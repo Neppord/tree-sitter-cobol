@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "tree-stitter test",
+    "test": "tree-sitter test",
     "start": "tree-sitter generate",
     "parse": "tree-sitter parse"
   },
