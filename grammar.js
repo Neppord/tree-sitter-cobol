@@ -14,7 +14,7 @@ module.exports = grammar({
             "IDENTIFICATION DIVISION." // or "ID DIVISION." in MF OSVS and VSC2
             , seq(
                 "PROGRAM-ID."
-                , field("program_name",$.program_name)
+                , field("program_name", $.program_name)
                 , optional(
                     //  ans85
                     choice(
@@ -35,6 +35,23 @@ module.exports = grammar({
             // only in OSVS where it is optional
             // + "REMARKS. comment-entry"
         ),
-        environment_division: $ => seq("ENVIRONMENT DIVISION.")
+        source_computer_entry: $ => "source-computer-entry",
+        object_computer_entry: $ => "object-computer-entry",
+        special_names_entry: $ => "special-names-entry",
+        environment_division: $ => seq(
+            "ENVIRONMENT DIVISION."
+            , optional(seq("CONFIGURATION SECTION."
+                , "SOURCE-COMPUTER."
+                , field("source_computer", $.source_computer_entry)
+                , "OBJECT-COMPUTER."
+                , field("object_computer", $.object_computer_entry)
+                , "SPECIAL-NAMES."
+                , field("special_names", $.special_names_entry)
+            ))
+            , optional(seq("INPUT-OUTPUT SECTION."
+                , "FILE-CONTROL.", "file-control-entry"
+                , "I-O-CONTROL.", "input-output-control-entry"
+            ))
+        )
     }
 });
