@@ -4,6 +4,7 @@ module.exports = grammar({
     rules: {
         source_file: $ => seq(
             $.identification_division
+            , $.environment_division
         ),
         // identification division is optional in MF
         identification_division: $ => seq(
@@ -27,6 +28,7 @@ module.exports = grammar({
             , optional("SECURITY. comment-entry")
             // only in OSVS where it is optional
             // + "REMARKS. comment-entry"
-        )
+        ),
+        environment_division: $ => seq()
     }
 });
