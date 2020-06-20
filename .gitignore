@@ -102,6 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+# ignore files built
 /src/
 /binding.gyp
 /index.js
+/parser.exp
+/parser.lib
+/parser.obj
