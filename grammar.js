@@ -2,7 +2,9 @@ module.exports = grammar({
     name: 'COBOL',
 
     rules: {
-        source_file: $ => $.identification_division,
+        source_file: $ => seq(
+            $.identification_division
+        ),
         // identification division is optional in MF
         identification_division: $ => seq(
             "IDENTIFICATION DIVISION." // or "ID DIVISION." in MF OSVS and VSC2
