@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "test": "tree-sitter test",
+    "test": "tree-sitter generate && tree-sitter test",
     "start": "tree-sitter generate",
-    "parse": "tree-sitter parse"
+    "parse": "tree-sitter parse",
+    "highlight": "tree-sitter highlight"
   },
   "devDependencies": {
     "tree-sitter-cli": "^0.16.7"

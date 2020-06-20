@@ -1,0 +1,30 @@
+=================
+IDENTIFICATION DIVISION
+=================
+IDENTIFICATION DIVISION.
+PROGRAM-ID. program-name
+AUTHOR. comment-entry
+DATE-WRITTEN. comment-entry
+DATE-COMPILED. comment-entry
+SECURITY. comment-entry
+---
+(source_file (identification_division
+    program_name: (program_name)
+    author: (comment_entry)
+    date_written: (comment_entry)
+    date_compiled: (comment_entry)
+    security: (comment_entry)
+) )
+=================
+ENVIRONMENT DIVISION
+=================
+IDENTIFICATION DIVISION.
+    PROGRAM-ID. hello-world
+ENVIRONMENT DIVISION.
+---
+(source_file
+    (identification_division (program_name))
+    (environment_division)
+)
+
+
