@@ -1,6 +1,20 @@
 # tree-sitter-cobol
 A tree sitter implementation for COBOL
 
+# Project plan
+Cobol is a complicated language to support since it exists in so many variants and dialects. Therefore, this project needs to focus at implementing only partial support and then grow from there.
+
+Short term goals:
+ - [] parse free from cobol
+ - [] parse nicely used copy constructs
+ - [] parse ans85
+
+task list:
+ - [] Identification Division
+ - [] Environment Division
+ - [] Data Division
+ - [] Procedure Division
+
 # links
  * COBOL Extension for VS Code: https://github.com/spgennard/vscode_cobol
  * Antlr gramma for COBOL: https://github.com/uwol/proleap-cobol-parser
