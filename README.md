@@ -5,15 +5,19 @@ A tree sitter implementation for COBOL
 Cobol is a complicated language to support since it exists in so many variants and dialects. Therefore, this project needs to focus at implementing only partial support and then grow from there.
 
 Short term goals:
- - [] parse free from cobol
- - [] parse nicely used copy constructs
- - [] parse ans85
+ - [ ] parse free from cobol
+ - [ ] parse nicely used copy constructs
+ - [ ] parse ans85
 
 task list:
  - [x] Identification Division
- - [] Environment Division
- - [] Data Division
- - [] Procedure Division
+ - [-] Environment Division
+    - [-] Configuration Section 
+    - [-] Input Output Section 
+        - [x] Record Sequential Files
+        - [x] Relative Files
+ - [ ] Data Division
+ - [ ] Procedure Division
 
 # links
  * COBOL Extension for VS Code: https://github.com/spgennard/vscode_cobol

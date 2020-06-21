@@ -3,9 +3,11 @@
     "test": "tree-sitter generate && tree-sitter test",
     "start": "tree-sitter generate",
     "parse": "tree-sitter parse",
-    "highlight": "tree-sitter highlight"
+    "highlight": "tree-sitter highlight",
+    "format": "prettier --write grammar.js"
   },
   "devDependencies": {
+    "prettier": "^2.0.5",
     "tree-sitter-cli": "^0.16.7"
   },
   "dependencies": {

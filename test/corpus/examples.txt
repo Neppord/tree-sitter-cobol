@@ -26,15 +26,18 @@ ENVIRONMENT DIVISION.
         OBJECT-COMPUTER. object-computer-entry
         SPECIAL-NAMES. special-names-entry
     INPUT-OUTPUT SECTION.
-        FILE-CONTROL. file-control-entry
+        FILE-CONTROL.
         I-O-CONTROL. input-output-control-entry
 ---
 (source_file
     (identification_division program_name: (program_name))
     (environment_division
-        source_computer: (source_computer_entry)
-        object_computer: (object_computer_entry)
-        special_names: (special_names_entry)
+        (configuration_section
+            source_computer: (source_computer_entry)
+            object_computer: (object_computer_entry)
+            special_names: (special_names_entry)
+        )
+        (input_output_section)
     )
 )
 
