@@ -68,30 +68,30 @@ module.exports = grammar({
     _external_or_dynamic: ($) => choice("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
       choice($._record_sequential_file, $._relative_file),
-      _foo: ($) =>
-          choice(
+    _foo: ($) =>
+      choice(
+        seq(
+          optional($._external_or_dynamic),
+          optional(
+            choice(
               seq(
-                  optional($._external_or_dynamic),
-                  optional(
-                      choice(
-                          seq(
-                              choice(
-                                  "LINE ADVANCING",
-                                  seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
-                              ),
-                              optional("FILE")
-                          ),
-                          "DISC",
-                          "KEYBOARD",
-                          "DISPLAY",
-                          "PRINTER",
-                          "PRINTER-1"
-                      )
-                  ),
-                  $._file_reference
+                choice(
+                  "LINE ADVANCING",
+                  seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
+                ),
+                optional("FILE")
               ),
-              seq("DISC", "FROM", $.data_name)
+              "DISC",
+              "KEYBOARD",
+              "DISPLAY",
+              "PRINTER",
+              "PRINTER-1"
+            )
           ),
+          $._file_reference
+        ),
+        seq("DISC", "FROM", $.data_name)
+      ),
     _record_sequential_file: ($) =>
       seq(
         "SELECT",
@@ -109,8 +109,8 @@ module.exports = grammar({
             "PADDING",
             optional("CHARACTER"),
             optional("IS"),
-              // data_name and literal both contains _user_defined_word words
-              // and therefore compete
+            // data_name and literal both contains _user_defined_word words
+            // and therefore compete
             choice(/*$.data_name,*/ $.literal)
           )
         ),
@@ -174,5 +174,5 @@ module.exports = grammar({
         optional(seq("I-O-CONTROL.", "input-output-control-entry"))
       ),
   },
-    conflicts: ($) => [[$._foo, $._relative_file]]
+  conflicts: ($) => [[$._foo, $._relative_file]],
 });
