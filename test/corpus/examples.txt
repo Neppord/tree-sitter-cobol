@@ -27,6 +27,9 @@ ENVIRONMENT DIVISION.
         SPECIAL-NAMES. special-names-entry
     INPUT-OUTPUT SECTION.
         FILE-CONTROL.
+          SELECT file-name ASSIGN TO dd-name
+          ORGANIZATION RELATIVE
+          ACCESS MODE IS SEQUENTIAL
         I-O-CONTROL. input-output-control-entry
 ---
 (source_file
@@ -37,7 +40,9 @@ ENVIRONMENT DIVISION.
             object_computer: (object_computer_entry)
             special_names: (special_names_entry)
         )
-        (input_output_section)
+        (input_output_section
+            (file_control_entry (file_name) (literal))
+        )
     )
 )
 

@@ -7,8 +7,13 @@ module.exports = grammar({
         // Environment division is optional in ans85
         optional($.environment_division)
       ),
-    _user_defined_word: ($) => /[A-Za-z][A-Za-z0-9_-]*/,
+    _user_defined_word: ($) => /[A-Za-z][A-Za-z\d_-]*/,
     program_name: ($) => $._user_defined_word,
+    data_name: ($) => $._user_defined_word,
+    file_name: ($) => $._user_defined_word,
+    integer: ($) => /\d+/,
+    literal: ($) =>
+      $._user_defined_word /*or string or constant or literal number*/,
     comment_entry: ($) => /.*/,
     // identification division is optional in MF
     identification_division: ($) =>
@@ -54,16 +59,23 @@ module.exports = grammar({
         "SPECIAL-NAMES.",
         field("special_names", $.special_names_entry)
       ),
+    // _external_file_reference is a string
+    _external_file_reference: ($) => "external-file-reference",
     _file_reference: ($) =>
-      choice("external-file-reference", "data-name", "literal"),
+        // data_name and literal both contains _user_defined_word words
+        // and therefore compete
+      choice($._external_file_reference, /*$.data_name,*/ $.literal),
     _external_or_dynamic: ($) => choice("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
-      choice($._record_sequential_file, $._relative_file),
+      choice(
+          $._record_sequential_file,
+          $._relative_file
+      ),
     _record_sequential_file: ($) =>
       seq(
         "SELECT",
         optional("OPTIONAL"),
-        "file-name",
+        $.file_name,
         "ASSIGN TO",
         choice(
           seq(
@@ -84,40 +96,47 @@ module.exports = grammar({
             ),
             $._file_reference
           ),
-          seq("DISC", "FROM", "data-name")
+          seq("DISC", "FROM", $.data_name)
         ),
-        optional(seq("RESERVE", "integer-1", choice("AREA", "AREAS"))),
+        optional(seq("RESERVE", $.integer, choice("AREA", "AREAS"))),
         optional(seq(optional("ORGANIZATION IS"), "SEQUENTIAL")),
-        optional(seq("PADDING CHARACTER IS", choice("data-name", "literal"))),
+        optional(seq("PADDING CHARACTER IS", choice($.data_name, "literal"))),
         optional(
           seq("RECORD DELIMITER IS", choice("STANDARD-1", "character-string"))
         ),
         optional("ACCESS MODE IS SEQUENTIAL"),
-        optional(seq("FILE STATUS IS", "data-name"))
+        optional(seq("FILE STATUS IS", $.data_name))
       ),
     _relative_file: ($) =>
       seq(
         "SELECT",
         optional("OPTIONAL"),
-        "file-name",
-        "ASSIGN TO",
+        $.file_name,
+        "ASSIGN",
+        optional("TO"),
         choice(
-          seq(optional($._external_or_dynamic), "DISK", $._file_reference),
-          seq(optional($._external_or_dynamic)),
-          seq("DISK FROM", "data-name")
+          seq(
+            optional($._external_or_dynamic),
+            optional("DISK"),
+            $._file_reference
+          ),
+          seq("DISK FROM", $.data_name),
+          optional($._external_or_dynamic)
         ),
-        optional(seq("RESERVE", "integer", choice("AREA", "AREAS"))),
+        optional(seq("RESERVE", $.integer, choice("AREA", "AREAS"))),
         seq(optional("ORGANIZATION"), "RELATIVE"),
         optional(
           seq(
-            "ACCESS MODE IS",
+            "ACCESS",
+            optional("MODE"),
+            optional("IS"),
             choice(
-              seq("SEQUENTIAL", optional(seq("RELATIVE KEY IS", "data-name"))),
-              seq(choice("RANDOM", "DYNAMIC"), "RELATIVE KEY IS", "data-name")
+              seq("SEQUENTIAL", optional(seq("RELATIVE", optional("KEY"), optional("IS"), $.data_name))),
+              seq(choice("RANDOM", "DYNAMIC"), "RELATIVE", optional("KEY"), optional("IS"), $.data_name)
             )
           )
         ),
-        optional(seq("FILE STATUS IS", "data-name"))
+        optional(seq("FILE STATUS IS", $.data_name))
       ),
     input_output_section: ($) =>
       seq(
