@@ -68,7 +68,8 @@ module.exports = grammar({
       // and therefore compete
       or($._external_file_reference, /*$.data_name,*/ $.literal),
     _external_or_dynamic: ($) => or("EXTERNAL", "DYNAMIC"),
-    file_control_entry: ($) => or($._record_sequential_file, $._relative_file),
+    file_control_entry: ($) =>
+      or($._record_sequential_file, $._relative_file, $._indexed_file),
     _record_sequential_file_assign: ($) =>
       seq(
         "ASSIGN",
@@ -102,14 +103,13 @@ module.exports = grammar({
         // and therefore compete
         or(/*$.data_name,*/ $.literal)
       ),
+    _file_status: ($) => seq(op("FILE"), "STATUS", op("IS"), $.data_name),
     _record_sequential_file: ($) =>
       seq(
-        "SELECT",
-        op("OPTIONAL"),
-        $.file_name,
+        $._select,
         $._record_sequential_file_assign,
         op(
-          seq("RESERVE", $.integer, or("AREA", "AREAS")),
+          seq("RESERVE", $.integer, $._area),
           seq(op(seq("ORGANIZATION", op("IS"))), "SEQUENTIAL"),
           $._record_sequential_file_padding,
           seq(
@@ -118,7 +118,7 @@ module.exports = grammar({
             or("STANDARD-1", "character-string")
           ),
           seq("ACCESS", op("MODE"), op("IS"), "SEQUENTIAL"),
-          seq("FILE STATUS IS", $.data_name)
+          $._file_status
         )
       ),
     _relative_file_access_mode: ($) =>
@@ -143,17 +143,45 @@ module.exports = grammar({
           op($._external_or_dynamic)
         )
       ),
-    _relative_file_reserve: ($) =>
-      seq("RESERVE", $.integer, or("AREA", "AREAS")),
+    _relative_file_reserve: ($) => seq("RESERVE", $.integer, $._area),
+    _select: ($) => seq("SELECT", op("OPTIONAL"), $.file_name),
+    _area: ($) => or("AREA", "AREAS"),
     _relative_file: ($) =>
       seq(
-        "SELECT",
-        op("OPTIONAL"),
-        $.file_name,
+        $._select,
         $._relative_file_assign,
         op($._relative_file_reserve),
         seq(op("ORGANIZATION"), "RELATIVE"),
         op($._relative_file_access_mode, seq("FILE STATUS IS", $.data_name))
+      ),
+    _indexed_file_assign: ($) =>
+      or(
+        seq(op($._external_or_dynamic), op("DISK"), $._file_reference),
+        seq($._external_or_dynamic),
+        seq("DISK", "FROM", $._file_reference)
+      ),
+    _indexed_file_reserve: ($) => seq("RESERVE", $.integer, $._area),
+    _indexed_file_organization: ($) => seq(or("ORGANIZATION"), "INDEXED"),
+    _indexed_file_access_mode: ($) =>
+      seq("ACCESS", or("MODE", "IS"), or("SEQUENTIAL", "RANDOM", "DYNAMIC")),
+    _record_key: ($) => seq("RECORD", op("KEY", "IS"), $.data_name),
+    _alternate_record_key: ($) =>
+      seq(
+        "ALTERNATE",
+        op("RECORD", "KEY", "IS"),
+        $.data_name,
+        op(seq(op("WITH"), "DUPLICATES"))
+      ),
+    _indexed_file: ($) =>
+      seq(
+        $._select,
+        op($._indexed_file_assign),
+        op($._indexed_file_reserve),
+        $._indexed_file_organization,
+        op($._indexed_file_access_mode),
+        $._record_key,
+        op($._alternate_record_key),
+        op($._file_status)
       ),
     input_output_section: ($) =>
       seq(

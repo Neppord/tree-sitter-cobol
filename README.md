@@ -16,7 +16,7 @@ task list:
     - [ ] Input Output Section 
         - [x] Record Sequential Files
         - [x] Relative Files
-        - [ ] Indexed Files
+        - [x] Indexed Files
         - [ ] Sort Merge Files
  - [ ] Data Division
    - [ ] File Section
