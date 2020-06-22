@@ -67,7 +67,7 @@ module.exports = grammar({
       choice($._external_file_reference, /*$.data_name,*/ $.literal),
     _external_or_dynamic: ($) => choice("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
-      choice($._record_sequential_file , $._relative_file),
+      choice($._record_sequential_file, $._relative_file),
     _record_sequential_file: ($) =>
       seq(
         "SELECT",
@@ -79,19 +79,21 @@ module.exports = grammar({
           seq(
             optional($._external_or_dynamic),
             optional(
-              seq(
-                choice(
-                  "LINE ADVANCING",
-                  seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
+              choice(
+                seq(
+                  choice(
+                    "LINE ADVANCING",
+                    seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
+                  ),
+                  optional("FILE")
                 ),
-                optional("FILE")
+                "DISC",
+                "KEYBOARD",
+                "DISPLAY",
+                "PRINTER",
+                "PRINTER-1"
               )
             ),
-            $._file_reference
-          ),
-          seq(
-            optional($._external_or_dynamic),
-            choice("DISC", "KEYBOARD", "DISPLAY", "PRINTER", "PRINTER-1"),
             $._file_reference
           ),
           seq("DISC", "FROM", $.data_name)
