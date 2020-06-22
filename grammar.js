@@ -1,3 +1,5 @@
+const op = (...lits) => seq(...lits.map((x) => optional(x)));
+const or = choice;
 module.exports = grammar({
   name: "COBOL",
   rules: {
@@ -5,7 +7,7 @@ module.exports = grammar({
       seq(
         $.identification_division,
         // Environment division is optional in ans85
-        optional($.environment_division)
+        op($.environment_division)
       ),
     _user_defined_word: ($) => /[A-Za-z][A-Za-z\d_-]*/,
     program_name: ($) => $._user_defined_word,
@@ -22,29 +24,29 @@ module.exports = grammar({
         seq(
           "PROGRAM-ID.",
           field("program_name", $.program_name),
-          optional(
+          op(
             //  ans85
-            choice("IS COMMON PROGRAM", "IS INITIAL PROGRAM")
+            or("IS COMMON PROGRAM", "IS INITIAL PROGRAM")
             // "IS EXTERNAL PROGRAM" MF
           )
         ),
 
-        optional(seq("AUTHOR.", field("author", $.comment_entry))),
-        optional(seq("INSTALLATION.", field("installation", $.comment_entry))),
-        optional(seq("DATE-WRITTEN.", field("date_written", $.comment_entry))),
-        optional(
-          seq("DATE-COMPILED.", field("date_compiled", $.comment_entry))
-        ),
-        optional(seq("SECURITY.", field("security", $.comment_entry)))
+        op(
+          seq("AUTHOR.", field("author", $.comment_entry)),
+          seq("INSTALLATION.", field("installation", $.comment_entry)),
+          seq("DATE-WRITTEN.", field("date_written", $.comment_entry)),
+          seq("DATE-COMPILED.", field("date_compiled", $.comment_entry)),
+          seq("SECURITY.", field("security", $.comment_entry))
+        )
         // only in OSVS where it is optional
         // + "REMARKS. comment-entry"
       ),
     environment_division: ($) =>
       seq(
         "ENVIRONMENT DIVISION.",
-        optional($.configuration_section),
+        op($.configuration_section),
         // Input-Output section is optional for MF
-        optional($.input_output_section)
+        op($.input_output_section)
       ),
     source_computer_entry: ($) => "source-computer-entry",
     object_computer_entry: ($) => "object-computer-entry",
@@ -64,115 +66,104 @@ module.exports = grammar({
     _file_reference: ($) =>
       // data_name and literal both contains _user_defined_word words
       // and therefore compete
-      choice($._external_file_reference, /*$.data_name,*/ $.literal),
-    _external_or_dynamic: ($) => choice("EXTERNAL", "DYNAMIC"),
-    file_control_entry: ($) =>
-      choice($._record_sequential_file, $._relative_file),
-    _foo: ($) =>
-      choice(
-        seq(
-          optional($._external_or_dynamic),
-          optional(
-            choice(
-              seq(
-                choice(
-                  "LINE ADVANCING",
-                  seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
+      or($._external_file_reference, /*$.data_name,*/ $.literal),
+    _external_or_dynamic: ($) => or("EXTERNAL", "DYNAMIC"),
+    file_control_entry: ($) => or($._record_sequential_file, $._relative_file),
+    _record_sequential_file_assign: ($) =>
+      seq(
+        "ASSIGN",
+        op("TO"),
+        or(
+          seq(
+            op(
+              $._external_or_dynamic,
+              or(
+                seq(
+                  or("LINE ADVANCING", seq(op("MULTIPLE"), or("REEL", "UNIT"))),
+                  op("FILE")
                 ),
-                optional("FILE")
-              ),
-              "DISC",
-              "KEYBOARD",
-              "DISPLAY",
-              "PRINTER",
-              "PRINTER-1"
-            )
+                "DISC",
+                "KEYBOARD",
+                "DISPLAY",
+                "PRINTER",
+                "PRINTER-1"
+              )
+            ),
+            $._file_reference
           ),
-          $._file_reference
-        ),
-        seq("DISC", "FROM", $.data_name)
+          seq("DISC", "FROM", $.data_name)
+        )
+      ),
+    _record_sequential_file_padding: ($) =>
+      seq(
+        "PADDING",
+        op("CHARAC", "IS"),
+        // data_name and literal both contains _user_defined_word words
+        // and therefore compete
+        or(/*$.data_name,*/ $.literal)
       ),
     _record_sequential_file: ($) =>
       seq(
         "SELECT",
-        optional("OPTIONAL"),
+        op("OPTIONAL"),
         $.file_name,
-        "ASSIGN",
-        optional("TO"),
-        $._foo,
-        optional(seq("RESERVE", $.integer, choice("AREA", "AREAS"))),
-        optional(
-          seq(optional(seq("ORGANIZATION", optional("IS"))), "SEQUENTIAL")
-        ),
-        optional(
-          seq(
-            "PADDING",
-            optional("CHARACTER"),
-            optional("IS"),
-            // data_name and literal both contains _user_defined_word words
-            // and therefore compete
-            choice(/*$.data_name,*/ $.literal)
-          )
-        ),
-        optional(
+        $._record_sequential_file_assign,
+        op(
+          seq("RESERVE", $.integer, or("AREA", "AREAS")),
+          seq(op(seq("ORGANIZATION", op("IS"))), "SEQUENTIAL"),
+          $._record_sequential_file_padding,
           seq(
             "RECORD DELIMITER",
-            optional("IS"),
-            choice("STANDARD-1", "character-string")
-          )
-        ),
-        optional(seq("ACCESS", optional("MODE"), optional("IS"), "SEQUENTIAL")),
-        optional(seq("FILE STATUS IS", $.data_name))
+            op("IS"),
+            or("STANDARD-1", "character-string")
+          ),
+          seq("ACCESS", op("MODE"), op("IS"), "SEQUENTIAL"),
+          seq("FILE STATUS IS", $.data_name)
+        )
       ),
+    _relative_file_access_mode: ($) =>
+      seq(
+        "ACCESS",
+        op("MODE", "IS"),
+        or(
+          seq(
+            "SEQUENTIAL",
+            op(seq("RELATIVE", op("KEY"), op("IS"), $.data_name))
+          ),
+          seq(or("RANDOM", "DYNAMIC"), "RELATIVE", op("KEY", "IS"), $.data_name)
+        )
+      ),
+    _relative_file_assign: ($) =>
+      seq(
+        "ASSIGN",
+        op("TO"),
+        or(
+          seq(op($._external_or_dynamic, "DISK"), $._file_reference),
+          seq("DISK FROM", $.data_name),
+          op($._external_or_dynamic)
+        )
+      ),
+    _relative_file_reserve: ($) =>
+      seq("RESERVE", $.integer, or("AREA", "AREAS")),
     _relative_file: ($) =>
       seq(
         "SELECT",
-        optional("OPTIONAL"),
+        op("OPTIONAL"),
         $.file_name,
-        "ASSIGN",
-        optional("TO"),
-        choice(
-          seq(
-            optional($._external_or_dynamic),
-            optional("DISK"),
-            $._file_reference
-          ),
-          seq("DISK FROM", $.data_name),
-          optional($._external_or_dynamic)
-        ),
-        optional(seq("RESERVE", $.integer, choice("AREA", "AREAS"))),
-        seq(optional("ORGANIZATION"), "RELATIVE"),
-        optional(
-          seq(
-            "ACCESS",
-            optional("MODE"),
-            optional("IS"),
-            choice(
-              seq(
-                "SEQUENTIAL",
-                optional(
-                  seq("RELATIVE", optional("KEY"), optional("IS"), $.data_name)
-                )
-              ),
-              seq(
-                choice("RANDOM", "DYNAMIC"),
-                "RELATIVE",
-                optional("KEY"),
-                optional("IS"),
-                $.data_name
-              )
-            )
-          )
-        ),
-        optional(seq("FILE STATUS IS", $.data_name))
+        $._relative_file_assign,
+        op($._relative_file_reserve),
+        seq(op("ORGANIZATION"), "RELATIVE"),
+        op($._relative_file_access_mode, seq("FILE STATUS IS", $.data_name))
       ),
     input_output_section: ($) =>
       seq(
         "INPUT-OUTPUT SECTION.",
         // FILE-CONTROL is optional for MF
-        optional(seq("FILE-CONTROL.", repeat($.file_control_entry))),
-        optional(seq("I-O-CONTROL.", "input-output-control-entry"))
+        op(seq("FILE-CONTROL.", repeat($.file_control_entry))),
+        op(seq("I-O-CONTROL.", "input-output-control-entry"))
       ),
   },
-  conflicts: ($) => [[$._foo, $._relative_file]],
+  conflicts: ($) => [
+    [$._record_sequential_file_assign, $._relative_file_assign],
+  ],
 });
