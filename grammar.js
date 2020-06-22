@@ -62,49 +62,60 @@ module.exports = grammar({
     // _external_file_reference is a string
     _external_file_reference: ($) => "external-file-reference",
     _file_reference: ($) =>
-        // data_name and literal both contains _user_defined_word words
-        // and therefore compete
+      // data_name and literal both contains _user_defined_word words
+      // and therefore compete
       choice($._external_file_reference, /*$.data_name,*/ $.literal),
     _external_or_dynamic: ($) => choice("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
-      choice(
-          $._record_sequential_file,
-          $._relative_file
-      ),
+      choice($._record_sequential_file , $._relative_file),
     _record_sequential_file: ($) =>
       seq(
         "SELECT",
         optional("OPTIONAL"),
         $.file_name,
-        "ASSIGN TO",
+        "ASSIGN",
+        optional("TO"),
         choice(
           seq(
             optional($._external_or_dynamic),
-            choice(
+            optional(
               seq(
                 choice(
                   "LINE ADVANCING",
-                  seq("MULTIPLE", choice("REEL", "UNIT"))
+                  seq(optional("MULTIPLE"), choice("REEL", "UNIT"))
                 ),
-                "FILE"
-              ),
-              "DISC",
-              "KEYBOARD",
-              "DISPLAY",
-              "PRINTER",
-              "PRINTER-1"
+                optional("FILE")
+              )
             ),
+            $._file_reference
+          ),
+          seq(
+            optional($._external_or_dynamic),
+            choice("DISC", "KEYBOARD", "DISPLAY", "PRINTER", "PRINTER-1"),
             $._file_reference
           ),
           seq("DISC", "FROM", $.data_name)
         ),
         optional(seq("RESERVE", $.integer, choice("AREA", "AREAS"))),
-        optional(seq(optional("ORGANIZATION IS"), "SEQUENTIAL")),
-        optional(seq("PADDING CHARACTER IS", choice($.data_name, "literal"))),
         optional(
-          seq("RECORD DELIMITER IS", choice("STANDARD-1", "character-string"))
+          seq(optional(seq("ORGANIZATION", optional("IS"))), "SEQUENTIAL")
         ),
-        optional("ACCESS MODE IS SEQUENTIAL"),
+        optional(
+          seq(
+            "PADDING",
+            optional("CHARACTER"),
+            optional("IS"),
+            choice($.data_name, $.literal)
+          )
+        ),
+        optional(
+          seq(
+            "RECORD DELIMITER",
+            optional("IS"),
+            choice("STANDARD-1", "character-string")
+          )
+        ),
+        optional(seq("ACCESS", optional("MODE"), optional("IS"), "SEQUENTIAL")),
         optional(seq("FILE STATUS IS", $.data_name))
       ),
     _relative_file: ($) =>
@@ -131,8 +142,19 @@ module.exports = grammar({
             optional("MODE"),
             optional("IS"),
             choice(
-              seq("SEQUENTIAL", optional(seq("RELATIVE", optional("KEY"), optional("IS"), $.data_name))),
-              seq(choice("RANDOM", "DYNAMIC"), "RELATIVE", optional("KEY"), optional("IS"), $.data_name)
+              seq(
+                "SEQUENTIAL",
+                optional(
+                  seq("RELATIVE", optional("KEY"), optional("IS"), $.data_name)
+                )
+              ),
+              seq(
+                choice("RANDOM", "DYNAMIC"),
+                "RELATIVE",
+                optional("KEY"),
+                optional("IS"),
+                $.data_name
+              )
             )
           )
         ),

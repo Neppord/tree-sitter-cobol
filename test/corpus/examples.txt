@@ -30,6 +30,9 @@ ENVIRONMENT DIVISION.
           SELECT file-name ASSIGN TO dd-name
           ORGANIZATION RELATIVE
           ACCESS MODE IS SEQUENTIAL
+          SELECT file-name-2 ASSIGN TO dd-name-2
+          ORGANIZATION SEQUENTIAL
+          ACCESS MODE IS SEQUENTIAL
         I-O-CONTROL. input-output-control-entry
 ---
 (source_file
@@ -41,6 +44,7 @@ ENVIRONMENT DIVISION.
             special_names: (special_names_entry)
         )
         (input_output_section
+            (file_control_entry (file_name) (literal))
             (file_control_entry (file_name) (literal))
         )
     )
