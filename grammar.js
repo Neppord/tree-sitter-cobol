@@ -69,7 +69,12 @@ module.exports = grammar({
       or($._external_file_reference, /*$.data_name,*/ $.literal),
     _external_or_dynamic: ($) => or("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
-      or($._record_sequential_file, $._relative_file, $._indexed_file),
+      or(
+        $._record_sequential_file,
+        $._relative_file,
+        $._indexed_file,
+        $._sort_merge_file
+      ),
     _record_sequential_file_assign: ($) =>
       seq(
         "ASSIGN",
@@ -183,6 +188,8 @@ module.exports = grammar({
         op($._alternate_record_key),
         op($._file_status)
       ),
+    _sort_merge_file: ($) =>
+      seq("SELECT", $.file_name, "ASSIGN", op("TO"), $._file_reference),
     input_output_section: ($) =>
       seq(
         "INPUT-OUTPUT SECTION.",
@@ -193,5 +200,6 @@ module.exports = grammar({
   },
   conflicts: ($) => [
     [$._record_sequential_file_assign, $._relative_file_assign],
+    [$._sort_merge_file, $._select],
   ],
 });
