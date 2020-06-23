@@ -13,11 +13,11 @@ task list:
  - [x] Identification Division
  - [ ] Environment Division
     - [ ] Configuration Section 
-    - [ ] Input Output Section 
+    - [x] Input Output Section 
         - [x] Record Sequential Files
         - [x] Relative Files
         - [x] Indexed Files
-        - [ ] Sort Merge Files
+        - [x] Sort Merge Files
  - [ ] Data Division
    - [ ] File Section
    - [ ] Working Storage Section
