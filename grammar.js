@@ -1,4 +1,5 @@
-const op = (...lits) => seq(...lits.map((x) => optional(x)));
+/* global module, optional, choice, seq, grammar, field, repeat */
+const op = (...xs) => seq(...xs.map((x) => optional(x)));
 const or = choice;
 module.exports = grammar({
   name: "COBOL",
@@ -9,14 +10,14 @@ module.exports = grammar({
         // Environment division is optional in ans85
         op($.environment_division)
       ),
-    _user_defined_word: ($) => /[A-Za-z][A-Za-z\d_-]*/,
+    _user_defined_word: (_) => /[A-Za-z][A-Za-z\d_-]*/,
     program_name: ($) => $._user_defined_word,
     data_name: ($) => $._user_defined_word,
     file_name: ($) => $._user_defined_word,
-    integer: ($) => /\d+/,
+    integer: (_) => /\d+/,
     literal: ($) =>
       $._user_defined_word /*or string or constant or literal number*/,
-    comment_entry: ($) => /.*/,
+    comment_entry: (_) => /.*/,
     // identification division is optional in MF
     identification_division: ($) =>
       seq(
@@ -48,9 +49,9 @@ module.exports = grammar({
         // Input-Output section is optional for MF
         op($.input_output_section)
       ),
-    source_computer_entry: ($) => "source-computer-entry",
-    object_computer_entry: ($) => "object-computer-entry",
-    special_names_entry: ($) => "special-names-entry",
+    source_computer_entry: (_) => "source-computer-entry",
+    object_computer_entry: (_) => "object-computer-entry",
+    special_names_entry: (_) => "special-names-entry",
     configuration_section: ($) =>
       seq(
         "CONFIGURATION SECTION.",
@@ -62,12 +63,12 @@ module.exports = grammar({
         field("special_names", $.special_names_entry)
       ),
     // _external_file_reference is a string
-    _external_file_reference: ($) => "external-file-reference",
+    _external_file_reference: (_) => "external-file-reference",
     _file_reference: ($) =>
       // data_name and literal both contains _user_defined_word words
       // and therefore compete
       or($._external_file_reference, /*$.data_name,*/ $.literal),
-    _external_or_dynamic: ($) => or("EXTERNAL", "DYNAMIC"),
+    _external_or_dynamic: (_) => or("EXTERNAL", "DYNAMIC"),
     file_control_entry: ($) =>
       or(
         $._record_sequential_file,
@@ -150,7 +151,7 @@ module.exports = grammar({
       ),
     _relative_file_reserve: ($) => seq("RESERVE", $.integer, $._area),
     _select: ($) => seq("SELECT", op("OPTIONAL"), $.file_name),
-    _area: ($) => or("AREA", "AREAS"),
+    _area: (_) => or("AREA", "AREAS"),
     _relative_file: ($) =>
       seq(
         $._select,
@@ -166,8 +167,8 @@ module.exports = grammar({
         seq("DISK", "FROM", $._file_reference)
       ),
     _indexed_file_reserve: ($) => seq("RESERVE", $.integer, $._area),
-    _indexed_file_organization: ($) => seq(or("ORGANIZATION"), "INDEXED"),
-    _indexed_file_access_mode: ($) =>
+    _indexed_file_organization: (_) => seq(or("ORGANIZATION"), "INDEXED"),
+    _indexed_file_access_mode: (_) =>
       seq("ACCESS", or("MODE", "IS"), or("SEQUENTIAL", "RANDOM", "DYNAMIC")),
     _record_key: ($) => seq("RECORD", op("KEY", "IS"), $.data_name),
     _alternate_record_key: ($) =>
