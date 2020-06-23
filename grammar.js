@@ -98,7 +98,7 @@ module.exports = grammar({
     _record_sequential_file_padding: ($) =>
       seq(
         "PADDING",
-        op("CHARAC", "IS"),
+        op("CHARACTER", "IS"),
         // data_name and literal both contains _user_defined_word words
         // and therefore compete
         or(/*$.data_name,*/ $.literal)
