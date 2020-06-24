@@ -13,5 +13,15 @@
   },
   "dependencies": {
     "nan": "^2.14.1"
-  }
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.cobol",
+      "file-types": [
+        "cbl",
+        "cob",
+        "cpy"
+      ]
+    }
+  ]
 }
