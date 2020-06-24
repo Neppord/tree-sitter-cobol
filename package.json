@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
     "test": "tree-sitter generate && tree-sitter test",
     "start": "tree-sitter generate",
     "parse": "tree-sitter parse",
