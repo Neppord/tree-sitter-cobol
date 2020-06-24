@@ -1,4 +1,16 @@
 {
+  "name": "tree-sitter-cobol",
+  "version": "0.0.0",
+  "description": "COBOL grammar for tree-sitter",
+  "main": "index.js",
+  "keywords": [
+    "parser",
+    "lexer",
+    "cobol"
+  ],
+  "author": "Samuel Ytterbrink",
+  "license": "MIT",
+  "repository": "https://github.com/Neppord/tree-sitter-cobol",
   "scripts": {
     "build": "tree-sitter generate && node-gyp build",
     "test": "tree-sitter generate && tree-sitter test",
