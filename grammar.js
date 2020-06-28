@@ -15,6 +15,8 @@ module.exports = grammar({
     data_name: ($) => $._user_defined_word,
     file_name: ($) => $._user_defined_word,
     integer: (_) => /\d+/,
+    // TODO: implement real character string
+    character_string: (_) => /"[^"]*"/,
     literal: ($) =>
       $._user_defined_word /*or string or constant or literal number*/,
     comment_entry: (_) => /.*/,
@@ -191,12 +193,49 @@ module.exports = grammar({
       ),
     _sort_merge_file: ($) =>
       seq("SELECT", $.file_name, "ASSIGN", op("TO"), $._file_reference),
+    input_output_control_entry: ($) =>
+      or(
+        seq(
+          "RERUN",
+          op(seq("ON", or($.file_name, $.character_string))),
+          $._every
+        ),
+        seq(
+          "SAME",
+          or("RECORD", "SORT", "SORT-MERGE"),
+          op("AREA", "FOR"),
+          repeat($.file_name)
+        ),
+        seq(
+          "MULTIPLE",
+          "FILE",
+          op("TAPE", "CONTAINS"),
+          repeat(seq($.file_name, op(seq("POSITION", $.integer))))
+        )
+      ),
+    _every: ($) =>
+      seq(
+        "EVERY",
+        or(
+          seq(
+            or(
+              op(seq("END", op("OF"))),
+              or("REAL", "UNIT"),
+              seq($.integer, "RECORDS")
+            ),
+            "OF",
+            $.file_name
+          ),
+          seq($.integer, "CLOCK-UNITS"),
+          /*TODO*/ "condition-name"
+        )
+      ),
     input_output_section: ($) =>
       seq(
         "INPUT-OUTPUT SECTION.",
         // FILE-CONTROL is optional for MF
         op(seq("FILE-CONTROL.", repeat($.file_control_entry))),
-        op(seq("I-O-CONTROL.", "input-output-control-entry"))
+        op(seq("I-O-CONTROL.", repeat($.input_output_control_entry)))
       ),
   },
   conflicts: ($) => [

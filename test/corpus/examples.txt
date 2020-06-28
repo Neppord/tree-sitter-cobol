@@ -33,7 +33,7 @@ ENVIRONMENT DIVISION.
           SELECT file-name-2 ASSIGN TO dd-name-2
           ORGANIZATION SEQUENTIAL
           ACCESS MODE IS SEQUENTIAL
-        I-O-CONTROL. input-output-control-entry
+        I-O-CONTROL.
 ---
 (source_file
     (identification_division program_name: (program_name))
