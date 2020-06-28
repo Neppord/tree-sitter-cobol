@@ -11,13 +11,15 @@ Short term goals:
 
 task list:
  - [x] Identification Division
- - [ ] Environment Division
-    - [ ] Configuration Section 
-    - [x] Input Output Section 
-        - [x] Record Sequential Files
-        - [x] Relative Files
-        - [x] Indexed Files
-        - [x] Sort Merge Files
+ - [x] Environment Division
+    - [x] Configuration Section (stub)
+    - [x] Input Output Section
+        - [x] IO Control Paragraph (almost)
+        - [x] File Control Paragraph
+            - [x] Record Sequential Files
+            - [x] Relative Files
+            - [x] Indexed Files
+            - [x] Sort Merge Files
  - [ ] Data Division
    - [ ] File Section
    - [ ] Working Storage Section
