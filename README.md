@@ -22,6 +22,7 @@ task list:
             - [x] Sort Merge Files
  - [ ] Data Division
    - [ ] File Section
+        - [x] Record Sequential Files
    - [ ] Working Storage Section
    - [ ] Linkage Section
    - [ ] Communication Section

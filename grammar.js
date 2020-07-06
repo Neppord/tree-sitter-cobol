@@ -8,12 +8,14 @@ module.exports = grammar({
       seq(
         $.identification_division,
         // Environment division is optional in ans85
-        op($.environment_division)
+        op($.environment_division, $.data_division)
       ),
     _user_defined_word: (_) => /[A-Za-z][A-Za-z\d_-]*/,
     program_name: ($) => $._user_defined_word,
     data_name: ($) => $._user_defined_word,
     file_name: ($) => $._user_defined_word,
+    implementor_name: (_) => "implementor-name",
+    alphabet_name: (_) => "alphabet-name",
     integer: (_) => /\d+/,
     // TODO: implement real character string
     character_string: (_) => /"[^"]*"/,
@@ -106,39 +108,48 @@ module.exports = grammar({
     _record_sequential_file_padding: ($) =>
       seq(
         "PADDING",
-        op("CHARACTER", "IS"),
+        op("CHARACTER"),
+        optional($._IS),
         // data_name and literal both contains _user_defined_word words
         // and therefore compete
         or(/*$.data_name,*/ $.literal)
       ),
-    _file_status: ($) => seq(op("FILE"), "STATUS", op("IS"), $.data_name),
+    _file_status: ($) =>
+      seq(op("FILE"), "STATUS", optional($._IS), $.data_name),
     _record_sequential_file: ($) =>
       seq(
         $._select,
         $._record_sequential_file_assign,
         op(
           seq("RESERVE", $.integer, $._area),
-          seq(op(seq("ORGANIZATION", op("IS"))), "SEQUENTIAL"),
+          seq(op(seq("ORGANIZATION", optional($._IS))), "SEQUENTIAL"),
           $._record_sequential_file_padding,
           seq(
             "RECORD DELIMITER",
-            op("IS"),
+            optional($._IS),
             or("STANDARD-1", "character-string")
           ),
-          seq("ACCESS", op("MODE"), op("IS"), "SEQUENTIAL"),
+          seq("ACCESS", op("MODE"), optional($._IS), "SEQUENTIAL"),
           $._file_status
         )
       ),
     _relative_file_access_mode: ($) =>
       seq(
         "ACCESS",
-        op("MODE", "IS"),
+        op("MODE"),
+        optional($._IS),
         or(
           seq(
             "SEQUENTIAL",
-            op(seq("RELATIVE", op("KEY"), op("IS"), $.data_name))
+            op(seq("RELATIVE", op("KEY"), optional($._IS), $.data_name))
           ),
-          seq(or("RANDOM", "DYNAMIC"), "RELATIVE", op("KEY", "IS"), $.data_name)
+          seq(
+            or("RANDOM", "DYNAMIC"),
+            "RELATIVE",
+            op("KEY"),
+            optional($._IS),
+            $.data_name
+          )
         )
       ),
     _relative_file_assign: ($) =>
@@ -170,13 +181,19 @@ module.exports = grammar({
       ),
     _indexed_file_reserve: ($) => seq("RESERVE", $.integer, $._area),
     _indexed_file_organization: (_) => seq(or("ORGANIZATION"), "INDEXED"),
-    _indexed_file_access_mode: (_) =>
-      seq("ACCESS", or("MODE", "IS"), or("SEQUENTIAL", "RANDOM", "DYNAMIC")),
-    _record_key: ($) => seq("RECORD", op("KEY", "IS"), $.data_name),
+    _indexed_file_access_mode: ($) =>
+      seq(
+        "ACCESS",
+        op("MODE"),
+        optional($._IS),
+        or("SEQUENTIAL", "RANDOM", "DYNAMIC")
+      ),
+    _record_key: ($) => seq("RECORD", op("KEY"), optional($._IS), $.data_name),
     _alternate_record_key: ($) =>
       seq(
         "ALTERNATE",
-        op("RECORD", "KEY", "IS"),
+        op("RECORD", "KEY"),
+        optional($._IS),
         $.data_name,
         op(seq(op("WITH"), "DUPLICATES"))
       ),
@@ -195,23 +212,29 @@ module.exports = grammar({
       seq("SELECT", $.file_name, "ASSIGN", op("TO"), $._file_reference),
     input_output_control_entry: ($) =>
       or(
-        seq(
-          "RERUN",
-          op(seq("ON", or($.file_name, $.character_string))),
-          $._every
-        ),
-        seq(
-          "SAME",
-          or("RECORD", "SORT", "SORT-MERGE"),
-          op("AREA", "FOR"),
-          repeat($.file_name)
-        ),
-        seq(
-          "MULTIPLE",
-          "FILE",
-          op("TAPE", "CONTAINS"),
-          repeat(seq($.file_name, op(seq("POSITION", $.integer))))
-        )
+        $._input_output_control_rerun_entry,
+        $._input_output_control_same_entry,
+        $._input_output_control_multiple_file_entry
+      ),
+    _input_output_control_rerun_entry: ($) =>
+      seq(
+        "RERUN",
+        op(seq("ON", or($.file_name, $.character_string))),
+        $._every
+      ),
+    _input_output_control_same_entry: ($) =>
+      seq(
+        "SAME",
+        or("RECORD", "SORT", "SORT-MERGE"),
+        op("AREA", "FOR"),
+        repeat($.file_name)
+      ),
+    _input_output_control_multiple_file_entry: ($) =>
+      seq(
+        "MULTIPLE",
+        "FILE",
+        op("TAPE", "CONTAINS"),
+        repeat(seq($.file_name, op(seq("POSITION", $.integer))))
       ),
     _every: ($) =>
       seq(
@@ -237,9 +260,102 @@ module.exports = grammar({
         op(seq("FILE-CONTROL.", repeat($.file_control_entry))),
         op(seq("I-O-CONTROL.", repeat($.input_output_control_entry)))
       ),
+    data_division: ($) =>
+      seq(
+        "DATA DIVISION.",
+        op(
+          $.file_section,
+          $.working_storage_section,
+          $.linkage_section,
+          $.communication_section,
+          $.report_section
+        )
+      ),
+    file_section: ($) =>
+      seq("FILE SECTION.", repeat($._file_description_entry)),
+    _file_description_entry: ($) =>
+      choice($._record_sequential_file_description),
+    _RECORDS: ($) =>
+      choice(seq("RECORD", optional($._IS)), seq("RECORDS", op("ARE"))),
+    _IS: ($) => "IS",
+    _record_sequential_file_description: ($) =>
+      seq(
+        "FD",
+        $.file_name,
+        op(
+          seq(optional($._IS), "EXTERNAL"),
+          seq(optional($._IS), "GLOBAL"),
+          $._record_sequential_file_block_description,
+          $._record_sequential_file_record_description,
+          $._record_sequential_file_label_description,
+          $._record_sequential_file_value_description,
+          $._record_sequential_file_data_description,
+          $._record_sequential_file_linage_description,
+          seq(op("LINES", "AT"), "TOP", $.data_name),
+          seq(op("LINES", "AT"), "BOTTOM", $.data_name),
+          seq("CODE-SET", optional($._IS), $.alphabet_name)
+        )
+      ),
+    _record_sequential_file_block_description: ($) =>
+      seq(
+        "BLOCK",
+        op("CONTAINS"),
+        op(seq($.integer, "TO")),
+        $.integer,
+        choice("RECORDS", "CHARACTERS")
+      ),
+    _record_sequential_file_record_description: ($) =>
+      seq("RECORD", choice($._ansi85_contains, $._std_contains)),
+    _ansi85_contains: ($) =>
+      seq(
+        op("CONTAINS"),
+        $.integer,
+        op("CHARACTERS"),
+        optional($._IS),
+        "VARYING",
+        op("IN", "SIZE"),
+        op(
+          seq(
+            op(seq(op("FROM"), $.integer), seq("TO", $.integer), "CHARACTERS"),
+            op(seq("DEPENDING", op("ON"), $.data_name))
+          )
+        )
+      ),
+    _std_contains: ($) =>
+      seq(
+        op("CONTAINS"),
+        op(seq($.integer, "TO")),
+        $.integer,
+        op("CHARACTERS")
+      ),
+    _record_sequential_file_label_description: ($) =>
+      seq("LABEL", $._RECORDS, choice("STANDARD", "OMITTED")),
+    _record_sequential_file_value_description: ($) =>
+      seq(
+        "VALUE",
+        "OF",
+        $.implementor_name,
+        optional($._IS),
+        repeat($.data_name)
+      ),
+    _record_sequential_file_data_description: ($) =>
+      seq("DATA", $._RECORDS, repeat($.data_name)),
+    _record_sequential_file_linage_description: ($) =>
+      seq(
+        "LINAGE",
+        optional($._IS),
+        $.data_name,
+        op("LINES"),
+        op(seq(op("WITH"), "FOOTING", op("AT"), $.data_name))
+      ),
+    working_storage_section: ($) => "WORKING-STORAGE SECTION.",
+    linkage_section: ($) => "LINKAGE SECTION.",
+    communication_section: ($) => "COMMUNICATION SECTION.",
+    report_section: ($) => "REPORT SECTION.",
   },
   conflicts: ($) => [
     [$._record_sequential_file_assign, $._relative_file_assign],
     [$._sort_merge_file, $._select],
+    [$._record_sequential_file_linage_description],
   ],
 });
