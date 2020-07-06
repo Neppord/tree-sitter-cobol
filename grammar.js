@@ -22,18 +22,13 @@ module.exports = grammar({
     literal: ($) =>
       $._user_defined_word /*or string or constant or literal number*/,
     comment_entry: (_) => /.*/,
-    // identification division is optional in MF
     identification_division: ($) =>
       seq(
-        "IDENTIFICATION DIVISION.", // or "ID DIVISION." in MF OSVS and VSC2
+        "IDENTIFICATION DIVISION.",
         seq(
           "PROGRAM-ID.",
           field("program_name", $.program_name),
-          op(
-            //  ans85
-            or("IS COMMON PROGRAM", "IS INITIAL PROGRAM")
-            // "IS EXTERNAL PROGRAM" MF
-          )
+          op(or("IS COMMON PROGRAM", "IS INITIAL PROGRAM"))
         ),
 
         op(
