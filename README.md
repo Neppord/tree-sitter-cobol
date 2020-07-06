@@ -5,7 +5,7 @@ A tree sitter implementation for COBOL
 Cobol is a complicated language to support since it exists in so many variants and dialects. Therefore, this project needs to focus at implementing only partial support and then grow from there.
 
 Short term goals:
- - [ ] parse free from cobol
+ - [ ] parse freeform cobol
  - [ ] parse nicely used copy constructs
  - [ ] parse ans85
 
