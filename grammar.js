@@ -2,7 +2,6 @@
 module.exports = grammar({
   name: "Cobol",
   rules: {
-    startRule: ($) => $.compilationUnit,
     compilationUnit: ($) => repeat1($.programUnit),
     programUnit: ($) =>
       seq(
@@ -814,7 +813,7 @@ module.exports = grammar({
           seq(
             optional($.NUMBER),
             optional($.IS),
-            choice($.PLUS, $.PLUSCHAR, $.MINUSCHAR)
+            choice($.PLUS, $.PLUSCHAR, $._MINUSCHAR)
           )
         ),
         choice($.identifier, $.integerLiteral)
@@ -826,7 +825,7 @@ module.exports = grammar({
           seq(
             optional($.NUMBER),
             optional($.IS),
-            choice($.PLUS, $.PLUSCHAR, $.MINUSCHAR)
+            choice($.PLUS, $.PLUSCHAR, $._MINUSCHAR)
           )
         ),
         choice($.identifier, $.integerLiteral)
@@ -1231,7 +1230,7 @@ module.exports = grammar({
         $.LPARENCHAR,
         $.RPARENCHAR,
         $.PLUSCHAR,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $.LESSTHANCHAR,
         $.MORETHANCHAR,
         $.integerLiteral
@@ -2523,11 +2522,11 @@ module.exports = grammar({
       seq($.NOT, optional($.ON), $.EXCEPTION, repeat($.statement)),
     // arithmetic expression ----------------------------------
     arithmeticExpression: ($) => seq($.multDivs, repeat($.plusMinus)),
-    plusMinus: ($) => seq(choice($.PLUSCHAR, $.MINUSCHAR), $.multDivs),
+    plusMinus: ($) => seq(choice($.PLUSCHAR, $._MINUSCHAR), $.multDivs),
     multDivs: ($) => seq($.powers, repeat($.multDiv)),
     multDiv: ($) => seq(choice($.ASTERISKCHAR, $.SLASHCHAR), $.powers),
     powers: ($) =>
-      seq(optional(choice($.PLUSCHAR, $.MINUSCHAR)), $.basis, repeat($.power)),
+      seq(optional(choice($.PLUSCHAR, $._MINUSCHAR)), $.basis, repeat($.power)),
     power: ($) => seq($.DOUBLEASTERISKCHAR, $.basis),
     basis: ($) =>
       seq(
@@ -3026,7 +3025,7 @@ module.exports = grammar({
         $._T,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._O,
         $._W,
@@ -3045,7 +3044,7 @@ module.exports = grammar({
         $._T,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._U,
         $._P,
         $._P,
@@ -3081,7 +3080,7 @@ module.exports = grammar({
         $._R,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._E,
         $._D,
         $._I,
@@ -3113,7 +3112,7 @@ module.exports = grammar({
         $._T,
         $._E,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._A,
         $._T,
@@ -3131,12 +3130,12 @@ module.exports = grammar({
         $._T,
         $._E,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._A,
         $._T,
         $._A,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._E,
         $._N,
@@ -3149,7 +3148,7 @@ module.exports = grammar({
     AUTHOR: ($) => seq($._A, $._U, $._T, $._H, $._O, $._R),
     AUTO: ($) => seq($._A, $._U, $._T, $._O),
     AUTO_SKIP: ($) =>
-      seq($._A, $._U, $._T, $._O, $.MINUSCHAR, $._S, $._K, $._I, $._P),
+      seq($._A, $._U, $._T, $._O, $._MINUSCHAR, $._S, $._K, $._I, $._P),
     BACKGROUND_COLOR: ($) =>
       seq(
         $._B,
@@ -3162,7 +3161,7 @@ module.exports = grammar({
         $._U,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._L,
@@ -3181,7 +3180,7 @@ module.exports = grammar({
         $._U,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._L,
@@ -3221,7 +3220,8 @@ module.exports = grammar({
     CHARACTERS: ($) =>
       seq($._C, $._H, $._A, $._R, $._A, $._C, $._T, $._E, $._R, $._S),
     CLASS: ($) => seq($._C, $._L, $._A, $._S, $._S),
-    CLASS_ID: ($) => seq($._C, $._L, $._A, $._S, $._S, $.MINUSCHAR, $._I, $._D),
+    CLASS_ID: ($) =>
+      seq($._C, $._L, $._A, $._S, $._S, $._MINUSCHAR, $._I, $._D),
     CLOB: ($) => seq($._C, $._L, $._O, $._B),
     CLOCK_UNITS: ($) =>
       seq(
@@ -3230,7 +3230,7 @@ module.exports = grammar({
         $._O,
         $._C,
         $._K,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._U,
         $._N,
         $._I,
@@ -3241,7 +3241,7 @@ module.exports = grammar({
     CLOSE_DISPOSITION: ($) =>
       seq(
         $.CLOSE,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._I,
         $._S,
@@ -3256,7 +3256,8 @@ module.exports = grammar({
       ),
     COBOL: ($) => seq($._C, $._O, $._B, $._O, $._L),
     CODE: ($) => seq($._C, $._O, $._D, $._E),
-    CODE_SET: ($) => seq($._C, $._O, $._D, $._E, $.MINUSCHAR, $._S, $._E, $._T),
+    CODE_SET: ($) =>
+      seq($._C, $._O, $._D, $._E, $._MINUSCHAR, $._S, $._E, $._T),
     COLLATING: ($) => seq($._C, $._O, $._L, $._L, $._A, $._T, $._I, $._N, $._G),
     COL: ($) => seq($._C, $._O, $._L),
     COLUMN: ($) => seq($._C, $._O, $._L, $._U, $._M, $._N),
@@ -3282,11 +3283,11 @@ module.exports = grammar({
         $._N
       ),
     COMP: ($) => seq($._C, $._O, $._M, $._P),
-    COMP_1: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "1"),
-    COMP_2: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "2"),
-    COMP_3: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "3"),
-    COMP_4: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "4"),
-    COMP_5: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "5"),
+    COMP_1: ($) => seq($._C, $._O, $._M, $._P, $._MINUSCHAR, "1"),
+    COMP_2: ($) => seq($._C, $._O, $._M, $._P, $._MINUSCHAR, "2"),
+    COMP_3: ($) => seq($._C, $._O, $._M, $._P, $._MINUSCHAR, "3"),
+    COMP_4: ($) => seq($._C, $._O, $._M, $._P, $._MINUSCHAR, "4"),
+    COMP_5: ($) => seq($._C, $._O, $._M, $._P, $._MINUSCHAR, "5"),
     COMPUTATIONAL: ($) =>
       seq(
         $._C,
@@ -3318,7 +3319,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "1"
       ),
     COMPUTATIONAL_2: ($) =>
@@ -3336,7 +3337,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "2"
       ),
     COMPUTATIONAL_3: ($) =>
@@ -3354,7 +3355,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "3"
       ),
     COMPUTATIONAL_4: ($) =>
@@ -3372,7 +3373,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "4"
       ),
     COMPUTATIONAL_5: ($) =>
@@ -3390,7 +3391,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "5"
       ),
     COMPUTE: ($) => seq($._C, $._O, $._M, $._P, $._U, $._T, $._E),
@@ -3423,7 +3424,7 @@ module.exports = grammar({
         $._R,
         $._O,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._O,
         $._I,
@@ -3459,7 +3460,7 @@ module.exports = grammar({
     CURSOR: ($) => seq($._C, $._U, $._R, $._S, $._O, $._R),
     DATA: ($) => seq($._D, $._A, $._T, $._A),
     DATA_BASE: ($) =>
-      seq($._D, $._A, $._T, $._A, $.MINUSCHAR, $._B, $._A, $._S, $._E),
+      seq($._D, $._A, $._T, $._A, $._MINUSCHAR, $._B, $._A, $._S, $._E),
     DATE: ($) => seq($._D, $._A, $._T, $._E),
     DATE_COMPILED: ($) =>
       seq(
@@ -3467,7 +3468,7 @@ module.exports = grammar({
         $._A,
         $._T,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._M,
@@ -3483,7 +3484,7 @@ module.exports = grammar({
         $._A,
         $._T,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._W,
         $._R,
         $._I,
@@ -3498,10 +3499,10 @@ module.exports = grammar({
         $._D,
         $._A,
         $._Y,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._O,
         $._F,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._W,
         $._E,
         $._E,
@@ -3517,7 +3518,7 @@ module.exports = grammar({
         $._B,
         $._U,
         $._G,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._N,
@@ -3528,11 +3529,11 @@ module.exports = grammar({
         $._S
       ),
     DEBUG_ITEM: ($) =>
-      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._I, $._T, $._E, $._M),
+      seq($._D, $._E, $._B, $._U, $._G, $._MINUSCHAR, $._I, $._T, $._E, $._M),
     DEBUG_LINE: ($) =>
-      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._L, $._I, $._N, $._E),
+      seq($._D, $._E, $._B, $._U, $._G, $._MINUSCHAR, $._L, $._I, $._N, $._E),
     DEBUG_NAME: ($) =>
-      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._N, $._A, $._M, $._E),
+      seq($._D, $._E, $._B, $._U, $._G, $._MINUSCHAR, $._N, $._A, $._M, $._E),
     DEBUG_SUB_1: ($) =>
       seq(
         $._D,
@@ -3540,11 +3541,11 @@ module.exports = grammar({
         $._B,
         $._U,
         $._G,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "1"
       ),
     DEBUG_SUB_2: ($) =>
@@ -3554,11 +3555,11 @@ module.exports = grammar({
         $._B,
         $._U,
         $._G,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "2"
       ),
     DEBUG_SUB_3: ($) =>
@@ -3568,11 +3569,11 @@ module.exports = grammar({
         $._B,
         $._U,
         $._G,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "3"
       ),
     DEBUGGING: ($) => seq($._D, $._E, $._B, $._U, $._G, $._G, $._I, $._N, $._G),
@@ -3585,7 +3586,7 @@ module.exports = grammar({
         $._M,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._O,
         $._I,
@@ -3617,7 +3618,7 @@ module.exports = grammar({
         $._U,
         $._L,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._I,
         $._S,
@@ -3643,7 +3644,7 @@ module.exports = grammar({
     DISK: ($) => seq($._D, $._I, $._S, $._K),
     DISPLAY: ($) => seq($._D, $._I, $._S, $._P, $._L, $._A, $._Y),
     DISPLAY_1: ($) =>
-      seq($._D, $._I, $._S, $._P, $._L, $._A, $._Y, $.MINUSCHAR, "1"),
+      seq($._D, $._I, $._S, $._P, $._L, $._A, $._Y, $._MINUSCHAR, "1"),
     DIVIDE: ($) => seq($._D, $._I, $._V, $._I, $._D, $._E),
     DIVISION: ($) => seq($._D, $._I, $._V, $._I, $._S, $._I, $._O, $._N),
     DONTCARE: ($) => seq($._D, $._O, $._N, $._T, $._C, $._A, $._R, $._E),
@@ -3664,7 +3665,7 @@ module.exports = grammar({
         $._P,
         $._T,
         $._Y,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._H,
         $._E,
@@ -3674,15 +3675,16 @@ module.exports = grammar({
     ENABLE: ($) => seq($._E, $._N, $._A, $._B, $._L, $._E),
     END: ($) => seq($._E, $._N, $._D),
     END_ACCEPT: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._A, $._C, $._C, $._E, $._P, $._T),
-    END_ADD: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._A, $._D, $._D),
-    END_CALL: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._C, $._A, $._L, $._L),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._A, $._C, $._C, $._E, $._P, $._T),
+    END_ADD: ($) => seq($._E, $._N, $._D, $._MINUSCHAR, $._A, $._D, $._D),
+    END_CALL: ($) =>
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._C, $._A, $._L, $._L),
     END_COMPUTE: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._M,
@@ -3692,13 +3694,13 @@ module.exports = grammar({
         $._E
       ),
     END_DELETE: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._D, $._E, $._L, $._E, $._T, $._E),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._D, $._E, $._L, $._E, $._T, $._E),
     END_DISPLAY: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._I,
         $._S,
@@ -3708,13 +3710,13 @@ module.exports = grammar({
         $._Y
       ),
     END_DIVIDE: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._D, $._I, $._V, $._I, $._D, $._E),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._D, $._I, $._V, $._I, $._D, $._E),
     END_EVALUATE: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._E,
         $._V,
         $._A,
@@ -3724,13 +3726,13 @@ module.exports = grammar({
         $._T,
         $._E
       ),
-    END_IF: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._I, $._F),
+    END_IF: ($) => seq($._E, $._N, $._D, $._MINUSCHAR, $._I, $._F),
     END_MULTIPLY: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._M,
         $._U,
         $._L,
@@ -3745,10 +3747,10 @@ module.exports = grammar({
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._O,
         $._F,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._A,
         $._G,
@@ -3759,7 +3761,7 @@ module.exports = grammar({
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._E,
         $._R,
@@ -3768,13 +3770,14 @@ module.exports = grammar({
         $._R,
         $._M
       ),
-    END_READ: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._R, $._E, $._A, $._D),
+    END_READ: ($) =>
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._R, $._E, $._A, $._D),
     END_RECEIVE: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._R,
         $._E,
         $._C,
@@ -3788,7 +3791,7 @@ module.exports = grammar({
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._R,
         $._E,
         $._M,
@@ -3798,13 +3801,13 @@ module.exports = grammar({
         $._S
       ),
     END_RETURN: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._R, $._E, $._T, $._U, $._R, $._N),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._R, $._E, $._T, $._U, $._R, $._N),
     END_REWRITE: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._R,
         $._E,
         $._W,
@@ -3814,17 +3817,17 @@ module.exports = grammar({
         $._E
       ),
     END_SEARCH: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._E, $._A, $._R, $._C, $._H),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._S, $._E, $._A, $._R, $._C, $._H),
     END_START: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._T, $._A, $._R, $._T),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._S, $._T, $._A, $._R, $._T),
     END_STRING: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._T, $._R, $._I, $._N, $._G),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._S, $._T, $._R, $._I, $._N, $._G),
     END_SUBTRACT: ($) =>
       seq(
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._U,
         $._B,
@@ -3839,7 +3842,7 @@ module.exports = grammar({
         $._E,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._U,
         $._N,
         $._S,
@@ -3850,7 +3853,7 @@ module.exports = grammar({
         $._G
       ),
     END_WRITE: ($) =>
-      seq($._E, $._N, $._D, $.MINUSCHAR, $._W, $._R, $._I, $._T, $._E),
+      seq($._E, $._N, $._D, $._MINUSCHAR, $._W, $._R, $._I, $._T, $._E),
     //ENDING: ($) => seq($._E, $._N, $._D, $._I, $._N, $._F),
     ENTER: ($) => seq($._E, $._N, $._T, $._E, $._R),
     ENTRY: ($) => seq($._E, $._N, $._T, $._R, $._Y),
@@ -3861,7 +3864,7 @@ module.exports = grammar({
         $._T,
         $._R,
         $._Y,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._R,
         $._O,
@@ -3902,7 +3905,7 @@ module.exports = grammar({
         $._I,
         $._L,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._N,
@@ -3928,7 +3931,7 @@ module.exports = grammar({
         $._U,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._L,
@@ -3947,7 +3950,7 @@ module.exports = grammar({
         $._U,
         $._N,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._L,
@@ -3983,7 +3986,7 @@ module.exports = grammar({
         $._I,
         $._O,
         $._N,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._O,
         $._I,
@@ -4003,14 +4006,14 @@ module.exports = grammar({
     HEADING: ($) => seq($._H, $._E, $._A, $._D, $._I, $._N, $._G),
     HIGHLIGHT: ($) => seq($._H, $._I, $._G, $._H, $._L, $._I, $._G, $._H, $._T),
     HIGH_VALUE: ($) =>
-      seq($._H, $._I, $._G, $._H, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
+      seq($._H, $._I, $._G, $._H, $._MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
     HIGH_VALUES: ($) =>
       seq(
         $._H,
         $._I,
         $._G,
         $._H,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._V,
         $._A,
         $._L,
@@ -4018,13 +4021,13 @@ module.exports = grammar({
         $._E,
         $._S
       ),
-    I_O: ($) => seq($._I, $.MINUSCHAR, $._O),
+    I_O: ($) => seq($._I, $._MINUSCHAR, $._O),
     I_O_CONTROL: ($) =>
       seq(
         $._I,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._O,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._N,
@@ -4070,7 +4073,7 @@ module.exports = grammar({
         $._P,
         $._U,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._O,
         $._U,
         $._T,
@@ -4122,7 +4125,7 @@ module.exports = grammar({
         $._G,
         $._T,
         $._H,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._H,
         $._E,
@@ -4158,7 +4161,7 @@ module.exports = grammar({
         $._A,
         $._G,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._U,
@@ -4175,7 +4178,7 @@ module.exports = grammar({
         $._I,
         $._N,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._U,
@@ -4194,7 +4197,7 @@ module.exports = grammar({
         $._C,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._T,
         $._O,
@@ -4205,15 +4208,15 @@ module.exports = grammar({
       ),
     LOCK: ($) => seq($._L, $._O, $._C, $._K),
     LONG_DATE: ($) =>
-      seq($._L, $._O, $._N, $._G, $.MINUSCHAR, $._D, $._A, $._T, $._E),
+      seq($._L, $._O, $._N, $._G, $._MINUSCHAR, $._D, $._A, $._T, $._E),
     LONG_TIME: ($) =>
-      seq($._L, $._O, $._N, $._G, $.MINUSCHAR, $._T, $._I, $._M, $._E),
+      seq($._L, $._O, $._N, $._G, $._MINUSCHAR, $._T, $._I, $._M, $._E),
     LOWER: ($) => seq($._L, $._O, $._W, $._E, $._R),
     LOWLIGHT: ($) => seq($._L, $._O, $._W, $._L, $._I, $._G, $._H, $._T),
     LOW_VALUE: ($) =>
-      seq($._L, $._O, $._W, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
+      seq($._L, $._O, $._W, $._MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
     LOW_VALUES: ($) =>
-      seq($._L, $._O, $._W, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E, $._S),
+      seq($._L, $._O, $._W, $._MINUSCHAR, $._V, $._A, $._L, $._U, $._E, $._S),
     MEMORY: ($) => seq($._M, $._E, $._M, $._O, $._R, $._Y),
     MERGE: ($) => seq($._M, $._E, $._R, $._G, $._E),
     MESSAGE: ($) => seq($._M, $._E, $._S, $._S, $._A, $._G, $._E),
@@ -4226,7 +4229,7 @@ module.exports = grammar({
         $._O,
         $._R,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._A,
         $._B,
@@ -4249,7 +4252,7 @@ module.exports = grammar({
         $._N,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._E,
         $._D,
         $._I,
@@ -4262,7 +4265,7 @@ module.exports = grammar({
     NETWORK: ($) => seq($._N, $._E, $._T, $._W, $._O, $._R, $._K),
     NEXT: ($) => seq($._N, $._E, $._X, $._T),
     NO: ($) => seq($._N, $._O),
-    NO_ECHO: ($) => seq($._N, $._O, $.MINUSCHAR, $._E, $._C, $._H, $._O),
+    NO_ECHO: ($) => seq($._N, $._O, $._MINUSCHAR, $._E, $._C, $._H, $._O),
     NOT: ($) => seq($._N, $._O, $._T),
     NULL: ($) => seq($._N, $._U, $._L, $._L),
     NULLS: ($) => seq($._N, $._U, $._L, $._L, $._S),
@@ -4277,7 +4280,7 @@ module.exports = grammar({
         $._R,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._A,
         $._T,
@@ -4292,7 +4295,7 @@ module.exports = grammar({
         $._R,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._E,
         $._D,
         $._I,
@@ -4309,7 +4312,7 @@ module.exports = grammar({
         $._R,
         $._I,
         $._C,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._T,
         $._I,
         $._M,
@@ -4323,7 +4326,7 @@ module.exports = grammar({
         $._E,
         $._C,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._M,
@@ -4372,7 +4375,7 @@ module.exports = grammar({
         $._K,
         $._E,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._E,
         $._C,
@@ -4389,7 +4392,7 @@ module.exports = grammar({
         $._A,
         $._G,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._U,
@@ -4424,7 +4427,7 @@ module.exports = grammar({
         $._U,
         $._R,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._P,
         $._O,
         $._I,
@@ -4439,7 +4442,7 @@ module.exports = grammar({
     PROCESS: ($) => seq($._P, $._R, $._O, $._C, $._E, $._S, $._S),
     PROGRAM: ($) => seq($._P, $._R, $._O, $._G, $._R, $._A, $._M),
     PROGRAM_ID: ($) =>
-      seq($._P, $._R, $._O, $._G, $._R, $._A, $._M, $.MINUSCHAR, $._I, $._D),
+      seq($._P, $._R, $._O, $._G, $._R, $._A, $._M, $._MINUSCHAR, $._I, $._D),
     PROGRAM_LIBRARY: ($) =>
       seq(
         $._P,
@@ -4449,7 +4452,7 @@ module.exports = grammar({
         $._R,
         $._A,
         $._M,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._I,
         $._B,
@@ -4505,7 +4508,7 @@ module.exports = grammar({
         $._R,
         $._V,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._V,
         $._I,
         $._D,
@@ -4522,7 +4525,7 @@ module.exports = grammar({
         $._U,
         $._R,
         $._N,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._D,
@@ -4555,7 +4558,7 @@ module.exports = grammar({
         $._E,
         $._N,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._I,
         $._M,
@@ -4592,11 +4595,12 @@ module.exports = grammar({
         $._T
       ),
     SHARING: ($) => seq($._S, $._H, $._A, $._R, $._I, $._N, $._G),
-    SHIFT_IN: ($) => seq($._S, $._H, $._I, $._F, $._T, $.MINUSCHAR, $._I, $._N),
+    SHIFT_IN: ($) =>
+      seq($._S, $._H, $._I, $._F, $._T, $._MINUSCHAR, $._I, $._N),
     SHIFT_OUT: ($) =>
-      seq($._S, $._H, $._I, $._F, $._T, $.MINUSCHAR, $._O, $._U, $._T),
+      seq($._S, $._H, $._I, $._F, $._T, $._MINUSCHAR, $._O, $._U, $._T),
     SHORT_DATE: ($) =>
-      seq($._S, $._H, $._O, $._R, $._T, $.MINUSCHAR, $._D, $._A, $._T, $._E),
+      seq($._S, $._H, $._O, $._R, $._T, $._MINUSCHAR, $._D, $._A, $._T, $._E),
     SIGN: ($) => seq($._S, $._I, $._G, $._N),
     SIZE: ($) => seq($._S, $._I, $._Z, $._E),
     SORT: ($) => seq($._S, $._O, $._R, $._T),
@@ -4606,7 +4610,7 @@ module.exports = grammar({
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._N,
@@ -4621,12 +4625,12 @@ module.exports = grammar({
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._R,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._I,
         $._Z,
@@ -4638,26 +4642,26 @@ module.exports = grammar({
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._F,
         $._I,
         $._L,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._I,
         $._Z,
         $._E
       ),
     SORT_MERGE: ($) =>
-      seq($._S, $._O, $._R, $._T, $.MINUSCHAR, $._M, $._E, $._R, $._G, $._E),
+      seq($._S, $._O, $._R, $._T, $._MINUSCHAR, $._M, $._E, $._R, $._G, $._E),
     SORT_MESSAGE: ($) =>
       seq(
         $._S,
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._M,
         $._E,
         $._S,
@@ -4672,12 +4676,12 @@ module.exports = grammar({
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._M,
         $._O,
         $._D,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._I,
         $._Z,
@@ -4689,7 +4693,7 @@ module.exports = grammar({
         $._O,
         $._R,
         $._T,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._R,
         $._E,
         $._T,
@@ -4706,7 +4710,7 @@ module.exports = grammar({
         $._R,
         $._C,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._M,
@@ -4727,7 +4731,7 @@ module.exports = grammar({
         $._I,
         $._A,
         $._L,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._N,
         $._A,
         $._M,
@@ -4737,9 +4741,9 @@ module.exports = grammar({
     SQL: ($) => seq($._S, $._Q, $._L),
     STANDARD: ($) => seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D),
     STANDARD_1: ($) =>
-      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $.MINUSCHAR, "1"),
+      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $._MINUSCHAR, "1"),
     STANDARD_2: ($) =>
-      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $.MINUSCHAR, "2"),
+      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $._MINUSCHAR, "2"),
     START: ($) => seq($._S, $._T, $._A, $._R, $._T),
     STATUS: ($) => seq($._S, $._T, $._A, $._T, $._U, $._S),
     STOP: ($) => seq($._S, $._T, $._O, $._P),
@@ -4749,13 +4753,13 @@ module.exports = grammar({
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._Q,
         $._U,
         $._E,
         $._U,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "1"
       ),
     SUB_QUEUE_2: ($) =>
@@ -4763,13 +4767,13 @@ module.exports = grammar({
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._Q,
         $._U,
         $._E,
         $._U,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "2"
       ),
     SUB_QUEUE_3: ($) =>
@@ -4777,13 +4781,13 @@ module.exports = grammar({
         $._S,
         $._U,
         $._B,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._Q,
         $._U,
         $._E,
         $._U,
         $._E,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         "3"
       ),
     SUBTRACT: ($) => seq($._S, $._U, $._B, $._T, $._R, $._A, $._C, $._T),
@@ -4827,7 +4831,7 @@ module.exports = grammar({
         $._E,
         $._A,
         $._D,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._L,
         $._O,
         $._C,
@@ -4849,7 +4853,7 @@ module.exports = grammar({
         $._A,
         $._Y,
         $._S,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._D,
         $._A,
         $._T,
@@ -4863,7 +4867,7 @@ module.exports = grammar({
         $._A,
         $._Y,
         $._S,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._N,
         $._A,
         $._M,
@@ -4896,7 +4900,7 @@ module.exports = grammar({
         $._H,
         $._E,
         $._N,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._C,
         $._O,
         $._M,
@@ -4917,7 +4921,7 @@ module.exports = grammar({
         $._I,
         $._N,
         $._G,
-        $.MINUSCHAR,
+        $._MINUSCHAR,
         $._S,
         $._T,
         $._O,
@@ -4932,7 +4936,7 @@ module.exports = grammar({
     YYYYDDD: ($) => seq($._Y, $._Y, $._Y, $._Y, $._D, $._D, $._D),
     ZERO: ($) => seq($._Z, $._E, $._R, $._O),
     ZERO_FILL: ($) =>
-      seq($._Z, $._E, $._R, $._O, $.MINUSCHAR, $._F, $._I, $._L, $._L),
+      seq($._Z, $._E, $._R, $._O, $._MINUSCHAR, $._F, $._I, $._L, $._L),
     ZEROS: ($) => seq($._Z, $._E, $._R, $._O, $._S),
     ZEROES: ($) => seq($._Z, $._E, $._R, $._O, $._E, $._S),
     // symbols
@@ -4955,7 +4959,7 @@ module.exports = grammar({
     LESSTHANCHAR: ($) => "<",
     LESSTHANOREQUAL: ($) => "<=",
     LPARENCHAR: ($) => "(",
-    MINUSCHAR: ($) => "-",
+    _MINUSCHAR: ($) => "-",
     MORETHANCHAR: ($) => ">",
     MORETHANOREQUAL: ($) => ">=",
     NOTEQUALCHAR: ($) => "<>",
@@ -4990,26 +4994,26 @@ module.exports = grammar({
     LEVEL_NUMBER_77: ($) => "77",
     LEVEL_NUMBER_88: ($) => "88",
     INTEGERLITERAL: ($) =>
-      seq(optional(choice($.PLUSCHAR, $.MINUSCHAR)), /[0-9]+/),
+      seq(optional(choice($.PLUSCHAR, $._MINUSCHAR)), /[0-9]+/),
     NUMERICLITERAL: ($) =>
       seq(
-        optional(choice($.PLUSCHAR, $.MINUSCHAR)),
+        optional(choice($.PLUSCHAR, $._MINUSCHAR)),
         /[0-9]*/,
         choice($.DOT, $.COMMACHAR),
         /[0-9]+/,
         optional(
-          seq(/[eE]/, optional(choice($.PLUSCHAR, $.MINUSCHAR)), /[0-9]+/)
+          seq(/[eE]/, optional(choice($.PLUSCHAR, $._MINUSCHAR)), /[0-9]+/)
         )
       ),
     IDENTIFIER: ($) => /[a-zA-Z0-9]+([-_]+[a-zA-Z0-9]+)*/,
     // whitespace, line breaks, comments, ...
     // NEWLINE: ($) => seq(optional("\r"), "\n"),
-    EXECCICSLINE: ($) => seq($.EXECCICSTAG, $.WS, /[^\n\r}]*[\n\r}]/),
-    EXECSQLIMSLINE: ($) => seq($.EXECSQLIMSTAG, $.WS, /[^\n\r}]*[\n\r}]/),
-    EXECSQLLINE: ($) => seq($.EXECSQLTAG, $.WS, /[^\n\r}]*[\n\r}]/),
-    COMMENTENTRYLINE: ($) => seq($.COMMENTENTRYTAG, $.WS, /[^\n\r]*/),
+    EXECCICSLINE: ($) => seq($.EXECCICSTAG, $._WS, /[^\n\r}]*[\n\r}]/),
+    EXECSQLIMSLINE: ($) => seq($.EXECSQLIMSTAG, $._WS, /[^\n\r}]*[\n\r}]/),
+    EXECSQLLINE: ($) => seq($.EXECSQLTAG, $._WS, /[^\n\r}]*[\n\r}]/),
+    COMMENTENTRYLINE: ($) => seq($.COMMENTENTRYTAG, $._WS, /[^\n\r]*/),
     // COMMENTLINE: ($) => seq($.COMMENTTAG, $.WS, /[^\n\r]*/),
-    WS: ($) => /[\t\f;]+/,
+    _WS: ($) => /[\t\f;]+/,
     // SEPARATOR: ($) => ", ",
     // case insensitive chars
     _A: ($) => /[aA]/,

@@ -8,13 +8,25 @@ DATE-WRITTEN. comment-entry
 DATE-COMPILED. comment-entry
 SECURITY. comment-entry
 ---
-(source_file (identification_division
-    program_name: (program_name)
-    author: (comment_entry)
-    date_written: (comment_entry)
-    date_compiled: (comment_entry)
-    security: (comment_entry)
-) )
+(compilationUnit
+    (programUnit
+        (identificationDivision
+            (IDENTIFICATION)
+            (DIVISION)
+            (DOT_FS)
+            (programIdParagraph
+                (PROGRAM_ID)
+                (DOT_FS)
+                (programName (cobolWord (IDENTIFIER))))
+                (identificationDivisionBody
+                    (authorParagraph (AUTHOR) (DOT_FS)))
+                )
+            )
+            (ERROR
+                (END (ERROR))
+                (END (ERROR))
+            )
+        )
 =================
 ENVIRONMENT DIVISION
 =================
@@ -35,19 +47,75 @@ ENVIRONMENT DIVISION.
           ACCESS MODE IS SEQUENTIAL
         I-O-CONTROL.
 ---
-(source_file
-    (identification_division program_name: (program_name))
-    (environment_division
-        (configuration_section
-            source_computer: (source_computer_entry)
-            object_computer: (object_computer_entry)
-            special_names: (special_names_entry)
+(compilationUnit
+    (programUnit
+        (identificationDivision
+            (IDENTIFICATION)
+            (DIVISION)
+            (DOT_FS)
+            (programIdParagraph
+                (PROGRAM_ID)
+                (DOT_FS)
+                (programName (cobolWord (IDENTIFIER)))
+            )
         )
-        (input_output_section
-            (file_control_entry (file_name) (literal))
-            (file_control_entry (file_name) (literal))
+        (environmentDivision
+            (ENVIRONMENT)
+            (DIVISION)
+            (DOT_FS)
+            (environmentDivisionBody
+                (configurationSection
+                    (CONFIGURATION)
+                    (SECTION)
+                    (DOT_FS)
+                    (configurationSectionParagraph
+                        (sourceComputerParagraph
+                            (SOURCE_COMPUTER)
+                            (DOT_FS)
+                            (ERROR
+                                (computerName
+                                    (systemName (cobolWord (IDENTIFIER)))
+                                )
+                            )
+                            (computerName (systemName (cobolWord (IDENTIFIER))))
+                            (DOT_FS)
+                        )
+                    )
+                    (ERROR (OBJECT_COMPUTER))
+                    (configurationSectionParagraph
+                        (specialNamesParagraph
+                            (SPECIAL_NAMES)
+                            (DOT_FS)
+                            (specialNameClause
+                                (environmentSwitchNameClause
+                                    (environmentName
+                                        (systemName (cobolWord (IDENTIFIER)))
+                                    )
+                                    (mnemonicName (cobolWord (IDENTIFIER)))
+                                )
+                            )
+                            (specialNameClause
+                                (environmentSwitchNameClause
+                                    (environmentName
+                                        (systemName
+                                            (cobolWord (IDENTIFIER))
+                                        )
+                                    )
+                                    (ERROR)
+                                    (mnemonicName
+                                        (cobolWord (IDENTIFIER))
+                                    )
+                                )
+                            )
+                            (DOT_FS)
+                        )
+                    )
+                )
+            )
         )
     )
-)
-
-
+    (ERROR (ERROR)
+    (ID (ERROR))
+    (ERROR)
+    (ID (ERROR))
+))
