@@ -1,3319 +1,4942 @@
-/* global module, optional, choice, seq, grammar, field, repeat */
+/* global module, optional, choice, seq, grammar, field, repeat, repeat1 */
 module.exports = grammar({
   name: "Cobol",
   rules: {
-    startRule: ($) => seq(compilationUnit, EOF),
-    compilationUnit: ($) => repeat(programUnit),
+    startRule: ($) => $.compilationUnit,
+    compilationUnit: ($) => repeat1($.programUnit),
     programUnit: ($) =>
       seq(
-        identificationDivision,
-        optional(environmentDivision),
-        optional(dataDivision),
-        optional(procedureDivision),
-        repeat(programUnit),
-        optional(endProgramStatement)
+        $.identificationDivision,
+        optional($.environmentDivision),
+        optional($.dataDivision),
+        optional($.procedureDivision),
+        repeat($.programUnit),
+        optional($.endProgramStatement)
       ),
-    endProgramStatement: ($) => seq(END, PROGRAM, programName, DOT_FS),
+    endProgramStatement: ($) => seq($.END, $.PROGRAM, $.programName, $.DOT_FS),
     // --- identification division --------------------------------------------------------------------
     identificationDivision: ($) =>
       seq(
-        choice(IDENTIFICATION, ID),
-        DIVISION,
-        DOT_FS,
-        programIdParagraph,
-        repeat(identificationDivisionBody)
+        choice($.IDENTIFICATION, $.ID),
+        $.DIVISION,
+        $.DOT_FS,
+        $.programIdParagraph,
+        repeat($.identificationDivisionBody)
       ),
     identificationDivisionBody: ($) =>
       choice(
-        authorParagraph,
-        installationParagraph,
-        dateWrittenParagraph,
-        dateCompiledParagraph,
-        securityParagraph,
-        remarksParagraph
+        $.authorParagraph,
+        $.installationParagraph,
+        $.dateWrittenParagraph,
+        $.dateCompiledParagraph,
+        $.securityParagraph,
+        $.remarksParagraph
       ),
     // - program id paragraph ----------------------------------
     programIdParagraph: ($) =>
       seq(
-        PROGRAM_ID,
-        DOT_FS,
-        programName,
+        $.PROGRAM_ID,
+        $.DOT_FS,
+        $.programName,
         optional(
           seq(
-            optional(IS),
-            choice(COMMON, INITIAL, LIBRARY, DEFINITION, RECURSIVE),
-            optional(PROGRAM)
+            optional($.IS),
+            choice($.COMMON, $.INITIAL, $.LIBRARY, $.DEFINITION, $.RECURSIVE),
+            optional($.PROGRAM)
           )
         ),
-        optional(DOT_FS),
-        optional(commentEntry)
+        optional($.DOT_FS),
+        optional($.commentEntry)
       ),
     // - author paragraph ----------------------------------
-    authorParagraph: ($) => seq(AUTHOR, DOT_FS, optional(commentEntry)),
+    authorParagraph: ($) => seq($.AUTHOR, $.DOT_FS, optional($.commentEntry)),
     // - installation paragraph ----------------------------------
     installationParagraph: ($) =>
-      seq(INSTALLATION, DOT_FS, optional(commentEntry)),
+      seq($.INSTALLATION, $.DOT_FS, optional($.commentEntry)),
     // - date written paragraph ----------------------------------
     dateWrittenParagraph: ($) =>
-      seq(DATE_WRITTEN, DOT_FS, optional(commentEntry)),
+      seq($.DATE_WRITTEN, $.DOT_FS, optional($.commentEntry)),
     // - date compiled paragraph ----------------------------------
     dateCompiledParagraph: ($) =>
-      seq(DATE_COMPILED, DOT_FS, optional(commentEntry)),
+      seq($.DATE_COMPILED, $.DOT_FS, optional($.commentEntry)),
     // - security paragraph ----------------------------------
-    securityParagraph: ($) => seq(SECURITY, DOT_FS, optional(commentEntry)),
+    securityParagraph: ($) =>
+      seq($.SECURITY, $.DOT_FS, optional($.commentEntry)),
     // - remarks paragraph ----------------------------------
     remarksParagraph: ($) =>
       seq(
-        REMARKS,
-        DOT_FS,
-        optional(commentEntry),
-        optional(END_REMARKS),
-        optional(DOT_FS)
+        $.REMARKS,
+        $.DOT_FS,
+        optional($.commentEntry),
+        optional($.END_REMARKS),
+        optional($.DOT_FS)
       ),
     // --- environment division --------------------------------------------------------------------
     environmentDivision: ($) =>
-      seq(ENVIRONMENT, DIVISION, DOT_FS, repeat(environmentDivisionBody)),
+      seq(
+        $.ENVIRONMENT,
+        $.DIVISION,
+        $.DOT_FS,
+        repeat($.environmentDivisionBody)
+      ),
     environmentDivisionBody: ($) =>
-      choice(configurationSection, specialNamesParagraph, inputOutputSection),
+      choice(
+        $.configurationSection,
+        $.specialNamesParagraph,
+        $.inputOutputSection
+      ),
     // -- configuration section ----------------------------------
     configurationSection: ($) =>
       seq(
-        CONFIGURATION,
-        SECTION,
-        DOT_FS,
-        repeat(configurationSectionParagraph)
+        $.CONFIGURATION,
+        $.SECTION,
+        $.DOT_FS,
+        repeat($.configurationSectionParagraph)
       ),
     // - configuration section paragraph ----------------------------------
     configurationSectionParagraph: ($) =>
       choice(
-        sourceComputerParagraph,
-        objectComputerParagraph,
-        specialNamesParagraph
+        $.sourceComputerParagraph,
+        $.objectComputerParagraph,
+        $.specialNamesParagraph
       ),
-    // strictly, specialNamesParagraph does not belong into configurationSectionParagraph, but IBM-COBOL allows this,
+    // $.strictly, specialNamesParagraph does not belong into $.configurationSectionParagraph, but IBM-COBOL allows $.this,
     // - source computer paragraph ----------------------------------
     sourceComputerParagraph: ($) =>
       seq(
-        SOURCE_COMPUTER,
-        DOT_FS,
+        $.SOURCE_COMPUTER,
+        $.DOT_FS,
         optional(
           seq(
-            computerName,
-            optional(seq(optional(WITH), DEBUGGING, MODE)),
-            DOT_FS
+            $.computerName,
+            optional(seq(optional($.WITH), $.DEBUGGING, $.MODE)),
+            $.DOT_FS
           )
         )
       ),
     // - object computer paragraph ----------------------------------
     objectComputerParagraph: ($) =>
       seq(
-        OBJECT_COMPUTER,
-        DOT_FS,
-        optional(seq(computerName, repeat(objectComputerClause), DOT_FS))
+        $.OBJECT_COMPUTER,
+        $.DOT_FS,
+        optional(seq($.computerName, repeat($.objectComputerClause), $.DOT_FS))
       ),
     objectComputerClause: ($) =>
       choice(
-        memorySizeClause,
-        diskSizeClause,
-        collatingSequenceClause,
-        segmentLimitClause,
-        characterSetClause
+        $.memorySizeClause,
+        $.diskSizeClause,
+        $.collatingSequenceClause,
+        $.segmentLimitClause,
+        $.characterSetClause
       ),
     memorySizeClause: ($) =>
       seq(
-        MEMORY,
-        optional(SIZE),
-        choice(integerLiteral, cobolWord),
-        optional(choice(WORDS, CHARACTERS, MODULES))
+        $.MEMORY,
+        optional($.SIZE),
+        choice($.integerLiteral, $.cobolWord),
+        optional(choice($.WORDS, $.CHARACTERS, $.MODULES))
       ),
     diskSizeClause: ($) =>
       seq(
-        DISK,
-        optional(SIZE),
-        optional(IS),
-        choice(integerLiteral, cobolWord),
-        optional(choice(WORDS, MODULES))
+        $.DISK,
+        optional($.SIZE),
+        optional($.IS),
+        choice($.integerLiteral, $.cobolWord),
+        optional(choice($.WORDS, $.MODULES))
       ),
     collatingSequenceClause: ($) =>
       seq(
-        optional(PROGRAM),
-        optional(COLLATING),
-        SEQUENCE,
-        seq(optional(IS), repeat1(alphabetName)),
-        optional(collatingSequenceClauseAlphanumeric),
-        optional(collatingSequenceClauseNational)
+        optional($.PROGRAM),
+        optional($.COLLATING),
+        $.SEQUENCE,
+        seq(optional($.IS), repeat1($.alphabetName)),
+        optional($.collatingSequenceClauseAlphanumeric),
+        optional($.collatingSequenceClauseNational)
       ),
     collatingSequenceClauseAlphanumeric: ($) =>
-      seq(optional(FOR), ALPHANUMERIC, optional(IS), alphabetName),
+      seq(optional($.FOR), $.ALPHANUMERIC, optional($.IS), $.alphabetName),
     collatingSequenceClauseNational: ($) =>
-      seq(optional(FOR), NATIONAL, optional(IS), alphabetName),
-    segmentLimitClause: ($) => seq(SEGMENT_LIMIT, optional(IS), integerLiteral),
-    characterSetClause: ($) => seq(CHARACTER, SET, DOT_FS),
+      seq(optional($.FOR), $.NATIONAL, optional($.IS), $.alphabetName),
+    segmentLimitClause: ($) =>
+      seq($.SEGMENT_LIMIT, optional($.IS), $.integerLiteral),
+    characterSetClause: ($) => seq($.CHARACTER, $.SET, $.DOT_FS),
     // - special names paragraph ----------------------------------
     specialNamesParagraph: ($) =>
       seq(
-        SPECIAL_NAMES,
-        DOT_FS,
-        optional(seq(repeat1(specialNameClause), DOT_FS))
+        $.SPECIAL_NAMES,
+        $.DOT_FS,
+        optional(seq(repeat1($.specialNameClause), $.DOT_FS))
       ),
     specialNameClause: ($) =>
       choice(
-        channelClause,
-        odtClause,
-        alphabetClause,
-        classClause,
-        currencySignClause,
-        decimalPointClause,
-        symbolicCharactersClause,
-        environmentSwitchNameClause,
-        defaultDisplaySignClause,
-        defaultComputationalSignClause,
-        reserveNetworkClause
+        $.channelClause,
+        $.odtClause,
+        $.alphabetClause,
+        $.classClause,
+        $.currencySignClause,
+        $.decimalPointClause,
+        $.symbolicCharactersClause,
+        $.environmentSwitchNameClause,
+        $.defaultDisplaySignClause,
+        $.defaultComputationalSignClause,
+        $.reserveNetworkClause
       ),
-    alphabetClause: ($) => choice(alphabetClauseFormat1, alphabetClauseFormat2),
+    alphabetClause: ($) =>
+      choice($.alphabetClauseFormat1, $.alphabetClauseFormat2),
     alphabetClauseFormat1: ($) =>
       seq(
-        ALPHABET,
-        alphabetName,
-        optional(seq(FOR, ALPHANUMERIC)),
-        optional(IS),
+        $.ALPHABET,
+        $.alphabetName,
+        optional(seq($.FOR, $.ALPHANUMERIC)),
+        optional($.IS),
         seq(
           choice(
-            EBCDIC,
-            ASCII,
-            STANDARD_1,
-            STANDARD_2,
-            NATIVE,
-            cobolWord,
-            repeat1(alphabetLiterals)
+            $.EBCDIC,
+            $.ASCII,
+            $.STANDARD_1,
+            $.STANDARD_2,
+            $.NATIVE,
+            $.cobolWord,
+            repeat1($.alphabetLiterals)
           )
         )
       ),
     alphabetLiterals: ($) =>
-      seq(literal, optional(choice(alphabetThrough, repeat1(alphabetAlso)))),
-    alphabetThrough: ($) => seq(choice(THROUGH, THRU), literal),
-    alphabetAlso: ($) => seq(ALSO, repeat1(literal)),
+      seq(
+        $.literal,
+        optional(choice($.alphabetThrough, repeat1($.alphabetAlso)))
+      ),
+    alphabetThrough: ($) => seq(choice($.THROUGH, $.THRU), $.literal),
+    alphabetAlso: ($) => seq($.ALSO, repeat1($.literal)),
     alphabetClauseFormat2: ($) =>
       seq(
-        ALPHABET,
-        alphabetName,
-        optional(FOR),
-        NATIONAL,
-        optional(IS),
-        seq(choice(NATIVE, CCSVERSION), literal)
+        $.ALPHABET,
+        $.alphabetName,
+        optional($.FOR),
+        $.NATIONAL,
+        optional($.IS),
+        seq(choice($.NATIVE, $.CCSVERSION), $.literal)
       ),
     channelClause: ($) =>
-      seq(CHANNEL, integerLiteral, optional(IS), mnemonicName),
+      seq($.CHANNEL, $.integerLiteral, optional($.IS), $.mnemonicName),
     classClause: ($) =>
       seq(
-        CLASS,
-        className,
-        otional(seq(optional(FOR), choice(ALPHANUMERIC, NATIONAL))),
-        optional(IS),
-        repeat1(classClauseThrough)
+        $.CLASS,
+        $.className,
+        optional(seq(optional($.FOR), choice($.ALPHANUMERIC, $.NATIONAL))),
+        optional($.IS),
+        repeat1($.classClauseThrough)
       ),
     classClauseThrough: ($) =>
-      seq(classClauseFrom, optional(seq(choice(THROUGH, THRU), classClauseTo))),
-    classClauseFrom: ($) => choice(identifier, literal),
-    classClauseTo: ($) => choice(identifier, literal),
+      seq(
+        $.classClauseFrom,
+        optional(seq(choice($.THROUGH, $.THRU), $.classClauseTo))
+      ),
+    classClauseFrom: ($) => choice($.identifier, $.literal),
+    classClauseTo: ($) => choice($.identifier, $.literal),
     currencySignClause: ($) =>
       seq(
-        CURRENCY,
-        optional(SIGN),
-        optional(IS),
-        literal,
-        optional(seq(optional(WITH), PICTURE, SYMBOL, literal))
+        $.CURRENCY,
+        optional($.SIGN),
+        optional($.IS),
+        $.literal,
+        optional(seq(optional($.WITH), $.PICTURE, $.SYMBOL, $.literal))
       ),
-    decimalPointClause: ($) => seq(DECIMAL_POINT, optional(IS), COMMA),
+    decimalPointClause: ($) => seq($.DECIMAL_POINT, optional($.IS), $.COMMA),
     defaultComputationalSignClause: ($) =>
       seq(
-        DEFAULT,
-        optional(choice(COMPUTATIONAL, COMP)),
-        optional(seq(SIGN, optional(IS))),
-        optional(choice(LEADING, TRAILING)),
-        seq(SEPARATE, optional(CHARACTER))
+        $.DEFAULT,
+        optional(choice($.COMPUTATIONAL, $.COMP)),
+        optional(seq($.SIGN, optional($.IS))),
+        optional(choice($.LEADING, $.TRAILING)),
+        seq($.SEPARATE, optional($.CHARACTER))
       ),
     defaultDisplaySignClause: ($) =>
       seq(
-        DEFAULT_DISPLAY,
-        optional(seq(SIGN, optional(IS))),
-        choice(LEADING, TRAILING),
-        optional(seq(SEPARATE, optional(CHARACTER)))
+        $.DEFAULT_DISPLAY,
+        optional(seq($.SIGN, optional($.IS))),
+        choice($.LEADING, $.TRAILING),
+        optional(seq($.SEPARATE, optional($.CHARACTER)))
       ),
     environmentSwitchNameClause: ($) =>
       seq(
-        environmentName,
-        optional(IS),
-        mnemonicName,
+        $.environmentName,
+        optional($.IS),
+        $.mnemonicName,
         choice(
-          optional(environmentSwitchNameSpecialNamesStatusPhrase),
-          environmentSwitchNameSpecialNamesStatusPhrase
+          optional($.environmentSwitchNameSpecialNamesStatusPhrase),
+          $.environmentSwitchNameSpecialNamesStatusPhrase
         )
       ),
     environmentSwitchNameSpecialNamesStatusPhrase: ($) =>
       seq(
-        ON,
-        optional(STATUS),
-        optional(IS),
-        condition,
+        $.ON,
+        optional($.STATUS),
+        optional($.IS),
+        $.condition,
         choice(
-          optional(seq(OFF, optional(STATUS), optional(IS), condition)),
-          OFF
+          optional(seq($.OFF, optional($.STATUS), optional($.IS), $.condition)),
+          $.OFF
         ),
-        optional(STATUS),
-        optional(IS),
-        condition,
-        optional(seq(ON, optional(STATUS), optional(IS), condition))
+        optional($.STATUS),
+        optional($.IS),
+        $.condition,
+        optional(seq($.ON, optional($.STATUS), optional($.IS), $.condition))
       ),
-    odtClause: ($) => seq(ODT, optional(IS), mnemonicName),
+    odtClause: ($) => seq($.ODT, optional($.IS), $.mnemonicName),
     reserveNetworkClause: ($) =>
       seq(
-        RESERVE,
-        optional(WORDS),
-        optional(LIST),
-        optional(IS),
-        NETWORK,
-        optional(CAPABLE)
+        $.RESERVE,
+        optional($.WORDS),
+        optional($.LIST),
+        optional($.IS),
+        $.NETWORK,
+        optional($.CAPABLE)
       ),
     symbolicCharactersClause: ($) =>
       seq(
-        SYMBOLIC,
-        optional(CHARACTERS),
-        optional(seq(optional(FOR), choice(ALPHANUMERIC, NATIONAL))),
-        repeat1(symbolicCharacters),
-        optional(seq(IN, alphabetName))
+        $.SYMBOLIC,
+        optional($.CHARACTERS),
+        optional(seq(optional($.FOR), choice($.ALPHANUMERIC, $.NATIONAL))),
+        repeat1($.symbolicCharacters),
+        optional(seq($.IN, $.alphabetName))
       ),
     symbolicCharacters: ($) =>
       seq(
-        repeat1(symbolicCharacter),
-        optional(choice(IS, ARE)),
-        repeat1(integerLiteral)
+        repeat1($.symbolicCharacter),
+        optional(choice($.IS, $.ARE)),
+        repeat1($.integerLiteral)
       ),
     // -- input output section ----------------------------------
     inputOutputSection: ($) =>
-      seq(INPUT_OUTPUT, SECTION, DOT_FS, repeat(inputOutputSectionParagraph)),
+      seq(
+        $.INPUT_OUTPUT,
+        $.SECTION,
+        $.DOT_FS,
+        repeat($.inputOutputSectionParagraph)
+      ),
     // - input output section paragraph ----------------------------------
     inputOutputSectionParagraph: ($) =>
-      choice(fileControlParagraph, ioControlParagraph),
+      choice($.fileControlParagraph, $.ioControlParagraph),
     // - file control paragraph ----------------------------------
     fileControlParagraph: ($) =>
       seq(
-        optional(FILE_CONTROL),
-        repeat(seq(optional(DOT_FS), fileControlEntry)),
-        DOT_FS
+        optional($.FILE_CONTROL),
+        repeat(seq(optional($.DOT_FS), $.fileControlEntry)),
+        $.DOT_FS
       ),
-    fileControlEntry: ($) => seq(selectClause, repeat(fileControlClause)),
-    selectClause: ($) => seq(SELECT, optional(OPTIONAL), fileName),
+    fileControlEntry: ($) => seq($.selectClause, repeat($.fileControlClause)),
+    selectClause: ($) => seq($.SELECT, optional($.OPTIONAL), $.fileName),
     fileControlClause: ($) =>
       choice(
-        assignClause,
-        reserveClause,
-        organizationClause,
-        paddingCharacterClause,
-        recordDelimiterClause,
-        accessModeClause,
-        recordKeyClause,
-        alternateRecordKeyClause,
-        fileStatusClause,
-        passwordClause,
-        relativeKeyClause
+        $.assignClause,
+        $.reserveClause,
+        $.organizationClause,
+        $.paddingCharacterClause,
+        $.recordDelimiterClause,
+        $.accessModeClause,
+        $.recordKeyClause,
+        $.alternateRecordKeyClause,
+        $.fileStatusClause,
+        $.passwordClause,
+        $.relativeKeyClause
       ),
     assignClause: ($) =>
       seq(
-        ASSIGN,
-        optional(TO),
+        $.ASSIGN,
+        optional($.TO),
         choice(
-          DISK,
-          DISPLAY,
-          KEYBOARD,
-          PORT,
-          PRINTER,
-          READER,
-          REMOTE,
-          TAPE,
-          VIRTUAL,
-          seq(optional(choice(DYNAMIC, EXTERNAL)), assignmentName),
-          literal
+          $.DISK,
+          $.DISPLAY,
+          $.KEYBOARD,
+          $.PORT,
+          $.PRINTER,
+          $.READER,
+          $.REMOTE,
+          $.TAPE,
+          $.VIRTUAL,
+          seq(optional(choice($.DYNAMIC, $.EXTERNAL)), $.assignmentName),
+          $.literal
         )
       ),
     reserveClause: ($) =>
       seq(
-        RESERVE,
-        choice(NO, integerLiteral),
-        optional(ALTERNATE),
-        optional(choice(AREA, AREAS))
+        $.RESERVE,
+        choice($.NO, $.integerLiteral),
+        optional($.ALTERNATE),
+        optional(choice($.AREA, $.AREAS))
       ),
     organizationClause: ($) =>
       seq(
-        optional(seq(ORGANIZATION, optional(IS))),
-        optional(seq(choice(LINE, RECORD), choice(BINARY, RECORD, BINARY))),
-        choice(SEQUENTIAL, RELATIVE, INDEXED)
+        optional(seq($.ORGANIZATION, optional($.IS))),
+        optional(
+          seq(choice($.LINE, $.RECORD), choice($.BINARY, $.RECORD, $.BINARY))
+        ),
+        choice($.SEQUENTIAL, $.RELATIVE, $.INDEXED)
       ),
     paddingCharacterClause: ($) =>
       seq(
-        PADDING,
-        optional(CHARACTER),
-        optional(IS),
-        choice(qualifiedDataName, literal)
+        $.PADDING,
+        optional($.CHARACTER),
+        optional($.IS),
+        choice($.qualifiedDataName, $.literal)
       ),
     recordDelimiterClause: ($) =>
       seq(
-        RECORD,
-        DELIMITER,
-        optional(IS),
-        choice(STANDARD_1, IMPLICIT, assignmentName)
+        $.RECORD,
+        $.DELIMITER,
+        optional($.IS),
+        choice($.STANDARD_1, $.IMPLICIT, $.assignmentName)
       ),
     accessModeClause: ($) =>
       seq(
-        ACCESS,
-        optional(MODE),
-        optional(IS),
-        sechoice(SEQUENTIAL, RANDOM, DYNAMIC, EXCLUSIVE)
+        $.ACCESS,
+        optional($.MODE),
+        optional($.IS),
+        choice($.SEQUENTIAL, $.RANDOM, $.DYNAMIC, $.EXCLUSIVE)
       ),
     recordKeyClause: ($) =>
       seq(
-        RECORD,
-        optional(KEY),
-        optional(IS),
-        qualifiedDataName,
-        optional(passwordClause),
-        optional(seq(optional(WITH), DUPLICATES))
+        $.RECORD,
+        optional($.KEY),
+        optional($.IS),
+        $.qualifiedDataName,
+        optional($.passwordClause),
+        optional(seq(optional($.WITH), $.DUPLICATES))
       ),
     alternateRecordKeyClause: ($) =>
       seq(
-        ALTERNATE,
-        RECORD,
-        optional(KEY),
-        optional(IS),
-        qualifiedDataName,
-        optional(passwordClause),
-        optional(seq(optional(WITH), DUPLICATES))
+        $.ALTERNATE,
+        $.RECORD,
+        optional($.KEY),
+        optional($.IS),
+        $.qualifiedDataName,
+        optional($.passwordClause),
+        optional(seq(optional($.WITH), $.DUPLICATES))
       ),
-    passwordClause: ($) => seq(PASSWORD, optional(IS), dataName),
+    passwordClause: ($) => seq($.PASSWORD, optional($.IS), $.dataName),
     fileStatusClause: ($) =>
       seq(
-        optional(FILE),
-        STATUS,
-        optional(IS),
-        qualifiedDataName,
-        optional(qualifiedDataName)
+        optional($.FILE),
+        $.STATUS,
+        optional($.IS),
+        $.qualifiedDataName,
+        optional($.qualifiedDataName)
       ),
     relativeKeyClause: ($) =>
-      seq(RELATIVE, optional(KEY), optional(IS), qualifiedDataName),
+      seq($.RELATIVE, optional($.KEY), optional($.IS), $.qualifiedDataName),
     // - io control paragraph ----------------------------------
     ioControlParagraph: ($) =>
       seq(
-        I_O_CONTROL,
-        DOT_FS,
-        optional(seq(fileName, DOT_FS)),
-        optional(seq(repeat(ioControlClause), DOT_FS))
+        $.I_O_CONTROL,
+        $.DOT_FS,
+        optional(seq($.fileName, $.DOT_FS)),
+        optional(seq(repeat($.ioControlClause), $.DOT_FS))
       ),
     ioControlClause: ($) =>
       choice(
-        rerunClause,
-        sameClause,
-        multipleFileClause,
-        commitmentControlClause
+        $.rerunClause,
+        $.sameClause,
+        $.multipleFileClause,
+        $.commitmentControlClause
       ),
     rerunClause: ($) =>
       seq(
-        RERUN,
-        optional(seq(ON, choice(assignmentName, fileName))),
-        EVERY,
-        choice(rerunEveryRecords, rerunEveryOf, rerunEveryClock)
+        $.RERUN,
+        optional(seq($.ON, choice($.assignmentName, $.fileName))),
+        $.EVERY,
+        choice($.rerunEveryRecords, $.rerunEveryOf, $.rerunEveryClock)
       ),
-    rerunEveryRecords: ($) => seq(integerLiteral, RECORDS),
+    rerunEveryRecords: ($) => seq($.integerLiteral, $.RECORDS),
     rerunEveryOf: ($) =>
-      seq(optional(END), optional(OF), choice(REEL, UNIT), OF, fileName),
-    rerunEveryClock: ($) => seq(integerLiteral, optional(CLOCK_UNITS)),
+      seq(
+        optional($.END),
+        optional($.OF),
+        choice($.REEL, $.UNIT),
+        $.OF,
+        $.fileName
+      ),
+    rerunEveryClock: ($) => seq($.integerLiteral, optional($.CLOCK_UNITS)),
     sameClause: ($) =>
       seq(
-        SAME,
-        optional(choice(RECORD, SORT, SORT_MERGE)),
-        optional(AREA),
-        optional(FOR),
-        repeat1(fileName)
+        $.SAME,
+        optional(choice($.RECORD, $.SORT, $.SORT_MERGE)),
+        optional($.AREA),
+        optional($.FOR),
+        repeat1($.fileName)
       ),
     multipleFileClause: ($) =>
       seq(
-        MULTIPLE,
-        FILE,
-        optional(TAPE),
-        optional(CONTAINS),
-        repeat1(multipleFilePosition)
+        $.MULTIPLE,
+        $.FILE,
+        optional($.TAPE),
+        optional($.CONTAINS),
+        repeat1($.multipleFilePosition)
       ),
     multipleFilePosition: ($) =>
-      seq(fileName, optional(seq(POSITION, integerLiteral))),
+      seq($.fileName, optional(seq($.POSITION, $.integerLiteral))),
     commitmentControlClause: ($) =>
-      seq(COMMITMENT, CONTROL, optional(FOR), fileName),
+      seq($.COMMITMENT, $.CONTROL, optional($.FOR), $.fileName),
     // --- data division --------------------------------------------------------------------
     dataDivision: ($) =>
-      seq(DATA, DIVISION, DOT_FS, repeat(dataDivisionSection)),
+      seq($.DATA, $.DIVISION, $.DOT_FS, repeat($.dataDivisionSection)),
     dataDivisionSection: ($) =>
       choice(
-        fileSection,
-        dataBaseSection,
-        workingStorageSection,
-        linkageSection,
-        communicationSection,
-        localStorageSection,
-        screenSection,
-        reportSection,
-        programLibrarySection
+        $.fileSection,
+        $.dataBaseSection,
+        $.workingStorageSection,
+        $.linkageSection,
+        $.communicationSection,
+        $.localStorageSection,
+        $.screenSection,
+        $.reportSection,
+        $.programLibrarySection
       ),
     // -- file section ----------------------------------
     fileSection: ($) =>
-      seq(FILE, SECTION, DOT_FS, repeat(fileDescriptionEntry)),
+      seq($.FILE, $.SECTION, $.DOT_FS, repeat($.fileDescriptionEntry)),
     fileDescriptionEntry: ($) =>
       seq(
-        choice(FD, SD),
-        fileName,
-        repeat(seq(optional(DOT_FS), fileDescriptionEntryClause)),
-        DOT_FS,
-        repeat(dataDescriptionEntry)
+        choice($.FD, $.SD),
+        $.fileName,
+        repeat(seq(optional($.DOT_FS), $.fileDescriptionEntryClause)),
+        $.DOT_FS,
+        repeat($.dataDescriptionEntry)
       ),
     fileDescriptionEntryClause: ($) =>
       choice(
-        externalClause,
-        globalClause,
-        blockContainsClause,
-        recordContainsClause,
-        labelRecordsClause,
-        valueOfClause,
-        dataRecordsClause,
-        linageClause,
-        codeSetClause,
-        reportClause,
-        recordingModeClause
+        $.externalClause,
+        $.globalClause,
+        $.blockContainsClause,
+        $.recordContainsClause,
+        $.labelRecordsClause,
+        $.valueOfClause,
+        $.dataRecordsClause,
+        $.linageClause,
+        $.codeSetClause,
+        $.reportClause,
+        $.recordingModeClause
       ),
-    externalClause: ($) => seq(optional(IS), EXTERNAL),
-    globalClause: ($) => seq(optional(IS), GLOBAL),
+    externalClause: ($) => seq(optional($.IS), $.EXTERNAL),
+    globalClause: ($) => seq(optional($.IS), $.GLOBAL),
     blockContainsClause: ($) =>
       seq(
-        BLOCK,
-        optional(CONTAINS),
-        integerLiteral,
-        optional(blockContainsTo),
-        optional(choice(RECORDS, CHARACTERS))
+        $.BLOCK,
+        optional($.CONTAINS),
+        $.integerLiteral,
+        optional($.blockContainsTo),
+        optional(choice($.RECORDS, $.CHARACTERS))
       ),
-    blockContainsTo: ($) => seq(TO, integerLiteral),
+    blockContainsTo: ($) => seq($.TO, $.integerLiteral),
     recordContainsClause: ($) =>
       seq(
-        RECORD,
+        $.RECORD,
         choice(
-          recordContainsClauseFormat1,
-          recordContainsClauseFormat2,
-          recordContainsClauseFormat3
+          $.recordContainsClauseFormat1,
+          $.recordContainsClauseFormat2,
+          $.recordContainsClauseFormat3
         )
       ),
     recordContainsClauseFormat1: ($) =>
-      seq(optional(CONTAINS), integerLiteral, optional(CHARACTERS)),
+      seq(optional($.CONTAINS), $.integerLiteral, optional($.CHARACTERS)),
     recordContainsClauseFormat2: ($) =>
       seq(
-        optional(IS),
-        VARYING,
-        optional(IN),
-        optional(SIZE),
+        optional($.IS),
+        $.VARYING,
+        optional($.IN),
+        optional($.SIZE),
         optional(
           seq(
-            optional(FROM),
-            integerLiteral,
-            optional(recordContainsTo),
-            optional(CHARACTERS)
+            optional($.FROM),
+            $.integerLiteral,
+            optional($.recordContainsTo),
+            optional($.CHARACTERS)
           )
         ),
-        optional(seq(DEPENDING, optional(ON), qualifiedDataName))
+        optional(seq($.DEPENDING, optional($.ON), $.qualifiedDataName))
       ),
     recordContainsClauseFormat3: ($) =>
       seq(
-        optional(CONTAINS),
-        integerLiteral,
-        recordContainsTo,
-        optional(CHARACTERS)
+        optional($.CONTAINS),
+        $.integerLiteral,
+        $.recordContainsTo,
+        optional($.CHARACTERS)
       ),
-    recordContainsTo: ($) => seq(TO, integerLiteral),
+    recordContainsTo: ($) => seq($.TO, $.integerLiteral),
     labelRecordsClause: ($) =>
       seq(
-        LABEL,
-        choice(seq(RECORD, optional(IS)), seq(RECORDS, optional(ARE))),
-        choice(OMITTED, STANDARD, repeat1(dataName))
+        $.LABEL,
+        choice(seq($.RECORD, optional($.IS)), seq($.RECORDS, optional($.ARE))),
+        choice($.OMITTED, $.STANDARD, repeat1($.dataName))
       ),
-    valueOfClause: ($) => seq(VALUE, OF, repeat1(valuePair)),
+    valueOfClause: ($) => seq($.VALUE, $.OF, repeat1($.valuePair)),
     valuePair: ($) =>
-      seq(systemName, optional(IS), choice(qualifiedDataName, literal)),
+      seq($.systemName, optional($.IS), choice($.qualifiedDataName, $.literal)),
     dataRecordsClause: ($) =>
       seq(
-        DATA,
-        choice(seq(RECORD, optional(IS)), seq(RECORDS, optional(ARE))),
-        repeat1(dataName)
+        $.DATA,
+        choice(seq($.RECORD, optional($.IS)), seq($.RECORDS, optional($.ARE))),
+        repeat1($.dataName)
       ),
     linageClause: ($) =>
       seq(
-        LINAGE,
-        optional(IS),
-        choice(dataName, integerLiteral),
-        optional(LINES),
-        repeat(linageAt)
+        $.LINAGE,
+        optional($.IS),
+        choice($.dataName, $.integerLiteral),
+        optional($.LINES),
+        repeat($.linageAt)
       ),
     linageAt: ($) =>
-      choice(linageFootingAt, linageLinesAtTop, linageLinesAtBottom),
+      choice($.linageFootingAt, $.linageLinesAtTop, $.linageLinesAtBottom),
     linageFootingAt: ($) =>
       seq(
-        optional(WITH),
-        FOOTING,
-        optional(AT),
-        choice(dataName, integerLiteral)
+        optional($.WITH),
+        $.FOOTING,
+        optional($.AT),
+        choice($.dataName, $.integerLiteral)
       ),
     linageLinesAtTop: ($) =>
-      seq(optional(LINES), optional(AT), TOP, choice(dataName, integerLiteral)),
+      seq(
+        optional($.LINES),
+        optional($.AT),
+        $.TOP,
+        choice($.dataName, $.integerLiteral)
+      ),
     linageLinesAtBottom: ($) =>
       seq(
-        optional(LINES),
-        optional(AT),
-        BOTTOM,
-        choice(dataName, integerLiteral)
+        optional($.LINES),
+        optional($.AT),
+        $.BOTTOM,
+        choice($.dataName, $.integerLiteral)
       ),
     recordingModeClause: ($) =>
-      seq(RECORDING, optional(MODE), optional(IS), modeStatement),
-    modeStatement: ($) => cobolWord,
-    codeSetClause: ($) => seq(CODE_SET, optional(IS), alphabetName),
+      seq($.RECORDING, optional($.MODE), optional($.IS), $.modeStatement),
+    modeStatement: ($) => $.cobolWord,
+    codeSetClause: ($) => seq($.CODE_SET, optional($.IS), $.alphabetName),
     reportClause: ($) =>
       seq(
-        choice(seq(REPORT, optional(IS)), seq(REPORTS, optional(ARE))),
-        repeat1(reportName)
+        choice(seq($.REPORT, optional($.IS)), seq($.REPORTS, optional($.ARE))),
+        repeat1($.reportName)
       ),
     // -- data base section ----------------------------------
     dataBaseSection: ($) =>
-      seq(DATA_BASE, SECTION, DOT_FS, repeat(dataBaseSectionEntry)),
-    dataBaseSectionEntry: ($) => seq(integerLiteral, literal, INVOKE, literal),
+      seq($.DATA_BASE, $.SECTION, $.DOT_FS, repeat($.dataBaseSectionEntry)),
+    dataBaseSectionEntry: ($) =>
+      seq($.integerLiteral, $.literal, $.INVOKE, $.literal),
     // -- working storage section ----------------------------------
     workingStorageSection: ($) =>
-      seq(WORKING_STORAGE, SECTION, DOT_FS, repeat(dataDescriptionEntry)),
+      seq(
+        $.WORKING_STORAGE,
+        $.SECTION,
+        $.DOT_FS,
+        repeat($.dataDescriptionEntry)
+      ),
     // -- linkage section ----------------------------------
     linkageSection: ($) =>
-      seq(LINKAGE, SECTION, DOT_FS, repeat(dataDescriptionEntry)),
+      seq($.LINKAGE, $.SECTION, $.DOT_FS, repeat($.dataDescriptionEntry)),
     // -- communication section ----------------------------------
     communicationSection: ($) =>
       seq(
-        COMMUNICATION,
-        SECTION,
-        DOT_FS,
-        repeat(choice(communicationDescriptionEntry, dataDescriptionEntry))
+        $.COMMUNICATION,
+        $.SECTION,
+        $.DOT_FS,
+        repeat(choice($.communicationDescriptionEntry, $.dataDescriptionEntry))
       ),
     communicationDescriptionEntry: ($) =>
       choice(
-        communicationDescriptionEntryFormat1,
-        communicationDescriptionEntryFormat2,
-        communicationDescriptionEntryFormat3
+        $.communicationDescriptionEntryFormat1,
+        $.communicationDescriptionEntryFormat2,
+        $.communicationDescriptionEntryFormat3
       ),
     communicationDescriptionEntryFormat1: ($) =>
       seq(
-        CD,
-        cdName,
-        optional(FOR),
-        optional(INITIAL),
-        INPUT,
+        $.CD,
+        $.cdName,
+        optional($.FOR),
+        optional($.INITIAL),
+        $.INPUT,
         repeat(
           choice(
-            symbolicQueueClause,
-            symbolicSubQueueClause,
-            messageDateClause,
-            messageTimeClause,
-            symbolicSourceClause,
-            textLengthClause,
-            endKeyClause,
-            statusKeyClause,
-            messageCountClause,
-            dataDescName
+            $.symbolicQueueClause,
+            $.symbolicSubQueueClause,
+            $.messageDateClause,
+            $.messageTimeClause,
+            $.symbolicSourceClause,
+            $.textLengthClause,
+            $.endKeyClause,
+            $.statusKeyClause,
+            $.messageCountClause,
+            $.dataDescName
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
     communicationDescriptionEntryFormat2: ($) =>
       seq(
-        CD,
-        cdName,
-        optional(FOR),
-        OUTPUT,
+        $.CD,
+        $.cdName,
+        optional($.FOR),
+        $.OUTPUT,
         repeat(
           choice(
-            destinationCountClause,
-            textLengthClause,
-            statusKeyClause,
-            destinationTableClause,
-            errorKeyClause,
-            symbolicDestinationClause
+            $.destinationCountClause,
+            $.textLengthClause,
+            $.statusKeyClause,
+            $.destinationTableClause,
+            $.errorKeyClause,
+            $.symbolicDestinationClause
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
     communicationDescriptionEntryFormat3: ($) =>
       seq(
-        CD,
-        cdName,
-        optional(FOR),
-        INITIAL,
-        I_O,
+        $.CD,
+        $.cdName,
+        optional($.FOR),
+        $.INITIAL,
+        $.I_O,
         repeat(
           choice(
-            messageDateClause,
-            messageTimeClause,
-            symbolicTerminalClause,
-            textLengthClause,
-            endKeyClause,
-            statusKeyClause,
-            dataDescName
+            $.messageDateClause,
+            $.messageTimeClause,
+            $.symbolicTerminalClause,
+            $.textLengthClause,
+            $.endKeyClause,
+            $.statusKeyClause,
+            $.dataDescName
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
     destinationCountClause: ($) =>
-      seq(DESTINATION, COUNT, optional(IS), dataDescName),
+      seq($.DESTINATION, $.COUNT, optional($.IS), $.dataDescName),
     destinationTableClause: ($) =>
       seq(
-        DESTINATION,
-        TABLE,
-        OCCURS,
-        integerLiteral,
-        TIMES,
-        optional(seq(INDEXED, BY, repeat1(indexName)))
+        $.DESTINATION,
+        $.TABLE,
+        $.OCCURS,
+        $.integerLiteral,
+        $.TIMES,
+        optional(seq($.INDEXED, $.BY, repeat1($.indexName)))
       ),
-    endKeyClause: ($) => seq(END, KEY, optional(IS), dataDescName),
-    errorKeyClause: ($) => seq(ERROR, KEY, optional(IS), dataDescName),
+    endKeyClause: ($) => seq($.END, $.KEY, optional($.IS), $.dataDescName),
+    errorKeyClause: ($) => seq($.ERROR, $.KEY, optional($.IS), $.dataDescName),
     messageCountClause: ($) =>
-      seq(optional(MESSAGE), COUNT, optional(IS), dataDescName),
-    messageDateClause: ($) => seq(MESSAGE, DATE, optional(IS), dataDescName),
-    messageTimeClause: ($) => seq(MESSAGE, TIME, optional(IS), dataDescName),
-    statusKeyClause: ($) => seq(STATUS, KEY, optional(IS), dataDescName),
+      seq(optional($.MESSAGE), $.COUNT, optional($.IS), $.dataDescName),
+    messageDateClause: ($) =>
+      seq($.MESSAGE, $.DATE, optional($.IS), $.dataDescName),
+    messageTimeClause: ($) =>
+      seq($.MESSAGE, $.TIME, optional($.IS), $.dataDescName),
+    statusKeyClause: ($) =>
+      seq($.STATUS, $.KEY, optional($.IS), $.dataDescName),
     symbolicDestinationClause: ($) =>
-      seq(optional(SYMBOLIC), DESTINATION, optional(IS), dataDescName),
+      seq(optional($.SYMBOLIC), $.DESTINATION, optional($.IS), $.dataDescName),
     symbolicQueueClause: ($) =>
-      seq(optional(SYMBOLIC), QUEUE, optional(IS), dataDescName),
+      seq(optional($.SYMBOLIC), $.QUEUE, optional($.IS), $.dataDescName),
     symbolicSourceClause: ($) =>
-      seq(optional(SYMBOLIC), SOURCE, optional(IS), dataDescName),
+      seq(optional($.SYMBOLIC), $.SOURCE, optional($.IS), $.dataDescName),
     symbolicTerminalClause: ($) =>
-      seq(optional(SYMBOLIC), TERMINAL, optional(IS), dataDescName),
+      seq(optional($.SYMBOLIC), $.TERMINAL, optional($.IS), $.dataDescName),
     symbolicSubQueueClause: ($) =>
       seq(
-        optional(SYMBOLIC),
-        choice(SUB_QUEUE_1, SUB_QUEUE_2, SUB_QUEUE_3),
-        optional(IS),
-        dataDescName
+        optional($.SYMBOLIC),
+        choice($.SUB_QUEUE_1, $.SUB_QUEUE_2, $.SUB_QUEUE_3),
+        optional($.IS),
+        $.dataDescName
       ),
-    textLengthClause: ($) => seq(TEXT, LENGTH, optional(IS), dataDescName),
+    textLengthClause: ($) =>
+      seq($.TEXT, $.LENGTH, optional($.IS), $.dataDescName),
     // -- local storage section ----------------------------------
     localStorageSection: ($) =>
       seq(
-        LOCAL_STORAGE,
-        SECTION,
-        DOT_FS,
-        optional(seq(LD, localName, DOT_FS)),
-        repeat(dataDescriptionEntry)
+        $.LOCAL_STORAGE,
+        $.SECTION,
+        $.DOT_FS,
+        optional(seq($.LD, $.localName, $.DOT_FS)),
+        repeat($.dataDescriptionEntry)
       ),
     // -- screen section ----------------------------------
     screenSection: ($) =>
-      seq(SCREEN, SECTION, DOT_FS, repeat(screenDescriptionEntry)),
+      seq($.SCREEN, $.SECTION, $.DOT_FS, repeat($.screenDescriptionEntry)),
     screenDescriptionEntry: ($) =>
       seq(
-        INTEGERLITERAL,
-        optional(choice(FILLER, screenName)),
+        $.INTEGERLITERAL,
+        optional(choice($.FILLER, $.screenName)),
         repeat(
           choice(
-            screenDescriptionBlankClause,
-            screenDescriptionBellClause,
-            screenDescriptionBlinkClause,
-            screenDescriptionEraseClause,
-            screenDescriptionLightClause,
-            screenDescriptionGridClause,
-            screenDescriptionReverseVideoClause,
-            screenDescriptionUnderlineClause,
-            screenDescriptionSizeClause,
-            screenDescriptionLineClause,
-            screenDescriptionColumnClause,
-            screenDescriptionForegroundColorClause,
-            screenDescriptionBackgroundColorClause,
-            screenDescriptionControlClause,
-            screenDescriptionValueClause,
-            screenDescriptionPictureClause,
-            screenDescriptionFromClause,
-            screenDescriptionUsingClause,
-            screenDescriptionUsageClause,
-            screenDescriptionBlankWhenZeroClause,
-            screenDescriptionJustifiedClause,
-            screenDescriptionSignClause,
-            screenDescriptionAutoClause,
-            screenDescriptionSecureClause,
-            screenDescriptionRequiredClause,
-            screenDescriptionPromptClause,
-            screenDescriptionFullClause,
-            screenDescriptionZeroFillClause
+            $.screenDescriptionBlankClause,
+            $.screenDescriptionBellClause,
+            $.screenDescriptionBlinkClause,
+            $.screenDescriptionEraseClause,
+            $.screenDescriptionLightClause,
+            $.screenDescriptionGridClause,
+            $.screenDescriptionReverseVideoClause,
+            $.screenDescriptionUnderlineClause,
+            $.screenDescriptionSizeClause,
+            $.screenDescriptionLineClause,
+            $.screenDescriptionColumnClause,
+            $.screenDescriptionForegroundColorClause,
+            $.screenDescriptionBackgroundColorClause,
+            $.screenDescriptionControlClause,
+            $.screenDescriptionValueClause,
+            $.screenDescriptionPictureClause,
+            $.screenDescriptionFromClause,
+            $.screenDescriptionUsingClause,
+            $.screenDescriptionUsageClause,
+            $.screenDescriptionBlankWhenZeroClause,
+            $.screenDescriptionJustifiedClause,
+            $.screenDescriptionSignClause,
+            $.screenDescriptionAutoClause,
+            $.screenDescriptionSecureClause,
+            $.screenDescriptionRequiredClause,
+            $.screenDescriptionPromptClause,
+            $.screenDescriptionFullClause,
+            $.screenDescriptionZeroFillClause
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
-    screenDescriptionBlankClause: ($) => seq(BLANK, choice(SCREEN, LINE)),
-    screenDescriptionBellClause: ($) => choice(BELL, BEEP),
-    screenDescriptionBlinkClause: ($) => BLINK,
-    screenDescriptionEraseClause: ($) => seq(ERASE, choice(EOL, EOS)),
-    screenDescriptionLightClause: ($) => choice(HIGHLIGHT, LOWLIGHT),
-    screenDescriptionGridClause: ($) => choice(GRID, LEFTLINE, OVERLINE),
-    screenDescriptionReverseVideoClause: ($) => REVERSE_VIDEO,
-    screenDescriptionUnderlineClause: ($) => UNDERLINE,
+    screenDescriptionBlankClause: ($) => seq($.BLANK, choice($.SCREEN, $.LINE)),
+    screenDescriptionBellClause: ($) => choice($.BELL, $.BEEP),
+    screenDescriptionBlinkClause: ($) => $.BLINK,
+    screenDescriptionEraseClause: ($) => seq($.ERASE, choice($.EOL, $.EOS)),
+    screenDescriptionLightClause: ($) => choice($.HIGHLIGHT, $.LOWLIGHT),
+    screenDescriptionGridClause: ($) => choice($.GRID, $.LEFTLINE, $.OVERLINE),
+    screenDescriptionReverseVideoClause: ($) => $.REVERSE_VIDEO,
+    screenDescriptionUnderlineClause: ($) => $.UNDERLINE,
     screenDescriptionSizeClause: ($) =>
-      seq(SIZE, optional(IS), choice(identifier, integerLiteral)),
+      seq($.SIZE, optional($.IS), choice($.identifier, $.integerLiteral)),
     screenDescriptionLineClause: ($) =>
       seq(
-        LINE,
+        $.LINE,
         optional(
-          seq(optional(NUMBER), optional(IS), choice(PLUS, PLUSCHAR, MINUSCHAR))
+          seq(
+            optional($.NUMBER),
+            optional($.IS),
+            choice($.PLUS, $.PLUSCHAR, $.MINUSCHAR)
+          )
         ),
-        choice(identifier, integerLiteral)
+        choice($.identifier, $.integerLiteral)
       ),
     screenDescriptionColumnClause: ($) =>
       seq(
-        choice(COLUMN, COL),
+        choice($.COLUMN, $.COL),
         optional(
-          seq(optional(NUMBER), optional(IS), choice(PLUS, PLUSCHAR, MINUSCHAR))
+          seq(
+            optional($.NUMBER),
+            optional($.IS),
+            choice($.PLUS, $.PLUSCHAR, $.MINUSCHAR)
+          )
         ),
-        choice(identifier, integerLiteral)
+        choice($.identifier, $.integerLiteral)
       ),
     screenDescriptionForegroundColorClause: ($) =>
       seq(
-        choice(FOREGROUND_COLOR, FOREGROUND_COLOUR),
-        optional(IS),
-        choice(identifier, integerLiteral)
+        choice($.FOREGROUND_COLOR, $.FOREGROUND_COLOUR),
+        optional($.IS),
+        choice($.identifier, $.integerLiteral)
       ),
     screenDescriptionBackgroundColorClause: ($) =>
       seq(
-        choice(BACKGROUND_COLOR, BACKGROUND_COLOUR),
-        optional(IS),
-        choice(identifier, integerLiteral)
+        choice($.BACKGROUND_COLOR, $.BACKGROUND_COLOUR),
+        optional($.IS),
+        choice($.identifier, $.integerLiteral)
       ),
     screenDescriptionControlClause: ($) =>
-      seq(CONTROL, optional(IS), identifier),
-    screenDescriptionValueClause: ($) => seq(VALUE, optional(IS), literal),
+      seq($.CONTROL, optional($.IS), $.identifier),
+    screenDescriptionValueClause: ($) =>
+      seq($.VALUE, optional($.IS), $.literal),
     screenDescriptionPictureClause: ($) =>
-      seq(choice(PICTURE, PIC), optional(IS), pictureString),
+      seq(choice($.PICTURE, $.PIC), optional($.IS), $.pictureString),
     screenDescriptionFromClause: ($) =>
       seq(
-        FROM,
-        choice(identifier, literal),
-        optional(screenDescriptionToClause)
+        $.FROM,
+        choice($.identifier, $.literal),
+        optional($.screenDescriptionToClause)
       ),
-    screenDescriptionToClause: ($) => seq(TO, identifier),
-    screenDescriptionUsingClause: ($) => seq(USING, identifier),
+    screenDescriptionToClause: ($) => seq($.TO, $.identifier),
+    screenDescriptionUsingClause: ($) => seq($.USING, $.identifier),
     screenDescriptionUsageClause: ($) =>
-      seq(USAGE, optional(IS), choice(DISPLAY, DISPLAY_1)),
+      seq($.USAGE, optional($.IS), choice($.DISPLAY, $.DISPLAY_1)),
     screenDescriptionBlankWhenZeroClause: ($) =>
-      seq(BLANK, optional(WHEN), ZERO),
+      seq($.BLANK, optional($.WHEN), $.ZERO),
     screenDescriptionJustifiedClause: ($) =>
-      seq(choice(JUSTIFIED, JUST), optional(RIGHT)),
+      seq(choice($.JUSTIFIED, $.JUST), optional($.RIGHT)),
     screenDescriptionSignClause: ($) =>
       seq(
-        optional(seq(SIGN, optional(IS))),
-        choice(LEADING, TRAILING),
-        optional(seq(SEPARATE, optional(CHARACTER)))
+        optional(seq($.SIGN, optional($.IS))),
+        choice($.LEADING, $.TRAILING),
+        optional(seq($.SEPARATE, optional($.CHARACTER)))
       ),
-    screenDescriptionAutoClause: ($) => choice(AUTO, AUTO_SKIP),
-    screenDescriptionSecureClause: ($) => choice(SECURE, NO_ECHO),
-    screenDescriptionRequiredClause: ($) => choice(REQUIRED, EMPTY_CHECK),
+    screenDescriptionAutoClause: ($) => choice($.AUTO, $.AUTO_SKIP),
+    screenDescriptionSecureClause: ($) => choice($.SECURE, $.NO_ECHO),
+    screenDescriptionRequiredClause: ($) => choice($.REQUIRED, $.EMPTY_CHECK),
     screenDescriptionPromptClause: ($) =>
       seq(
-        PROMPT,
-        optional(CHARACTER),
-        optional(IS),
-        choice(identifier, literal),
-        optional(screenDescriptionPromptOccursClause)
+        $.PROMPT,
+        optional($.CHARACTER),
+        optional($.IS),
+        choice($.identifier, $.literal),
+        optional($.screenDescriptionPromptOccursClause)
       ),
     screenDescriptionPromptOccursClause: ($) =>
-      seq(OCCURS, integerLiteral, optional(TIMES)),
-    screenDescriptionFullClause: ($) => choice(FULL, LENGTH_CHECK),
-    screenDescriptionZeroFillClause: ($) => ZERO_FILL,
+      seq($.OCCURS, $.integerLiteral, optional($.TIMES)),
+    screenDescriptionFullClause: ($) => choice($.FULL, $.LENGTH_CHECK),
+    screenDescriptionZeroFillClause: ($) => $.ZERO_FILL,
     // -- report section ----------------------------------
     reportSection: ($) =>
-      seq(REPORT, SECTION, DOT_FS, repeat(reportDescription)),
+      seq($.REPORT, $.SECTION, $.DOT_FS, repeat($.reportDescription)),
     reportDescription: ($) =>
-      seq(reportDescriptionEntry, repeat1(reportGroupDescriptionEntry)),
+      seq($.reportDescriptionEntry, repeat1($.reportGroupDescriptionEntry)),
     reportDescriptionEntry: ($) =>
       seq(
-        RD,
-        reportName,
-        optional(reportDescriptionGlobalClause),
+        $.RD,
+        $.reportName,
+        optional($.reportDescriptionGlobalClause),
         optional(
           seq(
-            reportDescriptionPageLimitClause,
-            optional(reportDescriptionHeadingClause),
-            optional(reportDescriptionFirstDetailClause),
-            optional(reportDescriptionLastDetailClause),
-            optional(reportDescriptionFootingClause)
+            $.reportDescriptionPageLimitClause,
+            optional($.reportDescriptionHeadingClause),
+            optional($.reportDescriptionFirstDetailClause),
+            optional($.reportDescriptionLastDetailClause),
+            optional($.reportDescriptionFootingClause)
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
-    reportDescriptionGlobalClause: ($) => seq(optional(IS), GLOBAL),
+    reportDescriptionGlobalClause: ($) => seq(optional($.IS), $.GLOBAL),
     reportDescriptionPageLimitClause: ($) =>
       seq(
-        PAGE,
-        optional(seq(LIMIT, choice(optional(IS), LIMITS), optional(ARE))),
-        integerLiteral,
-        optional(choice(LINE, LINES))
+        $.PAGE,
+        optional(
+          seq($.LIMIT, choice(optional($.IS), $.LIMITS), optional($.ARE))
+        ),
+        $.integerLiteral,
+        optional(choice($.LINE, $.LINES))
       ),
-    reportDescriptionHeadingClause: ($) => seq(HEADING, integerLiteral),
+    reportDescriptionHeadingClause: ($) => seq($.HEADING, $.integerLiteral),
     reportDescriptionFirstDetailClause: ($) =>
-      seq(FIRST, DETAIL, integerLiteral),
-    reportDescriptionLastDetailClause: ($) => seq(LAST, DETAIL, integerLiteral),
-    reportDescriptionFootingClause: ($) => sqe(FOOTING, integerLiteral),
+      seq($.FIRST, $.DETAIL, $.integerLiteral),
+    reportDescriptionLastDetailClause: ($) =>
+      seq($.LAST, $.DETAIL, $.integerLiteral),
+    reportDescriptionFootingClause: ($) => seq($.FOOTING, $.integerLiteral),
     reportGroupDescriptionEntry: ($) =>
       choice(
-        reportGroupDescriptionEntryFormat1,
-        reportGroupDescriptionEntryFormat2,
-        reportGroupDescriptionEntryFormat3
+        $.reportGroupDescriptionEntryFormat1,
+        $.reportGroupDescriptionEntryFormat2,
+        $.reportGroupDescriptionEntryFormat3
       ),
     reportGroupDescriptionEntryFormat1: ($) =>
       seq(
-        integerLiteral,
-        dataName,
-        optional(reportGroupLineNumberClause),
-        optional(reportGroupNextGroupClause),
-        reportGroupTypeClause,
-        optional(reportGroupUsageClause),
-        DOT_FS
+        $.integerLiteral,
+        $.dataName,
+        optional($.reportGroupLineNumberClause),
+        optional($.reportGroupNextGroupClause),
+        $.reportGroupTypeClause,
+        optional($.reportGroupUsageClause),
+        $.DOT_FS
       ),
     reportGroupDescriptionEntryFormat2: ($) =>
       seq(
-        integerLiteral,
-        optional(dataName),
-        optional(reportGroupLineNumberClause),
-        reportGroupUsageClause,
-        DOT_FS
+        $.integerLiteral,
+        optional($.dataName),
+        optional($.reportGroupLineNumberClause),
+        $.reportGroupUsageClause,
+        $.DOT_FS
       ),
     reportGroupDescriptionEntryFormat3: ($) =>
       seq(
-        integerLiteral,
-        optional(dataName),
+        $.integerLiteral,
+        optional($.dataName),
         repeat(
           choice(
-            reportGroupPictureClause,
-            reportGroupUsageClause,
-            reportGroupSignClause,
-            reportGroupJustifiedClause,
-            reportGroupBlankWhenZeroClause,
-            reportGroupLineNumberClause,
-            reportGroupColumnNumberClause,
-            reportGroupSourceClause,
-            reportGroupValueClause,
-            reportGroupSumClause,
-            reportGroupResetClause,
-            reportGroupIndicateClause
+            $.reportGroupPictureClause,
+            $.reportGroupUsageClause,
+            $.reportGroupSignClause,
+            $.reportGroupJustifiedClause,
+            $.reportGroupBlankWhenZeroClause,
+            $.reportGroupLineNumberClause,
+            $.reportGroupColumnNumberClause,
+            $.reportGroupSourceClause,
+            $.reportGroupValueClause,
+            $.reportGroupSumClause,
+            $.reportGroupResetClause,
+            $.reportGroupIndicateClause
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
-    reportGroupBlankWhenZeroClause: ($) => seq(BLANK, optional(WHEN), ZERO),
+    reportGroupBlankWhenZeroClause: ($) =>
+      seq($.BLANK, optional($.WHEN), $.ZERO),
     reportGroupColumnNumberClause: ($) =>
-      seq(COLUMN, optional(NUMBER), optional(IS), integerLiteral),
-    reportGroupIndicateClause: ($) => seq(GROUP, optional(INDICATE)),
+      seq($.COLUMN, optional($.NUMBER), optional($.IS), $.integerLiteral),
+    reportGroupIndicateClause: ($) => seq($.GROUP, optional($.INDICATE)),
     reportGroupJustifiedClause: ($) =>
-      seq(choice(JUSTIFIED, JUST), optional(RIGHT)),
+      seq(choice($.JUSTIFIED, $.JUST), optional($.RIGHT)),
     reportGroupLineNumberClause: ($) =>
       seq(
-        optional(LINE),
-        optional(NUMBER),
-        optional(IS),
-        choice(reportGroupLineNumberNextPage, reportGroupLineNumberPlus)
+        optional($.LINE),
+        optional($.NUMBER),
+        optional($.IS),
+        choice($.reportGroupLineNumberNextPage, $.reportGroupLineNumberPlus)
       ),
     reportGroupLineNumberNextPage: ($) =>
-      seq(integerLiteral, optional(seq(optional(ON), NEXT, PAGE))),
-    reportGroupLineNumberPlus: ($) => seq(PLUS, integerLiteral),
+      seq($.integerLiteral, optional(seq(optional($.ON), $.NEXT, $.PAGE))),
+    reportGroupLineNumberPlus: ($) => seq($.PLUS, $.integerLiteral),
     reportGroupNextGroupClause: ($) =>
       seq(
-        NEXT,
-        GROUP,
-        optional(IS),
+        $.NEXT,
+        $.GROUP,
+        optional($.IS),
         choice(
-          integerLiteral,
-          reportGroupNextGroupNextPage,
-          reportGroupNextGroupPlus
+          $.integerLiteral,
+          $.reportGroupNextGroupNextPage,
+          $.reportGroupNextGroupPlus
         )
       ),
-    reportGroupNextGroupPlus: ($) => seq(PLUS, integerLiteral),
-    reportGroupNextGroupNextPage: ($) => seq(NEXT, PAGE),
+    reportGroupNextGroupPlus: ($) => seq($.PLUS, $.integerLiteral),
+    reportGroupNextGroupNextPage: ($) => seq($.NEXT, $.PAGE),
     reportGroupPictureClause: ($) =>
-      seq(choice(PICTURE, PIC), optional(IS), pictureString),
+      seq(choice($.PICTURE, $.PIC), optional($.IS), $.pictureString),
     reportGroupResetClause: ($) =>
-      seq(RESET, optional(ON), choice(FINAL, dataName)),
+      seq($.RESET, optional($.ON), choice($.FINAL, $.dataName)),
     reportGroupSignClause: ($) =>
       seq(
-        SIGN,
-        optional(IS),
-        choice(LEADING, TRAILING),
-        SEPARATE,
-        optional(CHARACTER)
+        $.SIGN,
+        optional($.IS),
+        choice($.LEADING, $.TRAILING),
+        $.SEPARATE,
+        optional($.CHARACTER)
       ),
-    reportGroupSourceClause: ($) => seq(SOURCE, optional(IS), identifier),
+    reportGroupSourceClause: ($) => seq($.SOURCE, optional($.IS), $.identifier),
     reportGroupSumClause: ($) =>
       seq(
-        SUM,
-        identifier,
-        repeat(seq(optional(COMMACHAR), identifier)),
+        $.SUM,
+        $.identifier,
+        repeat(seq(optional($.COMMACHAR), $.identifier)),
         optional(
-          seq(UPON, dataName, repeat(seq(optional(COMMACHAR), dataName)))
+          seq(
+            $.UPON,
+            $.dataName,
+            repeat(seq(optional($.COMMACHAR), $.dataName))
+          )
         )
       ),
     reportGroupTypeClause: ($) =>
       seq(
-        TYPE,
-        optional(IS),
+        $.TYPE,
+        optional($.IS),
         choice(
-          reportGroupTypeReportHeading,
-          reportGroupTypePageHeading,
-          reportGroupTypeControlHeading,
-          reportGroupTypeDetail,
-          reportGroupTypeControlFooting,
-          reportGroupTypePageFooting,
-          reportGroupTypeReportFooting
+          $.reportGroupTypeReportHeading,
+          $.reportGroupTypePageHeading,
+          $.reportGroupTypeControlHeading,
+          $.reportGroupTypeDetail,
+          $.reportGroupTypeControlFooting,
+          $.reportGroupTypePageFooting,
+          $.reportGroupTypeReportFooting
         )
       ),
-    reportGroupTypeReportHeading: ($) => choice(seq(REPORT, HEADING), RH),
-    reportGroupTypePageHeading: ($) => choice(seq(PAGE, HEADING), PH),
+    reportGroupTypeReportHeading: ($) => choice(seq($.REPORT, $.HEADING), $.RH),
+    reportGroupTypePageHeading: ($) => choice(seq($.PAGE, $.HEADING), $.PH),
     reportGroupTypeControlHeading: ($) =>
-      seq(choice(seq(CONTROL, HEADING), CH), choice(FINAL, dataName)),
-    reportGroupTypeDetail: ($) => choice(DETAIL, DE),
+      seq(choice(seq($.CONTROL, $.HEADING), $.CH), choice($.FINAL, $.dataName)),
+    reportGroupTypeDetail: ($) => choice($.DETAIL, $.DE),
     reportGroupTypeControlFooting: ($) =>
-      seq(choice(seq(CONTROL, FOOTING), CF), choice(FINAL, dataName)),
+      seq(choice(seq($.CONTROL, $.FOOTING), $.CF), choice($.FINAL, $.dataName)),
     reportGroupUsageClause: ($) =>
-      seq(optional(seq(USAGE, optional(IS))), choice(DISPLAY, DISPLAY_1)),
-    reportGroupTypePageFooting: ($) => choice(seq(PAGE, FOOTING), PF),
-    reportGroupTypeReportFooting: ($) => choice(seq(REPORT, FOOTING), RF),
-    reportGroupValueClause: ($) => seq(VALUE, optional(IS), literal),
+      seq(
+        optional(seq($.USAGE, optional($.IS))),
+        choice($.DISPLAY, $.DISPLAY_1)
+      ),
+    reportGroupTypePageFooting: ($) => choice(seq($.PAGE, $.FOOTING), $.PF),
+    reportGroupTypeReportFooting: ($) => choice(seq($.REPORT, $.FOOTING), $.RF),
+    reportGroupValueClause: ($) => seq($.VALUE, optional($.IS), $.literal),
     // -- program library section ----------------------------------
     programLibrarySection: ($) =>
-      seq(PROGRAM_LIBRARY, SECTION, DOT_FS, repeat(libraryDescriptionEntry)),
+      seq(
+        $.PROGRAM_LIBRARY,
+        $.SECTION,
+        $.DOT_FS,
+        repeat($.libraryDescriptionEntry)
+      ),
     libraryDescriptionEntry: ($) =>
-      choice(libraryDescriptionEntryFormat1, libraryDescriptionEntryFormat2),
+      choice(
+        $.libraryDescriptionEntryFormat1,
+        $.libraryDescriptionEntryFormat2
+      ),
     libraryDescriptionEntryFormat1: ($) =>
       seq(
-        LD,
-        libraryName,
-        EXPORT,
-        optional(libraryAttributeClauseFormat1),
-        optional(libraryEntryProcedureClauseFormat1)
+        $.LD,
+        $.libraryName,
+        $.EXPORT,
+        optional($.libraryAttributeClauseFormat1),
+        optional($.libraryEntryProcedureClauseFormat1)
       ),
     libraryDescriptionEntryFormat2: ($) =>
       seq(
-        LB,
-        libraryName,
-        IMPORT,
-        optional(libraryIsGlobalClause),
-        optional(libraryIsCommonClause),
+        $.LB,
+        $.libraryName,
+        $.IMPORT,
+        optional($.libraryIsGlobalClause),
+        optional($.libraryIsCommonClause),
         repeat(
           choice(
-            libraryAttributeClauseFormat2,
-            libraryEntryProcedureClauseFormat2
+            $.libraryAttributeClauseFormat2,
+            $.libraryEntryProcedureClauseFormat2
           )
         )
       ),
     libraryAttributeClauseFormat1: ($) =>
       seq(
-        ATTRIBUTE,
+        $.ATTRIBUTE,
         optional(
           seq(
-            SHARING,
-            optional(IS),
-            seq(choice(DONTCARE, PRIVATE, SHAREDBYRUNUNIT, SHAREDBYALL))
+            $.SHARING,
+            optional($.IS),
+            seq(choice($.DONTCARE, $.PRIVATE, $.SHAREDBYRUNUNIT, $.SHAREDBYALL))
           )
         )
       ),
     libraryAttributeClauseFormat2: ($) =>
       seq(
-        ATTRIBUTE,
-        optional(libraryAttributeFunction),
-        optional(seq(LIBACCESS, optional(IS), choice(BYFUNCTION, BYTITLE))),
-        optional(libraryAttributeParameter),
-        optional(libraryAttributeTitle)
+        $.ATTRIBUTE,
+        optional($.libraryAttributeFunction),
+        optional(
+          seq($.LIBACCESS, optional($.IS), choice($.BYFUNCTION, $.BYTITLE))
+        ),
+        optional($.libraryAttributeParameter),
+        optional($.libraryAttributeTitle)
       ),
-    libraryAttributeFunction: ($) => seq(FUNCTIONNAME, IS, literal),
-    libraryAttributeParameter: ($) => seq(LIBPARAMETER, optional(IS), literal),
-    libraryAttributeTitle: ($) => seq(TITLE, optional(IS), literal),
+    libraryAttributeFunction: ($) => seq($.FUNCTIONNAME, $.IS, $.literal),
+    libraryAttributeParameter: ($) =>
+      seq($.LIBPARAMETER, optional($.IS), $.literal),
+    libraryAttributeTitle: ($) => seq($.TITLE, optional($.IS), $.literal),
     libraryEntryProcedureClauseFormat1: ($) =>
       seq(
-        ENTRY_PROCEDURE,
-        programName,
-        optional(libraryEntryProcedureForClause)
+        $.ENTRY_PROCEDURE,
+        $.programName,
+        optional($.libraryEntryProcedureForClause)
       ),
     libraryEntryProcedureClauseFormat2: ($) =>
       seq(
-        ENTRY_PROCEDURE,
-        programName,
-        optional(libraryEntryProcedureForClause),
-        optional(libraryEntryProcedureWithClause),
-        optional(libraryEntryProcedureUsingClause),
-        optional(libraryEntryProcedureGivingClause)
+        $.ENTRY_PROCEDURE,
+        $.programName,
+        optional($.libraryEntryProcedureForClause),
+        optional($.libraryEntryProcedureWithClause),
+        optional($.libraryEntryProcedureUsingClause),
+        optional($.libraryEntryProcedureGivingClause)
       ),
-    libraryEntryProcedureForClause: ($) => seq(FOR, literal),
-    libraryEntryProcedureGivingClause: ($) => seq(GIVING, dataName),
+    libraryEntryProcedureForClause: ($) => seq($.FOR, $.literal),
+    libraryEntryProcedureGivingClause: ($) => seq($.GIVING, $.dataName),
     libraryEntryProcedureUsingClause: ($) =>
-      seq(USING, repeat1(libraryEntryProcedureUsingName)),
-    libraryEntryProcedureUsingName: ($) => choice(dataName, fileName),
+      seq($.USING, repeat1($.libraryEntryProcedureUsingName)),
+    libraryEntryProcedureUsingName: ($) => choice($.dataName, $.fileName),
     libraryEntryProcedureWithClause: ($) =>
-      seq(WITH, repeat1(libraryEntryProcedureWithName)),
-    libraryEntryProcedureWithName: ($) => choice(localName, fileName),
-    libraryIsCommonClause: ($) => seq(optional(IS), COMMON),
-    libraryIsGlobalClause: ($) => seq(optional(IS), GLOBAL),
+      seq($.WITH, repeat1($.libraryEntryProcedureWithName)),
+    libraryEntryProcedureWithName: ($) => choice($.localName, $.fileName),
+    libraryIsCommonClause: ($) => seq(optional($.IS), $.COMMON),
+    libraryIsGlobalClause: ($) => seq(optional($.IS), $.GLOBAL),
     // data description entry ----------------------------------
     dataDescriptionEntry: ($) =>
       choice(
-        dataDescriptionEntryFormat1,
-        dataDescriptionEntryFormat2,
-        dataDescriptionEntryFormat3,
-        dataDescriptionEntryExecSql
+        $.dataDescriptionEntryFormat1,
+        $.dataDescriptionEntryFormat2,
+        $.dataDescriptionEntryFormat3,
+        $.dataDescriptionEntryExecSql
       ),
     dataDescriptionEntryFormat1: ($) =>
       seq(
-        choice(INTEGERLITERAL, LEVEL_NUMBER_77),
-        optional(choice(FILLER, dataName)),
+        choice($.INTEGERLITERAL, $.LEVEL_NUMBER_77),
+        optional(choice($.FILLER, $.dataName)),
         repeat(
           choice(
-            dataRedefinesClause,
-            dataIntegerStringClause,
-            dataExternalClause,
-            dataGlobalClause,
-            dataTypeDefClause,
-            dataThreadLocalClause,
-            dataPictureClause,
-            dataCommonOwnLocalClause,
-            dataTypeClause,
-            dataUsingClause,
-            dataUsageClause,
-            dataValueClause,
-            dataReceivedByClause,
-            dataOccursClause,
-            dataSignClause,
-            dataSynchronizedClause,
-            dataJustifiedClause,
-            dataBlankWhenZeroClause,
-            dataWithLowerBoundsClause,
-            dataAlignedClause,
-            dataRecordAreaClause
+            $.dataRedefinesClause,
+            $.dataIntegerStringClause,
+            $.dataExternalClause,
+            $.dataGlobalClause,
+            $.dataTypeDefClause,
+            $.dataThreadLocalClause,
+            $.dataPictureClause,
+            $.dataCommonOwnLocalClause,
+            $.dataTypeClause,
+            $.dataUsingClause,
+            $.dataUsageClause,
+            $.dataValueClause,
+            $.dataReceivedByClause,
+            $.dataOccursClause,
+            $.dataSignClause,
+            $.dataSynchronizedClause,
+            $.dataJustifiedClause,
+            $.dataBlankWhenZeroClause,
+            $.dataWithLowerBoundsClause,
+            $.dataAlignedClause,
+            $.dataRecordAreaClause
           )
         ),
-        DOT_FS
+        $.DOT_FS
       ),
     dataDescriptionEntryFormat2: ($) =>
-      seq(LEVEL_NUMBER_66, dataName, dataRenamesClause, DOT_FS),
+      seq($.LEVEL_NUMBER_66, $.dataName, $.dataRenamesClause, $.DOT_FS),
     dataDescriptionEntryFormat3: ($) =>
-      seq(LEVEL_NUMBER_88, conditionName, dataValueClause, DOT_FS),
+      seq($.LEVEL_NUMBER_88, $.conditionName, $.dataValueClause, $.DOT_FS),
     dataDescriptionEntryExecSql: ($) =>
-      seq(repeat1(EXECSQLLINE), optional(DOT_FS)),
-    dataAlignedClause: ($) => ALIGNED,
+      seq(repeat1($.EXECSQLLINE), optional($.DOT_FS)),
+    dataAlignedClause: ($) => $.ALIGNED,
     dataBlankWhenZeroClause: ($) =>
-      seq(BLANK, optional(WHEN), choice(ZERO, ZEROS, ZEROES)),
-    dataCommonOwnLocalClause: ($) => seq(choice(COMMON, OWN, LOCAL)),
+      seq($.BLANK, optional($.WHEN), choice($.ZERO, $.ZEROS, $.ZEROES)),
+    dataCommonOwnLocalClause: ($) => seq(choice($.COMMON, $.OWN, $.LOCAL)),
     dataExternalClause: ($) =>
-      seq(optional(IS), EXTERNAL, optionale(seq(BY, literal))),
-    dataGlobalClause: ($) => seq(optional(IS), GLOBAL),
-    dataIntegerStringClause: ($) => choice(INTEGER, STRING),
-    dataJustifiedClause: ($) => seq(choice(JUSTIFIED, JUST), optional(RIGHT)),
+      seq(optional($.IS), $.EXTERNAL, optional(seq($.BY, $.literal))),
+    dataGlobalClause: ($) => seq(optional($.IS), $.GLOBAL),
+    dataIntegerStringClause: ($) => choice($.INTEGER, $.STRING),
+    dataJustifiedClause: ($) =>
+      seq(choice($.JUSTIFIED, $.JUST), optional($.RIGHT)),
     dataOccursClause: ($) =>
       seq(
-        OCCURS,
-        choice(identifier, integerLiteral),
-        optional(dataOccursTo),
-        optional(TIMES),
-        optional(dataOccursDepending),
-        repeat(choice(dataOccursSort, dataOccursIndexed))
+        $.OCCURS,
+        choice($.identifier, $.integerLiteral),
+        optional($.dataOccursTo),
+        optional($.TIMES),
+        optional($.dataOccursDepending),
+        repeat(choice($.dataOccursSort, $.dataOccursIndexed))
       ),
-    dataOccursTo: ($) => seq(TO, integerLiteral),
-    dataOccursDepending: ($) => seq(DEPENDING, optional(ON), qualifiedDataName),
+    dataOccursTo: ($) => seq($.TO, $.integerLiteral),
+    dataOccursDepending: ($) =>
+      seq($.DEPENDING, optional($.ON), $.qualifiedDataName),
     dataOccursSort: ($) =>
       seq(
-        choice(ASCENDING, DESCENDING),
-        optional(KEY),
-        optional(IS),
-        repeat1(qualifiedDataName)
+        choice($.ASCENDING, $.DESCENDING),
+        optional($.KEY),
+        optional($.IS),
+        repeat1($.qualifiedDataName)
       ),
     dataOccursIndexed: ($) =>
-      seq(INDEXED, optional(BY), optional(LOCAL), repeat1(indexName)),
+      seq($.INDEXED, optional($.BY), optional($.LOCAL), repeat1($.indexName)),
     dataPictureClause: ($) =>
-      seq(choice(PICTURE, PIC), optional(IS), pictureString),
+      seq(choice($.PICTURE, $.PIC), optional($.IS), $.pictureString),
     pictureString: ($) =>
-      repeat1(seq(repeat1(pictureChars), optional(pictureCardinality))),
+      repeat1(seq(repeat1($.pictureChars), optional($.pictureCardinality))),
     pictureChars: ($) =>
       choice(
-        DOLLARCHAR,
-        IDENTIFIER,
-        NUMERICLITERAL,
-        SLASHCHAR,
-        COMMACHAR,
-        DOT,
-        COLONCHAR,
-        ASTERISKCHAR,
-        DOUBLEASTERISKCHAR,
-        LPARENCHAR,
-        RPARENCHAR,
-        PLUSCHAR,
-        MINUSCHAR,
-        LESSTHANCHAR,
-        MORETHANCHAR,
-        integerLiteral
+        $.DOLLARCHAR,
+        $.IDENTIFIER,
+        $.NUMERICLITERAL,
+        $.SLASHCHAR,
+        $.COMMACHAR,
+        $.DOT,
+        $.COLONCHAR,
+        $.ASTERISKCHAR,
+        $.DOUBLEASTERISKCHAR,
+        $.LPARENCHAR,
+        $.RPARENCHAR,
+        $.PLUSCHAR,
+        $.MINUSCHAR,
+        $.LESSTHANCHAR,
+        $.MORETHANCHAR,
+        $.integerLiteral
       ),
-    pictureCardinality: ($) => seq(LPARENCHAR, integerLiteral, RPARENCHAR),
+    pictureCardinality: ($) =>
+      seq($.LPARENCHAR, $.integerLiteral, $.RPARENCHAR),
     dataReceivedByClause: ($) =>
-      seq(optional(RECEIVED), optional(BY), choice(CONTENT, REFERENCE, REF)),
-    dataRecordAreaClause: ($) => seq(RECORD, AREA),
-    dataRedefinesClause: ($) => seq(REDEFINES, dataName),
+      seq(
+        optional($.RECEIVED),
+        optional($.BY),
+        choice($.CONTENT, $.REFERENCE, $.REF)
+      ),
+    dataRecordAreaClause: ($) => seq($.RECORD, $.AREA),
+    dataRedefinesClause: ($) => seq($.REDEFINES, $.dataName),
     dataRenamesClause: ($) =>
       seq(
-        RENAMES,
-        qualifiedDataName,
-        optional(seq(choice(THROUGH, THRU), qualifiedDataName))
+        $.RENAMES,
+        $.qualifiedDataName,
+        optional(seq(choice($.THROUGH, $.THRU), $.qualifiedDataName))
       ),
     dataSignClause: ($) =>
       seq(
-        optional(seq(SIGN, optional(IS))),
-        choice(LEADING, TRAILING),
-        optional(seq(SEPARATE, optional(CHARACTER)))
+        optional(seq($.SIGN, optional($.IS))),
+        choice($.LEADING, $.TRAILING),
+        optional(seq($.SEPARATE, optional($.CHARACTER)))
       ),
     dataSynchronizedClause: ($) =>
-      sqe(choice(SYNCHRONIZED, SYNC), optional(choice(LEFT, RIGHT))),
-    dataThreadLocalClause: ($) => seq(optional(IS), THREAD_LOCAL),
+      seq(choice($.SYNCHRONIZED, $.SYNC), optional(choice($.LEFT, $.RIGHT))),
+    dataThreadLocalClause: ($) => seq(optional($.IS), $.THREAD_LOCAL),
     dataTypeClause: ($) =>
       seq(
-        TYPE,
-        optional(IS),
+        $.TYPE,
+        optional($.IS),
         choice(
-          SHORT_DATE,
-          LONG_DATE,
-          NUMERIC_DATE,
-          NUMERIC_TIME,
-          LONG_TIME,
+          $.SHORT_DATE,
+          $.LONG_DATE,
+          $.NUMERIC_DATE,
+          $.NUMERIC_TIME,
+          $.LONG_TIME,
           seq(
-            choice(CLOB, BLOB, DBCLOB),
-            LPARENCHAR,
-            integerLiteral,
-            RPARENCHAR
+            choice($.CLOB, $.BLOB, $.DBCLOB),
+            $.LPARENCHAR,
+            $.integerLiteral,
+            $.RPARENCHAR
           )
         )
       ),
-    dataTypeDefClause: ($) => seq(optional(IS), TYPEDEF),
+    dataTypeDefClause: ($) => seq(optional($.IS), $.TYPEDEF),
     dataUsageClause: ($) =>
       seq(
-        optional(seq(USAGE, optional(IS))),
+        optional(seq($.USAGE, optional($.IS))),
         choice(
-          seq(BINARY, optional(choice(TRUNCATED, EXTENDED))),
-          BIT,
-          COMP,
-          COMP_1,
-          COMP_2,
-          COMP_3,
-          COMP_4,
-          COMP_5,
-          COMPUTATIONAL,
-          COMPUTATIONAL_1,
-          COMPUTATIONAL_2,
-          COMPUTATIONAL_3,
-          COMPUTATIONAL_4,
-          COMPUTATIONAL_5,
-          CONTROL_POINT,
-          DATE,
-          DISPLAY,
-          DISPLAY_1,
-          DOUBLE,
-          EVENT,
-          FUNCTION_POINTER,
-          INDEX,
-          KANJI,
-          LOCK,
-          NATIONAL,
-          PACKED_DECIMAL,
-          POINTER,
-          PROCEDURE_POINTER,
-          REAL,
-          SQL,
-          TASK
+          seq($.BINARY, optional(choice($.TRUNCATED, $.EXTENDED))),
+          $.BIT,
+          $.COMP,
+          $.COMP_1,
+          $.COMP_2,
+          $.COMP_3,
+          $.COMP_4,
+          $.COMP_5,
+          $.COMPUTATIONAL,
+          $.COMPUTATIONAL_1,
+          $.COMPUTATIONAL_2,
+          $.COMPUTATIONAL_3,
+          $.COMPUTATIONAL_4,
+          $.COMPUTATIONAL_5,
+          $.CONTROL_POINT,
+          $.DATE,
+          $.DISPLAY,
+          $.DISPLAY_1,
+          $.DOUBLE,
+          $.EVENT,
+          $.FUNCTION_POINTER,
+          $.INDEX,
+          $.KANJI,
+          $.LOCK,
+          $.NATIONAL,
+          $.PACKED_DECIMAL,
+          $.POINTER,
+          $.PROCEDURE_POINTER,
+          $.REAL,
+          $.SQL,
+          $.TASK
         )
       ),
     dataUsingClause: ($) =>
       seq(
-        USING,
-        choice(LANGUAGE, CONVENTION),
-        optional(OF),
-        choice(cobolWord, dataName)
+        $.USING,
+        choice($.LANGUAGE, $.CONVENTION),
+        optional($.OF),
+        choice($.cobolWord, $.dataName)
       ),
     dataValueClause: ($) =>
       seq(
-        optional(seq(choice(VALUE, VALUES), optional(choice(IS, ARE)))),
-        dataValueInterval,
-        repeat(seq(optional(COMMACHAR), dataValueInterval))
+        optional(seq(choice($.VALUE, $.VALUES), optional(choice($.IS, $.ARE)))),
+        $.dataValueInterval,
+        repeat(seq(optional($.COMMACHAR), $.dataValueInterval))
       ),
     dataValueInterval: ($) =>
-      seq(dataValueIntervalFrom, optional(dataValueIntervalTo)),
-    dataValueIntervalFrom: ($) => choice(literal, cobolWord),
-    dataValueIntervalTo: ($) => seq(choice(THROUGH, THRU), literal),
-    dataWithLowerBoundsClause: ($) => seq(optional(WITH), LOWER, BOUNDS),
+      seq($.dataValueIntervalFrom, optional($.dataValueIntervalTo)),
+    dataValueIntervalFrom: ($) => choice($.literal, $.cobolWord),
+    dataValueIntervalTo: ($) => seq(choice($.THROUGH, $.THRU), $.literal),
+    dataWithLowerBoundsClause: ($) => seq(optional($.WITH), $.LOWER, $.BOUNDS),
     // --- procedure division --------------------------------------------------------------------
     procedureDivision: ($) =>
       seq(
-        PROCEDURE,
-        DIVISION,
-        optional(procedureDivisionUsingClause),
-        optional(procedureDivisionGivingClause),
-        DOT_FS,
-        optional(procedureDeclaratives),
-        procedureDivisionBody
+        $.PROCEDURE,
+        $.DIVISION,
+        optional($.procedureDivisionUsingClause),
+        optional($.procedureDivisionGivingClause),
+        $.DOT_FS,
+        optional($.procedureDeclaratives),
+        $.procedureDivisionBody
       ),
     procedureDivisionUsingClause: ($) =>
-      seq(choice(USING, CHAINING), repeat1(procedureDivisionUsingParameter)),
+      seq(
+        choice($.USING, $.CHAINING),
+        repeat1($.procedureDivisionUsingParameter)
+      ),
     procedureDivisionGivingClause: ($) =>
-      seq(choice(GIVING, RETURNING), dataName),
+      seq(choice($.GIVING, $.RETURNING), $.dataName),
     procedureDivisionUsingParameter: ($) =>
       choice(
-        procedureDivisionByReferencePhrase,
-        procedureDivisionByValuePhrase
+        $.procedureDivisionByReferencePhrase,
+        $.procedureDivisionByValuePhrase
       ),
     procedureDivisionByReferencePhrase: ($) =>
       seq(
-        optional(seq(optional(BY), REFERENCE)),
-        repeat1(procedureDivisionByReference)
+        optional(seq(optional($.BY), $.REFERENCE)),
+        repeat1($.procedureDivisionByReference)
       ),
     procedureDivisionByReference: ($) =>
-      //(OPTIONAL? (identifier | fileName)) | ANY
-      choice(seq(optional(OPTIONAL), choice(identifier, fileName)), ANY),
+      //(OPTIONAL? (identifier | $.fileName)) | ANY
+      choice(
+        seq(optional($.OPTIONAL), choice($.identifier, $.fileName)),
+        $.ANY
+      ),
     procedureDivisionByValuePhrase: ($) =>
-      seq(optional(BY), VALUE, repeat1(procedureDivisionByValue)),
-    procedureDivisionByValue: ($) => choice(identifier, literal, ANY),
+      seq(optional($.BY), $.VALUE, repeat1($.procedureDivisionByValue)),
+    procedureDivisionByValue: ($) => choice($.identifier, $.literal, $.ANY),
     procedureDeclaratives: ($) =>
       seq(
-        DECLARATIVES,
-        DOT_FS,
-        repeat1(procedureDeclarative),
-        END,
-        DECLARATIVES,
-        DOT_FS
+        $.DECLARATIVES,
+        $.DOT_FS,
+        repeat1($.procedureDeclarative),
+        $.END,
+        $.DECLARATIVES,
+        $.DOT_FS
       ),
     procedureDeclarative: ($) =>
-      seq(procedureSectionHeader, DOT_FS, useStatement, DOT_FS, paragraphs),
+      seq(
+        $.procedureSectionHeader,
+        $.DOT_FS,
+        $.useStatement,
+        $.DOT_FS,
+        $.paragraphs
+      ),
     procedureSectionHeader: ($) =>
-      seq(sectionName, SECTION, optional(integerLiteral)),
-    procedureDivisionBody: ($) => seq(paragraphs, repeat(procedureSection)),
+      seq($.sectionName, $.SECTION, optional($.integerLiteral)),
+    procedureDivisionBody: ($) => seq($.paragraphs, repeat($.procedureSection)),
     // -- procedure section ----------------------------------
-    procedureSection: ($) => seq(procedureSectionHeader, DOT_FS, paragraphs),
-    paragraphs: ($) => seq(repeat(sentence), repeat(paragraph)),
+    procedureSection: ($) =>
+      seq($.procedureSectionHeader, $.DOT_FS, $.paragraphs),
+    paragraphs: ($) => seq(repeat($.sentence), repeat1($.paragraph)),
     paragraph: ($) =>
       seq(
-        paragraphName,
-        optional(DOT_FS),
-        choice(alteredGoTo, repeat(sentence))
+        $.paragraphName,
+        optional($.DOT_FS),
+        choice($.alteredGoTo, repeat($.sentence))
       ),
-    sentence: ($) => seq(repeat(statement), DOT_FS),
+    sentence: ($) => seq(repeat($.statement), $.DOT_FS),
     statement: ($) =>
       choice(
-        acceptStatement,
-        addStatement,
-        alterStatement,
-        callStatement,
-        cancelStatement,
-        closeStatement,
-        computeStatement,
-        continueStatement,
-        deleteStatement,
-        disableStatement,
-        displayStatement,
-        divideStatement,
-        enableStatement,
-        entryStatement,
-        evaluateStatement,
-        exhibitStatement,
-        execCicsStatement,
-        execSqlStatement,
-        execSqlImsStatement,
-        exitStatement,
-        generateStatement,
-        gobackStatement,
-        goToStatement,
-        ifStatement,
-        initializeStatement,
-        initiateStatement,
-        inspectStatement,
-        mergeStatement,
-        moveStatement,
-        multiplyStatement,
-        nextSentenceStatement,
-        openStatement,
-        performStatement,
-        purgeStatement,
-        readStatement,
-        receiveStatement,
-        releaseStatement,
-        returnStatement,
-        rewriteStatement,
-        searchStatement,
-        sendStatement,
-        setStatement,
-        sortStatement,
-        startStatement,
-        stopStatement,
-        stringStatement,
-        subtractStatement,
-        terminateStatement,
-        unstringStatement,
-        writeStatement
+        $.acceptStatement,
+        $.addStatement,
+        $.alterStatement,
+        $.callStatement,
+        $.cancelStatement,
+        $.closeStatement,
+        $.computeStatement,
+        $.continueStatement,
+        $.deleteStatement,
+        $.disableStatement,
+        $.displayStatement,
+        $.divideStatement,
+        $.enableStatement,
+        $.entryStatement,
+        $.evaluateStatement,
+        $.exhibitStatement,
+        $.execCicsStatement,
+        $.execSqlStatement,
+        $.execSqlImsStatement,
+        $.exitStatement,
+        $.generateStatement,
+        $.gobackStatement,
+        $.goToStatement,
+        $.ifStatement,
+        $.initializeStatement,
+        $.initiateStatement,
+        $.inspectStatement,
+        $.mergeStatement,
+        $.moveStatement,
+        $.multiplyStatement,
+        $.nextSentenceStatement,
+        $.openStatement,
+        $.performStatement,
+        $.purgeStatement,
+        $.readStatement,
+        $.receiveStatement,
+        $.releaseStatement,
+        $.returnStatement,
+        $.rewriteStatement,
+        $.searchStatement,
+        $.sendStatement,
+        $.setStatement,
+        $.sortStatement,
+        $.startStatement,
+        $.stopStatement,
+        $.stringStatement,
+        $.subtractStatement,
+        $.terminateStatement,
+        $.unstringStatement,
+        $.writeStatement
       ),
     // accept statement
     acceptStatement: ($) =>
       seq(
-        ACCEPT,
-        identifier,
-        optionL(
+        $.ACCEPT,
+        $.identifier,
+        optional(
           choice(
-            acceptFromDateStatement,
-            acceptFromEscapeKeyStatement,
-            acceptFromMnemonicStatement,
-            acceptMessageCountStatement
+            $.acceptFromDateStatement,
+            $.acceptFromEscapeKeyStatement,
+            $.acceptFromMnemonicStatement,
+            $.acceptMessageCountStatement
           )
         ),
-        optional(onExceptionClause),
-        optional(notOnExceptionClause),
-        optional(END_ACCEPT)
+        optional($.onExceptionClause),
+        optional($.notOnExceptionClause),
+        optional($.END_ACCEPT)
       ),
     acceptFromDateStatement: ($) =>
       seq(
-        FROM,
+        $.FROM,
         seq(
-          DATE,
-          choice(optional(YYYYMMDD), DAY),
-          choice(optional(YYYYDDD), DAY_OF_WEEK, TIME, TIMER, TODAYS_DATE),
-          choice(optional(MMDDYYYY), TODAYS_NAME, YEAR, YYYYMMDD, YYYYDDD)
+          $.DATE,
+          choice(optional($.YYYYMMDD), $.DAY),
+          choice(
+            optional($.YYYYDDD),
+            $.DAY_OF_WEEK,
+            $.TIME,
+            $.TIMER,
+            $.TODAYS_DATE
+          ),
+          choice(
+            optional($.MMDDYYYY),
+            $.TODAYS_NAME,
+            $.YEAR,
+            $.YYYYMMDD,
+            $.YYYYDDD
+          )
         )
       ),
-    acceptFromMnemonicStatement: ($) => seq(FROM, mnemonicName),
-    acceptFromEscapeKeyStatement: ($) => seq(FROM, ESCAPE, KEY),
-    acceptMessageCountStatement: ($) => seq(optional(MESSAGE), COUNT),
+    acceptFromMnemonicStatement: ($) => seq($.FROM, $.mnemonicName),
+    acceptFromEscapeKeyStatement: ($) => seq($.FROM, $.ESCAPE, $.KEY),
+    acceptMessageCountStatement: ($) => seq(optional($.MESSAGE), $.COUNT),
     // add statement
     addStatement: ($) =>
       seq(
-        ADD,
-        choice(addToStatement, addToGivingStatement, addCorrespondingStatement),
-        optional(onSizeErrorPhrase),
-        optional(notOnSizeErrorPhrase),
-        optional(END_ADD)
+        $.ADD,
+        choice(
+          $.addToStatement,
+          $.addToGivingStatement,
+          $.addCorrespondingStatement
+        ),
+        optional($.onSizeErrorPhrase),
+        optional($.notOnSizeErrorPhrase),
+        optional($.END_ADD)
       ),
-    addToStatement: ($) => seq(repeat1(addFrom), TO, repeat1(addTo)),
+    addToStatement: ($) => seq(repeat1($.addFrom), $.TO, repeat1($.addTo)),
     addToGivingStatement: ($) =>
       seq(
-        repeat1(addFrom),
-        optional(seq(TO, repeat1(addToGiving))),
-        GIVING,
-        repeat1(addGiving)
+        repeat1($.addFrom),
+        optional(seq($.TO, repeat1($.addToGiving))),
+        $.GIVING,
+        repeat1($.addGiving)
       ),
     addCorrespondingStatement: ($) =>
-      seq(choice(CORRESPONDING, CORR), identifier, TO, addTo),
-    addFrom: ($) => choice(identifier, literal),
-    addTo: ($) => seq(identifier, optional(ROUNDED)),
-    addToGiving: ($) => choice(identifier, literal),
-    addGiving: ($) => seq(identifier, optional(ROUNDED)),
+      seq(choice($.CORRESPONDING, $.CORR), $.identifier, $.TO, $.addTo),
+    addFrom: ($) => choice($.identifier, $.literal),
+    addTo: ($) => seq($.identifier, optional($.ROUNDED)),
+    addToGiving: ($) => choice($.identifier, $.literal),
+    addGiving: ($) => seq($.identifier, optional($.ROUNDED)),
     // altered go to statement
-    alteredGoTo: ($) => seq(GO, optional(TO), DOT_FS),
+    alteredGoTo: ($) => seq($.GO, optional($.TO), $.DOT_FS),
     // alter statement
-    alterStatement: ($) => seq(ALTER, repeat1(alterProceedTo)),
+    alterStatement: ($) => seq($.ALTER, repeat1($.alterProceedTo)),
     alterProceedTo: ($) =>
-      seq(procedureName, TO, optional(seq(PROCEED, TO)), procedureName),
+      seq(
+        $.procedureName,
+        $.TO,
+        optional(seq($.PROCEED, $.TO)),
+        $.procedureName
+      ),
     // call statement
     callStatement: ($) =>
       seq(
-        CALL,
-        choice(identifier, literal),
-        optional(callUsingPhrase),
-        optional(callGivingPhrase),
-        optional(onOverflowPhrase),
-        optional(onExceptionClause),
-        optional(notOnExceptionClause),
-        optional(END_CALL)
+        $.CALL,
+        choice($.identifier, $.literal),
+        optional($.callUsingPhrase),
+        optional($.callGivingPhrase),
+        optional($.onOverflowPhrase),
+        optional($.onExceptionClause),
+        optional($.notOnExceptionClause),
+        optional($.END_CALL)
       ),
-    callUsingPhrase: ($) => seq(USING, repeat1(callUsingParameter)),
+    callUsingPhrase: ($) => seq($.USING, repeat1($.callUsingParameter)),
     callUsingParameter: ($) =>
-      choice(callByReferencePhrase, callByValuePhrase, callByContentPhrase),
+      choice(
+        $.callByReferencePhrase,
+        $.callByValuePhrase,
+        $.callByContentPhrase
+      ),
     callByReferencePhrase: ($) =>
-      seq(optional(seq(optional(BY), REFERENCE)), repeat1(callByReference)),
+      seq(
+        optional(seq(optional($.BY), $.REFERENCE)),
+        repeat1($.callByReference)
+      ),
     callByReference: ($) =>
       choice(
         choice(
-          seq(optional(choice(seq(ADDRESS, OF), INTEGER, STRING)), identifier),
-          literal,
-          fileName
+          seq(
+            optional(choice(seq($.ADDRESS, $.OF), $.INTEGER, $.STRING)),
+            $.identifier
+          ),
+          $.literal,
+          $.fileName
         ),
-        OMITTED
+        $.OMITTED
       ),
-    callByValuePhrase: ($) => seq(optional(BY), VALUE, repeat1(callByValue)),
+    callByValuePhrase: ($) =>
+      seq(optional($.BY), $.VALUE, repeat1($.callByValue)),
     callByValue: ($) =>
       seq(
-        optional(seq(ADDRESS, choice(OF, LENGTH), optional(OF))),
-        choice(identifier, literal)
+        optional(seq($.ADDRESS, choice($.OF, $.LENGTH), optional($.OF))),
+        choice($.identifier, $.literal)
       ),
     callByContentPhrase: ($) =>
-      seq(optional(BY), CONTENT, repeat1(callByContent)),
+      seq(optional($.BY), $.CONTENT, repeat1($.callByContent)),
     callByContent: ($) =>
       seq(
-        optional(choice(seq(ADDRESS, OF), seq(LENGTH, optional(OF)))),
-        choice(identifier, literal, OMITTED)
+        optional(choice(seq($.ADDRESS, $.OF), seq($.LENGTH, optional($.OF)))),
+        choice($.identifier, $.literal, $.OMITTED)
       ),
-    callGivingPhrase: ($) => seq(choice(GIVING, RETURNING), identifier),
+    callGivingPhrase: ($) => seq(choice($.GIVING, $.RETURNING), $.identifier),
     // cancel statement
-    cancelStatement: ($) => seq(CANCEL, repeat1(cancelCall)),
+    cancelStatement: ($) => seq($.CANCEL, repeat1($.cancelCall)),
     cancelCall: ($) =>
-      seq(libraryName, choice(BYTITLE, BYFUNCTION, identifier, literal)),
+      seq(
+        $.libraryName,
+        choice($.BYTITLE, $.BYFUNCTION, $.identifier, $.literal)
+      ),
     // close statement
-    closeStatement: ($) => seq(LOSE, repeat1(closeFile)),
+    closeStatement: ($) => seq($.CLOSE, repeat1($.closeFile)),
     closeFile: ($) =>
       seq(
-        fileName,
+        $.fileName,
         optional(
           choice(
-            closeReelUnitStatement,
-            closeRelativeStatement,
-            closePortFileIOStatement
+            $.closeReelUnitStatement,
+            $.closeRelativeStatement,
+            $.closePortFileIOStatement
           )
         )
       ),
     closeReelUnitStatement: ($) =>
       seq(
-        choice(REEL, UNIT),
-        optional(seq(optional(FOR), REMOVAL)),
-        optional(seq(optional(WITH), choice(seq(NO, REWIND), LOCK)))
+        choice($.REEL, $.UNIT),
+        optional(seq(optional($.FOR), $.REMOVAL)),
+        optional(seq(optional($.WITH), choice(seq($.NO, $.REWIND), $.LOCK)))
       ),
     closeRelativeStatement: ($) =>
-      seq(optional(WITH), choice(seq(NO, REWIND), LOCK)),
+      seq(optional($.WITH), choice(seq($.NO, $.REWIND), $.LOCK)),
     closePortFileIOStatement: ($) =>
       seq(
-        choice(seq(optional(WITH), NO, WAIT), seq(WITH, WAIT)),
-        optional(USING, repeat1(closePortFileIOUsing))
+        choice(seq(optional($.WITH), $.NO, $.WAIT), seq($.WITH, $.WAIT)),
+        optional(seq($.USING, repeat1($.closePortFileIOUsing)))
       ),
     closePortFileIOUsing: ($) =>
       choice(
-        closePortFileIOUsingCloseDisposition,
-        closePortFileIOUsingAssociatedData,
-        closePortFileIOUsingAssociatedDataLength
+        $.closePortFileIOUsingCloseDisposition,
+        $.closePortFileIOUsingAssociatedData,
+        $.closePortFileIOUsingAssociatedDataLength
       ),
     closePortFileIOUsingCloseDisposition: ($) =>
-      seq(CLOSE_DISPOSITION, optional(OF), choice(ABORT, ORDERLY)),
+      seq($.CLOSE_DISPOSITION, optional($.OF), choice($.ABORT, $.ORDERLY)),
     closePortFileIOUsingAssociatedData: ($) =>
-      seq(ASSOCIATED_DATA, choice(identifier, integerLiteral)),
+      seq($.ASSOCIATED_DATA, choice($.identifier, $.integerLiteral)),
     closePortFileIOUsingAssociatedDataLength: ($) =>
       seq(
-        ASSOCIATED_DATA_LENGTH,
-        optional(OF),
-        choice(identifier, integerLiteral)
+        $.ASSOCIATED_DATA_LENGTH,
+        optional($.OF),
+        choice($.identifier, $.integerLiteral)
       ),
     // compute statement
     computeStatement: ($) =>
       seq(
-        COMPUTE,
-        repeat1(computeStore),
-        choice(EQUALCHAR, EQUAL),
-        arithmeticExpression,
-        optional(onSizeErrorPhrase),
-        optional(notOnSizeErrorPhrase),
-        optional(END_COMPUTE)
+        $.COMPUTE,
+        repeat1($.computeStore),
+        choice($.EQUALCHAR, $.EQUAL),
+        $.arithmeticExpression,
+        optional($.onSizeErrorPhrase),
+        optional($.notOnSizeErrorPhrase),
+        optional($.END_COMPUTE)
       ),
-    computeStore: ($) => seq(identifier, optional(ROUNDED)),
+    computeStore: ($) => seq($.identifier, optional($.ROUNDED)),
     // continue statement
-    continueStatement: ($) => CONTINUE,
+    continueStatement: ($) => $.CONTINUE,
     // delete statement
     deleteStatement: ($) =>
       seq(
-        DELETE,
-        fileName,
-        optional(RECORD),
-        optional(invalidKeyPhrase),
-        optional(notInvalidKeyPhrase),
-        optional(END_DELETE)
+        $.DELETE,
+        $.fileName,
+        optional($.RECORD),
+        optional($.invalidKeyPhrase),
+        optional($.notInvalidKeyPhrase),
+        optional($.END_DELETE)
       ),
     // disable statement
     disableStatement: ($) =>
       seq(
-        DISABLE,
-        choice(seq(INPUT, optional(TERMINAL)), seq(I_O, TERMINAL), OUTPUT),
-        cdName,
-        optional(WITH),
-        KEY,
-        choice(identifier, literal)
+        $.DISABLE,
+        choice(
+          seq($.INPUT, optional($.TERMINAL)),
+          seq($.I_O, $.TERMINAL),
+          $.OUTPUT
+        ),
+        $.cdName,
+        optional($.WITH),
+        $.KEY,
+        choice($.identifier, $.literal)
       ),
     // display statement
     displayStatement: ($) =>
       seq(
-        DISPLAY,
-        repeat1(displayOperand),
-        optional(displayAt),
-        optional(displayUpon),
-        optional(displayWith),
-        optional(onExceptionClause),
-        optional(notOnExceptionClause),
-        optional(END_DISPLAY)
+        $.DISPLAY,
+        repeat1($.displayOperand),
+        optional($.displayAt),
+        optional($.displayUpon),
+        optional($.displayWith),
+        optional($.onExceptionClause),
+        optional($.notOnExceptionClause),
+        optional($.END_DISPLAY)
       ),
-    displayOperand: ($) => choice(identifier, literal),
-    displayAt: ($) => seq(AT, choice(identifier, literal)),
-    displayUpon: ($) => seq(UPON, choice(mnemonicName, environmentName)),
-    displayWith: ($) => seq(optional(WITH), NO, ADVANCING),
+    displayOperand: ($) => choice($.identifier, $.literal),
+    displayAt: ($) => seq($.AT, choice($.identifier, $.literal)),
+    displayUpon: ($) => seq($.UPON, choice($.mnemonicName, $.environmentName)),
+    displayWith: ($) => seq(optional($.WITH), $.NO, $.ADVANCING),
     // divide statement
     divideStatement: ($) =>
       seq(
-        DIVIDE,
-        choice(identifier, literal),
+        $.DIVIDE,
+        choice($.identifier, $.literal),
         choice(
-          divideIntoStatement,
-          divideIntoGivingStatement,
-          divideByGivingStatement
+          $.divideIntoStatement,
+          $.divideIntoGivingStatement,
+          $.divideByGivingStatement
         ),
-        optional(divideRemainder),
-        optional(onSizeErrorPhrase),
-        optional(notOnSizeErrorPhrase),
-        optional(END_DIVIDE)
+        optional($.divideRemainder),
+        optional($.onSizeErrorPhrase),
+        optional($.notOnSizeErrorPhrase),
+        optional($.END_DIVIDE)
       ),
-    divideIntoStatement: ($) => seq(INTO, repeat1(divideInto)),
+    divideIntoStatement: ($) => seq($.INTO, repeat1($.divideInto)),
     divideIntoGivingStatement: ($) =>
-      seq(INTO, choice(identifier, literal), optional(divideGivingPhrase)),
+      seq(
+        $.INTO,
+        choice($.identifier, $.literal),
+        optional($.divideGivingPhrase)
+      ),
     divideByGivingStatement: ($) =>
-      seq(BY, choice(identifier, literal), optional(divideGivingPhrase)),
-    divideGivingPhrase: ($) => seq(GIVING, repeat1(divideGiving)),
-    divideInto: ($) => seq(identifier, optional(ROUNDED)),
-    divideGiving: ($) => seq(identifier, optional(ROUNDED)),
-    divideRemainder: ($) => seq(REMAINDER, identifier),
+      seq(
+        $.BY,
+        choice($.identifier, $.literal),
+        optional($.divideGivingPhrase)
+      ),
+    divideGivingPhrase: ($) => seq($.GIVING, repeat1($.divideGiving)),
+    divideInto: ($) => seq($.identifier, optional($.ROUNDED)),
+    divideGiving: ($) => seq($.identifier, optional($.ROUNDED)),
+    divideRemainder: ($) => seq($.REMAINDER, $.identifier),
     // enable statement
     enableStatement: ($) =>
       seq(
-        ENABLE,
-        choice(seq(INPUT, optional(TERMINAL)), seq(I_O, TERMINAL), OUTPUT),
-        cdName,
-        optional(WITH),
-        KEY,
-        choice(literal, identifier)
+        $.ENABLE,
+        choice(
+          seq($.INPUT, optional($.TERMINAL)),
+          seq($.I_O, $.TERMINAL),
+          $.OUTPUT
+        ),
+        $.cdName,
+        optional($.WITH),
+        $.KEY,
+        choice($.literal, $.identifier)
       ),
     // entry statement
     entryStatement: ($) =>
-      seq(ENTRY, literal, optional(seq(USING, repeat1(identifier)))),
+      seq($.ENTRY, $.literal, optional(seq($.USING, repeat1($.identifier)))),
     // evaluate statement
     evaluateStatement: ($) =>
       seq(
-        EVALUATE,
-        evaluateSelect,
-        repeat(evaluateAlsoSelect),
-        repeat(evaluateWhenPhrase),
-        optional(evaluateWhenOther),
-        optional(END_EVALUATE)
+        $.EVALUATE,
+        $.evaluateSelect,
+        repeat($.evaluateAlsoSelect),
+        repeat($.evaluateWhenPhrase),
+        optional($.evaluateWhenOther),
+        optional($.END_EVALUATE)
       ),
     evaluateSelect: ($) =>
-      choice(identifier, literal, arithmeticExpression, condition),
-    evaluateAlsoSelect: ($) => seq(ALSO, evaluateSelect),
-    evaluateWhenPhrase: ($) => seq(repeat1(evaluateWhen), repeat(statement)),
+      choice($.identifier, $.literal, $.arithmeticExpression, $.condition),
+    evaluateAlsoSelect: ($) => seq($.ALSO, $.evaluateSelect),
+    evaluateWhenPhrase: ($) =>
+      seq(repeat1($.evaluateWhen), repeat($.statement)),
     evaluateWhen: ($) =>
-      seq(WHEN, evaluateCondition, repeat(evaluateAlsoCondition)),
+      seq($.WHEN, $.evaluateCondition, repeat($.evaluateAlsoCondition)),
     evaluateCondition: ($) =>
       seq(
-        choice(ANY, optional(NOT)),
-        evaluateValue,
-        choice(optional(evaluateThrough), condition, booleanLiteral)
+        choice($.ANY, optional($.NOT)),
+        $.evaluateValue,
+        choice(optional($.evaluateThrough), $.condition, $.booleanLiteral)
       ),
-    evaluateThrough: ($) => seq(choice(THROUGH, THRU), evaluateValue),
-    evaluateAlsoCondition: ($) => seq(ALSO, evaluateCondition),
-    evaluateWhenOther: ($) => seq(WHEN, OTHER, repeat(statement)),
-    evaluateValue: ($) => choice(identifier, literal, arithmeticExpression),
+    evaluateThrough: ($) => seq(choice($.THROUGH, $.THRU), $.evaluateValue),
+    evaluateAlsoCondition: ($) => seq($.ALSO, $.evaluateCondition),
+    evaluateWhenOther: ($) => seq($.WHEN, $.OTHER, repeat($.statement)),
+    evaluateValue: ($) =>
+      choice($.identifier, $.literal, $.arithmeticExpression),
     // exec cics statement
-    execCicsStatement: ($) => repeat1(EXECCICSLINE),
+    execCicsStatement: ($) => repeat1($.EXECCICSLINE),
     // exec sql statement
-    execSqlStatement: ($) => repeat1(EXECSQLLINE),
+    execSqlStatement: ($) => repeat1($.EXECSQLLINE),
     // exec sql ims statement
-    execSqlImsStatement: ($) => repeat1(EXECSQLIMSLINE),
+    execSqlImsStatement: ($) => repeat1($.EXECSQLIMSLINE),
     // exhibit statement
     exhibitStatement: ($) =>
-      seq(EXHIBIT, optional(NAMED), optional(CHANGED), repeat1(exhibitOperand)),
-    exhibitOperand: ($) => choice(identifier, literal),
+      seq(
+        $.EXHIBIT,
+        optional($.NAMED),
+        optional($.CHANGED),
+        repeat1($.exhibitOperand)
+      ),
+    exhibitOperand: ($) => choice($.identifier, $.literal),
     // exit statement
-    exitStatement: ($) => seq(EXIT, optional(PROGRAM)),
+    exitStatement: ($) => seq($.EXIT, optional($.PROGRAM)),
     // generate statement
-    generateStatement: ($) => seq(GENERATE, reportName),
+    generateStatement: ($) => seq($.GENERATE, $.reportName),
     // goback statement
-    gobackStatement: ($) => GOBACK,
+    gobackStatement: ($) => $.GOBACK,
     // goto statement
     goToStatement: ($) =>
       seq(
-        GO,
-        optional(TO),
-        choice(goToStatementSimple, goToDependingOnStatement)
+        $.GO,
+        optional($.TO),
+        choice($.goToStatementSimple, $.goToDependingOnStatement)
       ),
-    goToStatementSimple: ($) => procedureName,
+    goToStatementSimple: ($) => $.procedureName,
     goToDependingOnStatement: ($) =>
       seq(
-        choice(MORE_LABELS, repeat1(procedureName)),
-        optional(seq(DEPENDING, optional(ON), identifier))
+        choice($.MORE_LABELS, repeat1($.procedureName)),
+        optional(seq($.DEPENDING, optional($.ON), $.identifier))
       ),
     // if statement
     ifStatement: ($) =>
-      seq(IF, condition, ifThen, optional(ifElse), optional(END_IF)),
+      seq($.IF, $.condition, $.ifThen, optional($.ifElse), optional($.END_IF)),
     ifThen: ($) =>
-      seq(optional(THEN), choice(seq(NEXT, SENTENCE), repeat(statement))),
-    ifElse: ($) => seq(ELSE, choice(seq(NEXT, SENTENCE), repeat(statement))),
+      seq(
+        optional($.THEN),
+        choice(seq($.NEXT, $.SENTENCE), repeat1($.statement))
+      ),
+    ifElse: ($) =>
+      seq($.ELSE, choice(seq($.NEXT, $.SENTENCE), repeat($.statement))),
     // initialize statement
     initializeStatement: ($) =>
-      seq(INITIALIZE, repeat1(identifier), optional(initializeReplacingPhrase)),
+      seq(
+        $.INITIALIZE,
+        repeat1($.identifier),
+        optional($.initializeReplacingPhrase)
+      ),
     initializeReplacingPhrase: ($) =>
-      seq(REPLACING, repeat1(initializeReplacingBy)),
+      seq($.REPLACING, repeat1($.initializeReplacingBy)),
     initializeReplacingBy: ($) =>
       seq(
         choice(
-          ALPHABETIC,
-          ALPHANUMERIC,
-          ALPHANUMERIC_EDITED,
-          NATIONAL,
-          NATIONAL_EDITED,
-          NUMERIC,
-          NUMERIC_EDITED,
-          DBCS,
-          EGCS
+          $.ALPHABETIC,
+          $.ALPHANUMERIC,
+          $.ALPHANUMERIC_EDITED,
+          $.NATIONAL,
+          $.NATIONAL_EDITED,
+          $.NUMERIC,
+          $.NUMERIC_EDITED,
+          $.DBCS,
+          $.EGCS
         ),
-        optional(DATA),
-        BY,
-        choice(identifier, literal)
+        optional($.DATA),
+        $.BY,
+        choice($.identifier, $.literal)
       ),
     // initiate statement
-    initiateStatement: ($) => seq(INITIATE, repeat1(reportName)),
+    initiateStatement: ($) => seq($.INITIATE, repeat1($.reportName)),
     // inspect statement
     inspectStatement: ($) =>
       seq(
-        INSPECT,
-        identifier,
+        $.INSPECT,
+        $.identifier,
         choice(
-          inspectTallyingPhrase,
-          inspectReplacingPhrase,
-          inspectTallyingReplacingPhrase,
-          inspectConvertingPhrase
+          $.inspectTallyingPhrase,
+          $.inspectReplacingPhrase,
+          $.inspectTallyingReplacingPhrase,
+          $.inspectConvertingPhrase
         )
       ),
-    inspectTallyingPhrase: ($) => seq(TALLYING, repeat1(inspectFor)),
+    inspectTallyingPhrase: ($) => seq($.TALLYING, repeat1($.inspectFor)),
     inspectReplacingPhrase: ($) =>
       seq(
-        REPLACING,
-        repeat1(choice(inspectReplacingCharacters, inspectReplacingAllLeadings))
+        $.REPLACING,
+        repeat1(
+          choice($.inspectReplacingCharacters, $.inspectReplacingAllLeadings)
+        )
       ),
     inspectTallyingReplacingPhrase: ($) =>
-      seq(TALLYING, repeat1(inspectFor), repeat1(inspectReplacingPhrase)),
+      seq($.TALLYING, repeat1($.inspectFor), repeat1($.inspectReplacingPhrase)),
     inspectConvertingPhrase: ($) =>
       seq(
-        CONVERTING,
-        choice(identifier, literal),
-        inspectTo,
-        repeat(inspectBeforeAfter)
+        $.CONVERTING,
+        choice($.identifier, $.literal),
+        $.inspectTo,
+        repeat($.inspectBeforeAfter)
       ),
     inspectFor: ($) =>
       seq(
-        identifier,
-        FOR,
-        repeat1(choice(inspectCharacters, inspectAllLeadings))
+        $.identifier,
+        $.FOR,
+        repeat1(choice($.inspectCharacters, $.inspectAllLeadings))
       ),
     inspectCharacters: ($) =>
-      seq(choice(CHARACTER, CHARACTERS), repeat(inspectBeforeAfter)),
+      seq(choice($.CHARACTER, $.CHARACTERS), repeat($.inspectBeforeAfter)),
     inspectReplacingCharacters: ($) =>
-      seq(choice(CHARACTER, CHARACTERS), inspectBy, repeat(inspectBeforeAfter)),
+      seq(
+        choice($.CHARACTER, $.CHARACTERS),
+        $.inspectBy,
+        repeat($.inspectBeforeAfter)
+      ),
     inspectAllLeadings: ($) =>
-      seq(choice(ALL, LEADING), repeat1(inspectAllLeading)),
+      seq(choice($.ALL, $.LEADING), repeat1($.inspectAllLeading)),
     inspectReplacingAllLeadings: ($) =>
-      seq(choice(ALL, LEADING, FIRST), repeat1(inspectReplacingAllLeading)),
+      seq(
+        choice($.ALL, $.LEADING, $.FIRST),
+        repeat1($.inspectReplacingAllLeading)
+      ),
     inspectAllLeading: ($) =>
-      seq(choice(identifier, literal), repeat(inspectBeforeAfter)),
+      seq(choice($.identifier, $.literal), repeat($.inspectBeforeAfter)),
     inspectReplacingAllLeading: ($) =>
-      seq(choice(identifier, literal), inspectBy, repeat(inspectBeforeAfter)),
-    inspectBy: ($) => seq(BY, choice(identifier, literal)),
-    inspectTo: ($) => seq(TO, choice(identifier, literal)),
+      seq(
+        choice($.identifier, $.literal),
+        $.inspectBy,
+        repeat($.inspectBeforeAfter)
+      ),
+    inspectBy: ($) => seq($.BY, choice($.identifier, $.literal)),
+    inspectTo: ($) => seq($.TO, choice($.identifier, $.literal)),
     inspectBeforeAfter: ($) =>
       seq(
-        choice(BEFORE, AFTER),
-        optional(INITIAL),
-        choice(identifier, literal)
+        choice($.BEFORE, $.AFTER),
+        optional($.INITIAL),
+        choice($.identifier, $.literal)
       ),
     // merge statement
     mergeStatement: ($) =>
       seq(
-        MERGE,
-        fileName,
-        repeat1(mergeOnKeyClause),
-        optional(mergeCollatingSequencePhrase),
-        repeat(mergeUsing),
-        optional(mergeOutputProcedurePhrase),
-        repeat(mergeGivingPhrase)
+        $.MERGE,
+        $.fileName,
+        repeat1($.mergeOnKeyClause),
+        optional($.mergeCollatingSequencePhrase),
+        repeat($.mergeUsing),
+        optional($.mergeOutputProcedurePhrase),
+        repeat($.mergeGivingPhrase)
       ),
     mergeOnKeyClause: ($) =>
       seq(
-        optional(ON),
-        choice(ASCENDING, DESCENDING),
-        optional(KEY),
-        repeat1(qualifiedDataName)
+        optional($.ON),
+        choice($.ASCENDING, $.DESCENDING),
+        optional($.KEY),
+        repeat1($.qualifiedDataName)
       ),
     mergeCollatingSequencePhrase: ($) =>
       seq(
-        optional(COLLATING),
-        SEQUENCE,
-        optional(IS),
-        repeat1(alphabetName),
-        optional(mergeCollatingAlphanumeric),
-        optional(mergeCollatingNational)
+        optional($.COLLATING),
+        $.SEQUENCE,
+        optional($.IS),
+        repeat1($.alphabetName),
+        optional($.mergeCollatingAlphanumeric),
+        optional($.mergeCollatingNational)
       ),
     mergeCollatingAlphanumeric: ($) =>
-      seq(optional(FOR), ALPHANUMERIC, IS, alphabetName),
+      seq(optional($.FOR), $.ALPHANUMERIC, $.IS, $.alphabetName),
     mergeCollatingNational: ($) =>
-      seq(optional(FOR), NATIONAL, optional(IS), alphabetName),
-    mergeUsing: ($) => seq(USING, repeat1(fileName)),
+      seq(optional($.FOR), $.NATIONAL, optional($.IS), $.alphabetName),
+    mergeUsing: ($) => seq($.USING, repeat1($.fileName)),
     mergeOutputProcedurePhrase: ($) =>
       seq(
-        OUTPUT,
-        PROCEDURE,
-        optional(IS),
-        procedureName,
-        optional(mergeOutputThrough)
+        $.OUTPUT,
+        $.PROCEDURE,
+        optional($.IS),
+        $.procedureName,
+        optional($.mergeOutputThrough)
       ),
-    mergeOutputThrough: ($) => seq(choice(THROUGH, THRU), procedureName),
-    mergeGivingPhrase: ($) => seq(GIVING, repeat1(mergeGiving)),
+    mergeOutputThrough: ($) => seq(choice($.THROUGH, $.THRU), $.procedureName),
+    mergeGivingPhrase: ($) => seq($.GIVING, repeat1($.mergeGiving)),
     mergeGiving: ($) =>
       seq(
-        fileName,
+        $.fileName,
         optional(
           seq(
-            choice(LOCK, SAVE, NO),
-            choice(REWIND, CRUNCH, RELEASE, WITH),
-            REMOVE,
-            CRUNCH
+            choice($.LOCK, $.SAVE, $.NO),
+            choice($.REWIND, $.CRUNCH, $.RELEASE, $.WITH),
+            $.REMOVE,
+            $.CRUNCH
           )
         )
       ),
     // move statement
     moveStatement: ($) =>
       seq(
-        MOVE,
-        optional(ALL),
-        choice(moveToStatement, moveCorrespondingToStatement)
+        $.MOVE,
+        optional($.ALL),
+        choice($.moveToStatement, $.moveCorrespondingToStatement)
       ),
-    moveToStatement: ($) => seq(moveToSendingArea, TO, repeat1(identifier)),
-    moveToSendingArea: ($) => choice(identifier, literal),
+    moveToStatement: ($) =>
+      seq($.moveToSendingArea, $.TO, repeat1($.identifier)),
+    moveToSendingArea: ($) => choice($.identifier, $.literal),
     moveCorrespondingToStatement: ($) =>
       seq(
-        choice(CORRESPONDING, CORR),
-        moveCorrespondingToSendingArea,
-        TO,
-        repeat1(identifier)
+        choice($.CORRESPONDING, $.CORR),
+        $.moveCorrespondingToSendingArea,
+        $.TO,
+        repeat1($.identifier)
       ),
-    moveCorrespondingToSendingArea: ($) => identifier,
+    moveCorrespondingToSendingArea: ($) => $.identifier,
     // multiply statement
     multiplyStatement: ($) =>
       seq(
-        MULTIPLY,
-        choice(identifier, literal),
-        BY,
-        choice(multiplyRegular, multiplyGiving),
-        optional(onSizeErrorPhrase),
-        optional(notOnSizeErrorPhrase),
-        optional(END_MULTIPLY)
+        $.MULTIPLY,
+        choice($.identifier, $.literal),
+        $.BY,
+        choice($.multiplyRegular, $.multiplyGiving),
+        optional($.onSizeErrorPhrase),
+        optional($.notOnSizeErrorPhrase),
+        optional($.END_MULTIPLY)
       ),
-    multiplyRegular: ($) => repeat1(multiplyRegularOperand),
-    multiplyRegularOperand: ($) => seq(identifier, optional(ROUNDED)),
+    multiplyRegular: ($) => repeat1($.multiplyRegularOperand),
+    multiplyRegularOperand: ($) => seq($.identifier, optional($.ROUNDED)),
     multiplyGiving: ($) =>
-      seq(multiplyGivingOperand, GIVING, repeat1(multiplyGivingResult)),
-    multiplyGivingOperand: ($) => choice(identifier, literal),
-    multiplyGivingResult: ($) => seq(identifier, optional(ROUNDED)),
+      seq($.multiplyGivingOperand, $.GIVING, repeat1($.multiplyGivingResult)),
+    multiplyGivingOperand: ($) => choice($.identifier, $.literal),
+    multiplyGivingResult: ($) => seq($.identifier, optional($.ROUNDED)),
     // next sentence
-    nextSentenceStatement: ($) => seq(NEXT, SENTENCE),
+    nextSentenceStatement: ($) => seq($.NEXT, $.SENTENCE),
     // open statement
     openStatement: ($) =>
       seq(
-        OPEN,
+        $.OPEN,
         repeat1(
           choice(
-            openInputStatement,
-            openOutputStatement,
-            openIOStatement,
-            openExtendStatement
+            $.openInputStatement,
+            $.openOutputStatement,
+            $.openIOStatement,
+            $.openExtendStatement
           )
         )
       ),
-    openInputStatement: ($) => seq(INPUT, repeat1(openInput)),
+    openInputStatement: ($) => seq($.INPUT, repeat1($.openInput)),
     openInput: ($) =>
-      seq(fileName, choice(REVERSED, seq(optional(WITH), NO, REWIND))),
-    openOutputStatement: ($) => seq(OUTPUT, repeat1(openOutput)),
-    openOutput: ($) => seq(fileName, optional(seq(optional(WITH), NO, REWIND))),
-    openIOStatement: ($) => seq(I_O, repeat1(fileName)),
-    openExtendStatement: ($) => seq(EXTEND, repeat1(fileName)),
+      seq(
+        $.fileName,
+        choice($.REVERSED, seq(optional($.WITH), $.NO, $.REWIND))
+      ),
+    openOutputStatement: ($) => seq($.OUTPUT, repeat1($.openOutput)),
+    openOutput: ($) =>
+      seq($.fileName, optional(seq(optional($.WITH), $.NO, $.REWIND))),
+    openIOStatement: ($) => seq($.I_O, repeat1($.fileName)),
+    openExtendStatement: ($) => seq($.EXTEND, repeat1($.fileName)),
     // perform statement
     performStatement: ($) =>
-      seq(PERFORM, choice(performInlineStatement, performProcedureStatement)),
+      seq(
+        $.PERFORM,
+        choice($.performInlineStatement, $.performProcedureStatement)
+      ),
     performInlineStatement: ($) =>
-      seq(optional(performType), repeat(statement), END_PERFORM),
+      seq(optional($.performType), repeat($.statement), $.END_PERFORM),
     performProcedureStatement: ($) =>
       seq(
-        procedureName,
-        optional(seq(choice(THROUGH, THRU), procedureName)),
-        optional(performType)
+        $.procedureName,
+        optional(seq(choice($.THROUGH, $.THRU), $.procedureName)),
+        optional($.performType)
       ),
-    performType: ($) => choice(performTimes, performUntil, performVarying),
-    performTimes: ($) => seq(choice(identifier, integerLiteral), TIMES),
-    performUntil: ($) => seq(optional(performTestClause), UNTIL, condition),
+    performType: ($) =>
+      choice($.performTimes, $.performUntil, $.performVarying),
+    performTimes: ($) => seq(choice($.identifier, $.integerLiteral), $.TIMES),
+    performUntil: ($) =>
+      seq(optional($.performTestClause), $.UNTIL, $.condition),
     performVarying: ($) =>
       seq(
-        performTestClause,
-        choice(performVaryingClause, performVaryingClause),
-        optional(performTestClause)
+        $.performTestClause,
+        choice($.performVaryingClause, $.performVaryingClause),
+        optional($.performTestClause)
       ),
     performVaryingClause: ($) =>
-      seq(VARYING, performVaryingPhrase, repeat(performAfter)),
+      seq($.VARYING, $.performVaryingPhrase, repeat($.performAfter)),
     performVaryingPhrase: ($) =>
-      seq(choice(identifier, literal), performFrom, performBy, performUntil),
-    performAfter: ($) => seq(AFTER, performVaryingPhrase),
+      seq(
+        choice($.identifier, $.literal),
+        $.performFrom,
+        $.performBy,
+        $.performUntil
+      ),
+    performAfter: ($) => seq($.AFTER, $.performVaryingPhrase),
     performFrom: ($) =>
-      seq(FROM, choice(identifier, literal, arithmeticExpression)),
+      seq($.FROM, choice($.identifier, $.literal, $.arithmeticExpression)),
     performBy: ($) =>
-      seq(BY, choice(identifier, literal, arithmeticExpression)),
-    performTestClause: ($) => seq(optional(WITH), TEST, choice(BEFORE, AFTER)),
+      seq($.BY, choice($.identifier, $.literal, $.arithmeticExpression)),
+    performTestClause: ($) =>
+      seq(optional($.WITH), $.TEST, choice($.BEFORE, $.AFTER)),
     // purge statement
-    purgeStatement: ($) => seq(PURGE, repeat1(cdName)),
+    purgeStatement: ($) => seq($.PURGE, repeat1($.cdName)),
     // read statement
     readStatement: ($) =>
       seq(
-        READ,
-        fileName,
-        optional(NEXT),
-        optional(RECORD),
-        optional(readInto),
-        optional(readWith),
-        optional(readKey),
-        optional(invalidKeyPhrase),
-        optional(notInvalidKeyPhrase),
-        optional(atEndPhrase),
-        optional(notAtEndPhrase),
-        optional(END_READ)
+        $.READ,
+        $.fileName,
+        optional($.NEXT),
+        optional($.RECORD),
+        optional($.readInto),
+        optional($.readWith),
+        optional($.readKey),
+        optional($.invalidKeyPhrase),
+        optional($.notInvalidKeyPhrase),
+        optional($.atEndPhrase),
+        optional($.notAtEndPhrase),
+        optional($.END_READ)
       ),
-    readInto: ($) => seq(INTO, identifier),
+    readInto: ($) => seq($.INTO, $.identifier),
     readWith: ($) =>
-      seq(optional(WITH), choice(seq(choice(KEPT, NO), LOCK), WAIT)),
-    readKey: ($) => seq(KEY, optional(IS), qualifiedDataName),
+      seq(optional($.WITH), choice(seq(choice($.KEPT, $.NO), $.LOCK), $.WAIT)),
+    readKey: ($) => seq($.KEY, optional($.IS), $.qualifiedDataName),
     // receive statement
     receiveStatement: ($) =>
       seq(
-        RECEIVE,
-        choice(receiveFromStatement, receiveIntoStatement),
-        optional(onExceptionClause),
-        optional(notOnExceptionClause),
-        optional(END_RECEIVE)
+        $.RECEIVE,
+        choice($.receiveFromStatement, $.receiveIntoStatement),
+        optional($.onExceptionClause),
+        optional($.notOnExceptionClause),
+        optional($.END_RECEIVE)
       ),
     receiveFromStatement: ($) =>
       seq(
-        dataName,
-        FROM,
-        receiveFrom,
+        $.dataName,
+        $.FROM,
+        $.receiveFrom,
         repeat(
           choice(
-            receiveBefore,
-            receiveWith,
-            receiveThread,
-            receiveSize,
-            receiveStatus
+            $.receiveBefore,
+            $.receiveWith,
+            $.receiveThread,
+            $.receiveSize,
+            $.receiveStatus
           )
         )
       ),
     receiveFrom: ($) =>
-      choice(seq(THREAD, dataName), seq(LAST, THREAD), seq(ANY, THREAD)),
+      choice(
+        seq($.THREAD, $.dataName),
+        seq($.LAST, $.THREAD),
+        seq($.ANY, $.THREAD)
+      ),
     receiveIntoStatement: ($) =>
       seq(
-        cdName,
-        choice(MESSAGE, SEGMENT),
-        optional(INTO),
-        identifier,
-        optional(receiveNoData),
-        optional(receiveWithData)
+        $.cdName,
+        choice($.MESSAGE, $.SEGMENT),
+        optional($.INTO),
+        $.identifier,
+        optional($.receiveNoData),
+        optional($.receiveWithData)
       ),
-    receiveNoData: ($) => seq(NO, DATA, repeat(statement)),
-    receiveWithData: ($) => seq(WITH, DATA, repeat(statement)),
+    receiveNoData: ($) => seq($.NO, $.DATA, repeat($.statement)),
+    receiveWithData: ($) => seq($.WITH, $.DATA, repeat($.statement)),
     receiveBefore: ($) =>
-      seq(BEFORE, optional(TIME), choice(numericLiteral, identifier)),
-    receiveWith: ($) => seq(optional(WITH), NO, WAIT),
-    receiveThread: ($) => seq(THREAD, optional(IN), dataName),
+      seq($.BEFORE, optional($.TIME), choice($.numericLiteral, $.identifier)),
+    receiveWith: ($) => seq(optional($.WITH), $.NO, $.WAIT),
+    receiveThread: ($) => seq($.THREAD, optional($.IN), $.dataName),
     receiveSize: ($) =>
-      seq(SIZE, optional(IN), choice(numericLiteral, identifier)),
-    receiveStatus: ($) => seq(STATUS, optional(IN), identifier),
+      seq($.SIZE, optional($.IN), choice($.numericLiteral, $.identifier)),
+    receiveStatus: ($) => seq($.STATUS, optional($.IN), $.identifier),
     // release statement
     releaseStatement: ($) =>
-      seq(RELEASE, recordName, optionql(seq(FROM, qualifiedDataName))),
+      seq($.RELEASE, $.recordName, optional(seq($.FROM, $.qualifiedDataName))),
     // return statement
     returnStatement: ($) =>
       seq(
-        RETURN,
-        fileName,
-        optional(RECORD),
-        optional(returnInto),
-        atEndPhrase,
-        optional(notAtEndPhrase),
-        optional(END_RETURN)
+        $.RETURN,
+        $.fileName,
+        optional($.RECORD),
+        optional($.returnInto),
+        $.atEndPhrase,
+        optional($.notAtEndPhrase),
+        optional($.END_RETURN)
       ),
-    returnInto: ($) => seq(INTO, qualifiedDataName),
+    returnInto: ($) => seq($.INTO, $.qualifiedDataName),
     // rewrite statement
     rewriteStatement: ($) =>
       seq(
-        REWRITE,
-        recordName,
-        optional(rewriteFrom),
-        optional(invalidKeyPhrase),
-        optional(notInvalidKeyPhrase),
-        optional(END_REWRITE)
+        $.REWRITE,
+        $.recordName,
+        optional($.rewriteFrom),
+        optional($.invalidKeyPhrase),
+        optional($.notInvalidKeyPhrase),
+        optional($.END_REWRITE)
       ),
-    rewriteFrom: ($) => seq(FROM, identifier),
+    rewriteFrom: ($) => seq($.FROM, $.identifier),
     // search statement
     searchStatement: ($) =>
       seq(
-        SEARCH,
-        optional(ALL),
-        qualifiedDataName,
-        optional(searchVarying),
-        optional(atEndPhrase),
-        repeat1(searchWhen),
-        optional(END_SEARCH)
+        $.SEARCH,
+        optional($.ALL),
+        $.qualifiedDataName,
+        optional($.searchVarying),
+        optional($.atEndPhrase),
+        repeat1($.searchWhen),
+        optional($.END_SEARCH)
       ),
-    searchVarying: ($) => seq(VARYING, qualifiedDataName),
+    searchVarying: ($) => seq($.VARYING, $.qualifiedDataName),
     searchWhen: ($) =>
-      seq(WHEN, condition, choice(seq(NEXT, SENTENCE), repeat(statement))),
+      seq(
+        $.WHEN,
+        $.condition,
+        choice(seq($.NEXT, $.SENTENCE), repeat($.statement))
+      ),
     // send statement
     sendStatement: ($) =>
       seq(
-        SEND,
-        choice(sendStatementSync, sendStatementAsync),
-        optional(onExceptionClause),
-        optional(notOnExceptionClause)
+        $.SEND,
+        choice($.sendStatementSync, $.sendStatementAsync),
+        optional($.onExceptionClause),
+        optional($.notOnExceptionClause)
       ),
     sendStatementSync: ($) =>
       seq(
-        choice(identifier, literal),
-        optional(sendFromPhrase),
-        optional(sendWithPhrase),
-        optional(sendReplacingPhrase),
-        optional(sendAdvancingPhrase)
+        choice($.identifier, $.literal),
+        optional($.sendFromPhrase),
+        optional($.sendWithPhrase),
+        optional($.sendReplacingPhrase),
+        optional($.sendAdvancingPhrase)
       ),
-    sendStatementAsync: ($) => seq(TO, choice(TOP, BOTTOM), identifier),
-    sendFromPhrase: ($) => seq(FROM, identifier),
-    sendWithPhrase: ($) => seq(WITH, choice(EGI, EMI, ESI, identifier)),
-    sendReplacingPhrase: ($) => seq(REPLACING, optional(LINE)),
+    sendStatementAsync: ($) => seq($.TO, choice($.TOP, $.BOTTOM), $.identifier),
+    sendFromPhrase: ($) => seq($.FROM, $.identifier),
+    sendWithPhrase: ($) =>
+      seq($.WITH, choice($.EGI, $.EMI, $.ESI, $.identifier)),
+    sendReplacingPhrase: ($) => seq($.REPLACING, optional($.LINE)),
     sendAdvancingPhrase: ($) =>
       seq(
-        choice(BEFORE, AFTER),
-        optional(ADVANCING),
-        choice(sendAdvancingPage, sendAdvancingLines, sendAdvancingMnemonic)
+        choice($.BEFORE, $.AFTER),
+        optional($.ADVANCING),
+        choice(
+          $.sendAdvancingPage,
+          $.sendAdvancingLines,
+          $.sendAdvancingMnemonic
+        )
       ),
-    sendAdvancingPage: ($) => PAGE,
+    sendAdvancingPage: ($) => $.PAGE,
     sendAdvancingLines: ($) =>
-      seq(choice(identifier, literal), optional(choice(LINE, LINES))),
-    sendAdvancingMnemonic: ($) => mnemonicName,
+      seq(choice($.identifier, $.literal), optional(choice($.LINE, $.LINES))),
+    sendAdvancingMnemonic: ($) => $.mnemonicName,
     // set statement
     setStatement: ($) =>
-      seq(SET, choice(repeat1(setToStatement), setUpDownByStatement)),
-    setToStatement: ($) => seq(repeat1(setTo), TO, repeat1(setToValue)),
+      seq($.SET, choice(repeat1($.setToStatement), $.setUpDownByStatement)),
+    setToStatement: ($) => seq(repeat1($.setTo), $.TO, repeat1($.setToValue)),
     setUpDownByStatement: ($) =>
-      seq(repeat1(setTo), choice(seq(UP, BY), seq(DOWN, BY)), setByValue),
-    setTo: ($) => identifier,
+      seq(
+        repeat1($.setTo),
+        choice(seq($.UP, $.BY), seq($.DOWN, $.BY)),
+        $.setByValue
+      ),
+    setTo: ($) => $.identifier,
     setToValue: ($) =>
       seq(
         choice(
-          ON,
-          OFF,
-          seq(ENTRY, choice(identifier, literal)),
-          identifier,
-          literal
+          $.ON,
+          $.OFF,
+          seq($.ENTRY, choice($.identifier, $.literal)),
+          $.identifier,
+          $.literal
         )
       ),
-    setByValue: ($) => choice(identifier, literal),
+    setByValue: ($) => choice($.identifier, $.literal),
     // sort statement
     sortStatement: ($) =>
       seq(
-        SORT,
-        fileName,
-        repeat1(sortOnKeyClause),
-        optional(sortDuplicatesPhrase),
-        optional(sortCollatingSequencePhrase),
-        optional(sortInputProcedurePhrase),
-        repeat(sortUsing),
-        optional(sortOutputProcedurePhrase),
-        repeat(sortGivingPhrase)
+        $.SORT,
+        $.fileName,
+        repeat1($.sortOnKeyClause),
+        optional($.sortDuplicatesPhrase),
+        optional($.sortCollatingSequencePhrase),
+        optional($.sortInputProcedurePhrase),
+        repeat($.sortUsing),
+        optional($.sortOutputProcedurePhrase),
+        repeat($.sortGivingPhrase)
       ),
     sortOnKeyClause: ($) =>
       seq(
-        optional(ON),
-        choice(ASCENDING, DESCENDING),
-        optional(KEY),
-        repeat1(qualifiedDataName)
+        optional($.ON),
+        choice($.ASCENDING, $.DESCENDING),
+        optional($.KEY),
+        repeat1($.qualifiedDataName)
       ),
     sortDuplicatesPhrase: ($) =>
-      seq(optional(WITH), DUPLICATES, optional(IN), optional(ORDER)),
+      seq(optional($.WITH), $.DUPLICATES, optional($.IN), optional($.ORDER)),
     sortCollatingSequencePhrase: ($) =>
       seq(
-        optional(COLLATING),
-        SEQUENCE,
-        optional(IS),
-        repeat1(alphabetName),
-        optional(sortCollatingAlphanumeric),
-        optional(sortCollatingNational)
+        optional($.COLLATING),
+        $.SEQUENCE,
+        optional($.IS),
+        repeat1($.alphabetName),
+        optional($.sortCollatingAlphanumeric),
+        optional($.sortCollatingNational)
       ),
     sortCollatingAlphanumeric: ($) =>
-      seq(optional(FOR), ALPHANUMERIC, IS, alphabetName),
+      seq(optional($.FOR), $.ALPHANUMERIC, $.IS, $.alphabetName),
     sortCollatingNational: ($) =>
-      seq(optional(FOR), NATIONAL, optional(IS), alphabetName),
+      seq(optional($.FOR), $.NATIONAL, optional($.IS), $.alphabetName),
     sortInputProcedurePhrase: ($) =>
       seq(
-        INPUT,
-        PROCEDURE,
-        optional(IS),
-        procedureName,
-        optional(sortInputThrough)
+        $.INPUT,
+        $.PROCEDURE,
+        optional($.IS),
+        $.procedureName,
+        optional($.sortInputThrough)
       ),
-    sortInputThrough: ($) => seq(choice(THROUGH, THRU), procedureName),
-    sortUsing: ($) => seq(USING, repeat1(fileName)),
+    sortInputThrough: ($) => seq(choice($.THROUGH, $.THRU), $.procedureName),
+    sortUsing: ($) => seq($.USING, repeat1($.fileName)),
     sortOutputProcedurePhrase: ($) =>
       seq(
-        OUTPUT,
-        PROCEDURE,
-        optional(IS),
-        procedureName,
-        optional(sortOutputThrough)
+        $.OUTPUT,
+        $.PROCEDURE,
+        optional($.IS),
+        $.procedureName,
+        optional($.sortOutputThrough)
       ),
-    sortOutputThrough: ($) => seq(choice(THROUGH, THRU), procedureName),
-    sortGivingPhrase: ($) => seq(GIVING, repeat1(sortGiving)),
+    sortOutputThrough: ($) => seq(choice($.THROUGH, $.THRU), $.procedureName),
+    sortGivingPhrase: ($) => seq($.GIVING, repeat1($.sortGiving)),
     sortGiving: ($) =>
       seq(
-        fileName,
-        option(
+        $.fileName,
+        optional(
           choice(
-            LOCK,
-            SAVE,
-            seq(NO, REWIND),
-            CRUNCH,
-            RELEASE,
-            seq(WITH, REMOVE, CRUNCH)
+            $.LOCK,
+            $.SAVE,
+            seq($.NO, $.REWIND),
+            $.CRUNCH,
+            $.RELEASE,
+            seq($.WITH, $.REMOVE, $.CRUNCH)
           )
         )
       ),
     // start statement
     startStatement: ($) =>
       seq(
-        START,
-        fileName,
-        optional(startKey),
-        optional(invalidKeyPhrase),
-        optional(notInvalidKeyPhrase),
-        optional(END_START)
+        $.START,
+        $.fileName,
+        optional($.startKey),
+        optional($.invalidKeyPhrase),
+        optional($.notInvalidKeyPhrase),
+        optional($.END_START)
       ),
     startKey: ($) =>
       seq(
-        KEY,
-        optional(IS),
+        $.KEY,
+        optional($.IS),
         choice(
-          seq(EQUAL, optional(TO)),
-          EQUALCHAR,
-          seq(GREATER, optional(THAN)),
-          MORETHANCHAR,
-          seq(NOT, LESS, optional(THAN)),
-          seq(NOT, LESSTHANCHAR),
-          seq(GREATER, optional(THAN), OR, EQUAL, optional(TO)),
-          MORETHANOREQUAL
+          seq($.EQUAL, optional($.TO)),
+          $.EQUALCHAR,
+          seq($.GREATER, optional($.THAN)),
+          $.MORETHANCHAR,
+          seq($.NOT, $.LESS, optional($.THAN)),
+          seq($.NOT, $.LESSTHANCHAR),
+          seq($.GREATER, optional($.THAN), $.OR, $.EQUAL, optional($.TO)),
+          $.MORETHANOREQUAL
         ),
-        qualifiedDataName
+        $.qualifiedDataName
       ),
     // stop statement
-    stopStatement: ($) => seq(STOP, choice(RUN, literal, stopStatementGiving)),
+    stopStatement: ($) =>
+      seq($.STOP, choice($.RUN, $.literal, $.stopStatementGiving)),
     stopStatementGiving: ($) =>
-      seq(RUN, choice(GIVING, RETURNING), choice(identifier, integerLiteral)),
+      seq(
+        $.RUN,
+        choice($.GIVING, $.RETURNING),
+        choice($.identifier, $.integerLiteral)
+      ),
     // string statement
     stringStatement: ($) =>
       seq(
-        STRING,
-        repeat1(stringSendingPhrase),
-        stringIntoPhrase,
-        optional(stringWithPointerPhrase),
-        optional(onOverflowPhrase),
-        optional(notOnOverflowPhrase),
-        optional(END_STRING)
+        $.STRING,
+        repeat1($.stringSendingPhrase),
+        $.stringIntoPhrase,
+        optional($.stringWithPointerPhrase),
+        optional($.onOverflowPhrase),
+        optional($.notOnOverflowPhrase),
+        optional($.END_STRING)
       ),
     stringSendingPhrase: ($) =>
       seq(
-        stringSending,
-        repeat(seq(optional(COMMACHAR), stringSending)),
-        choice(stringDelimitedByPhrase, stringForPhrase)
+        $.stringSending,
+        repeat(seq(optional($.COMMACHAR), $.stringSending)),
+        choice($.stringDelimitedByPhrase, $.stringForPhrase)
       ),
-    stringSending: ($) => choice(identifier, literal),
+    stringSending: ($) => choice($.identifier, $.literal),
     stringDelimitedByPhrase: ($) =>
-      seq(DELIMITED, optional(BY), choice(SIZE, identifier, literal)),
-    stringForPhrase: ($) => seq(FOR, choice(identifier, literal)),
-    stringIntoPhrase: ($) => seq(INTO, identifier),
+      seq($.DELIMITED, optional($.BY), choice($.SIZE, $.identifier, $.literal)),
+    stringForPhrase: ($) => seq($.FOR, choice($.identifier, $.literal)),
+    stringIntoPhrase: ($) => seq($.INTO, $.identifier),
     stringWithPointerPhrase: ($) =>
-      seq(optional(WITH), POINTER, qualifiedDataName),
+      seq(optional($.WITH), $.POINTER, $.qualifiedDataName),
     // subtract statement
     subtractStatement: ($) =>
       seq(
-        SUBTRACT,
+        $.SUBTRACT,
         choice(
-          subtractFromStatement,
-          subtractFromGivingStatement,
-          subtractCorrespondingStatement
+          $.subtractFromStatement,
+          $.subtractFromGivingStatement,
+          $.subtractCorrespondingStatement
         ),
-        optional(onSizeErrorPhrase),
-        optional(notOnSizeErrorPhrase),
-        optional(END_SUBTRACT)
+        optional($.onSizeErrorPhrase),
+        optional($.notOnSizeErrorPhrase),
+        optional($.END_SUBTRACT)
       ),
     subtractFromStatement: ($) =>
-      seq(repeat1(subtractSubtrahend), FROM, repeat1(subtractMinuend)),
+      seq(repeat1($.subtractSubtrahend), $.FROM, repeat1($.subtractMinuend)),
     subtractFromGivingStatement: ($) =>
       seq(
-        repeat1(subtractSubtrahend),
-        FROM,
-        subtractMinuendGiving,
-        GIVING,
-        repeat1(subtractGiving)
+        repeat1($.subtractSubtrahend),
+        $.FROM,
+        $.subtractMinuendGiving,
+        $.GIVING,
+        repeat1($.subtractGiving)
       ),
     subtractCorrespondingStatement: ($) =>
       seq(
-        choice(CORRESPONDING, CORR),
-        qualifiedDataName,
-        FROM,
-        subtractMinuendCorresponding
+        choice($.CORRESPONDING, $.CORR),
+        $.qualifiedDataName,
+        $.FROM,
+        $.subtractMinuendCorresponding
       ),
-    subtractSubtrahend: ($) => choice(identifier, literal),
-    subtractMinuend: ($) => seq(identifier, optional(ROUNDED)),
-    subtractMinuendGiving: ($) => choice(identifier, literal),
-    subtractGiving: ($) => seq(identifier, optional(ROUNDED)),
+    subtractSubtrahend: ($) => choice($.identifier, $.literal),
+    subtractMinuend: ($) => seq($.identifier, optional($.ROUNDED)),
+    subtractMinuendGiving: ($) => choice($.identifier, $.literal),
+    subtractGiving: ($) => seq($.identifier, optional($.ROUNDED)),
     subtractMinuendCorresponding: ($) =>
-      seq(qualifiedDataName, optional(ROUNDED)),
+      seq($.qualifiedDataName, optional($.ROUNDED)),
     // terminate statement
-    terminateStatement: ($) => seq(TERMINATE, reportName),
+    terminateStatement: ($) => seq($.TERMINATE, $.reportName),
     // unstring statement
     unstringStatement: ($) =>
       seq(
-        UNSTRING,
-        unstringSendingPhrase,
-        unstringIntoPhrase,
-        optional(unstringWithPointerPhrase),
-        optional(unstringTallyingPhrase),
-        optional(onOverflowPhrase),
-        optional(notOnOverflowPhrase),
-        optional(END_UNSTRING)
+        $.UNSTRING,
+        $.unstringSendingPhrase,
+        $.unstringIntoPhrase,
+        optional($.unstringWithPointerPhrase),
+        optional($.unstringTallyingPhrase),
+        optional($.onOverflowPhrase),
+        optional($.notOnOverflowPhrase),
+        optional($.END_UNSTRING)
       ),
     unstringSendingPhrase: ($) =>
       seq(
-        identifier,
-        optional(seq(unstringDelimitedByPhrase, repeat(unstringOrAllPhrase)))
+        $.identifier,
+        optional(
+          seq($.unstringDelimitedByPhrase, repeat($.unstringOrAllPhrase))
+        )
       ),
     unstringDelimitedByPhrase: ($) =>
-      seq(DELIMITED, optional(BY), optional(ALL), choice(identifier, literal)),
+      seq(
+        $.DELIMITED,
+        optional($.BY),
+        optional($.ALL),
+        choice($.identifier, $.literal)
+      ),
     unstringOrAllPhrase: ($) =>
-      seq(OR, optional(ALL), choice(identifier, literal)),
-    unstringIntoPhrase: ($) => seq(INTO, repeat1(unstringInto)),
+      seq($.OR, optional($.ALL), choice($.identifier, $.literal)),
+    unstringIntoPhrase: ($) => seq($.INTO, repeat1($.unstringInto)),
     unstringInto: ($) =>
-      seq(identifier, optional(unstringDelimiterIn), optional(unstringCountIn)),
-    unstringDelimiterIn: ($) => seq(DELIMITER, optional(IN), identifier),
-    unstringCountIn: ($) => seq(COUNT, optional(IN), identifier),
+      seq(
+        $.identifier,
+        optional($.unstringDelimiterIn),
+        optional($.unstringCountIn)
+      ),
+    unstringDelimiterIn: ($) => seq($.DELIMITER, optional($.IN), $.identifier),
+    unstringCountIn: ($) => seq($.COUNT, optional($.IN), $.identifier),
     unstringWithPointerPhrase: ($) =>
-      seq(optional(WITH), POINTER, qualifiedDataName),
+      seq(optional($.WITH), $.POINTER, $.qualifiedDataName),
     unstringTallyingPhrase: ($) =>
-      seq(TALLYING, optional(IN), qualifiedDataName),
+      seq($.TALLYING, optional($.IN), $.qualifiedDataName),
     // use statement
-    useStatement: ($) => seq(USE, choice(useAfterClause, useDebugClause)),
+    useStatement: ($) => seq($.USE, choice($.useAfterClause, $.useDebugClause)),
     useAfterClause: ($) =>
       seq(
-        optional(GLOBAL),
-        AFTER,
-        optional(STANDARD),
-        choice(EXCEPTION, ERROR),
-        PROCEDURE,
-        optional(ON),
-        useAfterOn
+        optional($.GLOBAL),
+        $.AFTER,
+        optional($.STANDARD),
+        choice($.EXCEPTION, $.ERROR),
+        $.PROCEDURE,
+        optional($.ON),
+        $.useAfterOn
       ),
     useAfterOn: ($) =>
-      seq(choice(INPUT, OUTPUT, I_O, EXTEND, repeat1(fileName))),
+      seq(choice($.INPUT, $.OUTPUT, $.I_O, $.EXTEND, repeat1($.fileName))),
     useDebugClause: ($) =>
-      seq(optional(FOR), DEBUGGING, optional(ON), repeat1(useDebugOn)),
+      seq(optional($.FOR), $.DEBUGGING, optional($.ON), repeat1($.useDebugOn)),
     useDebugOn: ($) =>
       seq(
-        ALL,
-        choice(PROCEDURES, ALL),
-        optional(REFERENCES),
-        optional(OF),
-        choice(identifier, procedureName, fileName)
+        $.ALL,
+        choice($.PROCEDURES, $.ALL),
+        optional($.REFERENCES),
+        optional($.OF),
+        choice($.identifier, $.procedureName, $.fileName)
       ),
     // write statement
     writeStatement: ($) =>
       seq(
-        WRITE,
-        recordName,
-        optional(writeFromPhrase),
-        optional(writeAdvancingPhrase),
-        optional(writeAtEndOfPagePhrase),
-        optional(writeNotAtEndOfPagePhrase),
-        optional(invalidKeyPhrase),
-        optional(notInvalidKeyPhrase),
-        optional(END_WRITE)
+        $.WRITE,
+        $.recordName,
+        optional($.writeFromPhrase),
+        optional($.writeAdvancingPhrase),
+        optional($.writeAtEndOfPagePhrase),
+        optional($.writeNotAtEndOfPagePhrase),
+        optional($.invalidKeyPhrase),
+        optional($.notInvalidKeyPhrase),
+        optional($.END_WRITE)
       ),
-    writeFromPhrase: ($) => seq(FROM, choice(identifier, literal)),
+    writeFromPhrase: ($) => seq($.FROM, choice($.identifier, $.literal)),
     writeAdvancingPhrase: ($) =>
       seq(
-        choice(BEFORE, AFTER),
-        optional(ADVANCING),
-        choice(writeAdvancingPage, writeAdvancingLines, writeAdvancingMnemonic)
+        choice($.BEFORE, $.AFTER),
+        optional($.ADVANCING),
+        choice(
+          $.writeAdvancingPage,
+          $.writeAdvancingLines,
+          $.writeAdvancingMnemonic
+        )
       ),
-    writeAdvancingPage: ($) => PAGE,
+    writeAdvancingPage: ($) => $.PAGE,
     writeAdvancingLines: ($) =>
-      seq(choice(identifier, literal), optional(choice(LINE, LINES))),
-    writeAdvancingMnemonic: ($) => mnemonicName,
+      seq(choice($.identifier, $.literal), optional(choice($.LINE, $.LINES))),
+    writeAdvancingMnemonic: ($) => $.mnemonicName,
     writeAtEndOfPagePhrase: ($) =>
-      seq(optional(AT), choice(END_OF_PAGE, EOP), repeat(statement)),
+      seq(optional($.AT), choice($.END_OF_PAGE, $.EOP), repeat($.statement)),
     writeNotAtEndOfPagePhrase: ($) =>
-      seq(NOT, optional(AT), choice(END_OF_PAGE, EOP), repeat(statement)),
+      seq(
+        $.NOT,
+        optional($.AT),
+        choice($.END_OF_PAGE, $.EOP),
+        repeat($.statement)
+      ),
     // statement phrases ----------------------------------
-    atEndPhrase: ($) => seq(optional(AT), END, repeat(statement)),
-    notAtEndPhrase: ($) => seq(NOT, optional(AT), END, repeat(statement)),
-    invalidKeyPhrase: ($) => seq(INVALID, optional(KEY), repeat(statement)),
+    atEndPhrase: ($) => seq(optional($.AT), $.END, repeat($.statement)),
+    notAtEndPhrase: ($) =>
+      seq($.NOT, optional($.AT), $.END, repeat($.statement)),
+    invalidKeyPhrase: ($) =>
+      seq($.INVALID, optional($.KEY), repeat($.statement)),
     notInvalidKeyPhrase: ($) =>
-      seq(NOT, INVALID, optional(KEY), repeat(statement)),
-    onOverflowPhrase: ($) => seq(optional(ON), OVERFLOW, repeat(statement)),
+      seq($.NOT, $.INVALID, optional($.KEY), repeat($.statement)),
+    onOverflowPhrase: ($) =>
+      seq(optional($.ON), $.OVERFLOW, repeat($.statement)),
     notOnOverflowPhrase: ($) =>
-      seq(NOT, optional(ON), OVERFLOW, repeat(statement)),
-    onSizeErrorPhrase: ($) => seq(optional(ON), SIZE, ERROR, repeat(statement)),
+      seq($.NOT, optional($.ON), $.OVERFLOW, repeat($.statement)),
+    onSizeErrorPhrase: ($) =>
+      seq(optional($.ON), $.SIZE, $.ERROR, repeat($.statement)),
     notOnSizeErrorPhrase: ($) =>
-      seq(NOT, optional(ON), SIZE, ERROR, repeat(statement)),
+      seq($.NOT, optional($.ON), $.SIZE, $.ERROR, repeat($.statement)),
     // statement clauses ----------------------------------
-    onExceptionClause: ($) => seq(optional(ON), EXCEPTION, repeat(statement)),
+    onExceptionClause: ($) =>
+      seq(optional($.ON), $.EXCEPTION, repeat($.statement)),
     notOnExceptionClause: ($) =>
-      seq(NOT, optional(ON), EXCEPTION, repeat(statement)),
+      seq($.NOT, optional($.ON), $.EXCEPTION, repeat($.statement)),
     // arithmetic expression ----------------------------------
-    arithmeticExpression: ($) => seq(multDivs, repeat(plusMinus)),
-    plusMinus: ($) => seq(choice(PLUSCHAR, MINUSCHAR), multDivs),
-    multDivs: ($) => seq(powers, repeat(multDiv)),
-    multDiv: ($) => seq(choice(ASTERISKCHAR, SLASHCHAR), powers),
+    arithmeticExpression: ($) => seq($.multDivs, repeat($.plusMinus)),
+    plusMinus: ($) => seq(choice($.PLUSCHAR, $.MINUSCHAR), $.multDivs),
+    multDivs: ($) => seq($.powers, repeat($.multDiv)),
+    multDiv: ($) => seq(choice($.ASTERISKCHAR, $.SLASHCHAR), $.powers),
     powers: ($) =>
-      seq(optional(choice(PLUSCHAR, MINUSCHAR)), basis, repeat(power)),
-    power: ($) => seq(DOUBLEASTERISKCHAR, basis),
+      seq(optional(choice($.PLUSCHAR, $.MINUSCHAR)), $.basis, repeat($.power)),
+    power: ($) => seq($.DOUBLEASTERISKCHAR, $.basis),
     basis: ($) =>
       seq(
-        LPARENCHAR,
-        arithmeticExpression,
-        choice(RPARENCHAR, identifier, literal)
+        $.LPARENCHAR,
+        $.arithmeticExpression,
+        choice($.RPARENCHAR, $.identifier, $.literal)
       ),
     // condition ----------------------------------
-    condition: ($) => seq(combinableCondition, repeat(andOrCondition)),
+    condition: ($) => seq($.combinableCondition, repeat($.andOrCondition)),
     andOrCondition: ($) =>
-      seq(choice(AND, OR), choice(combinableCondition, repeat1(abbreviation))),
-    combinableCondition: ($) => seq(optional(NOT), simpleCondition),
+      seq(
+        choice($.AND, $.OR),
+        choice($.combinableCondition, repeat1($.abbreviation))
+      ),
+    combinableCondition: ($) => seq(optional($.NOT), $.simpleCondition),
     simpleCondition: ($) =>
       seq(
-        LPARENCHAR,
-        condition,
+        $.LPARENCHAR,
+        $.condition,
         choice(
-          RPARENCHAR,
-          relationCondition,
-          classCondition,
-          conditionNameReference
+          $.RPARENCHAR,
+          $.relationCondition,
+          $.classCondition,
+          $.conditionNameReference
         )
       ),
     classCondition: ($) =>
       seq(
-        identifier,
-        optional(IS),
-        optional(NOT),
+        $.identifier,
+        optional($.IS),
+        optional($.NOT),
         choice(
-          NUMERIC,
-          ALPHABETIC,
-          ALPHABETIC_LOWER,
-          ALPHABETIC_UPPER,
-          DBCS,
-          KANJI,
-          className
+          $.NUMERIC,
+          $.ALPHABETIC,
+          $.ALPHABETIC_LOWER,
+          $.ALPHABETIC_UPPER,
+          $.DBCS,
+          $.KANJI,
+          $.className
         )
       ),
     conditionNameReference: ($) =>
       seq(
-        conditionName,
+        $.conditionName,
         choice(
           seq(
-            repeat(inData),
-            optional(inFile),
-            repeat(conditionNameSubscriptReference)
+            repeat($.inData),
+            optional($.inFile),
+            repeat($.conditionNameSubscriptReference)
           ),
-          repeat(inMnemonic)
+          repeat($.inMnemonic)
         )
       ),
     conditionNameSubscriptReference: ($) =>
       seq(
-        LPARENCHAR,
-        subscript,
-        repeat(seq(optional(COMMACHAR), subscript)),
-        RPARENCHAR
+        $.LPARENCHAR,
+        $.subscript,
+        repeat(seq(optional($.COMMACHAR), $.subscript)),
+        $.RPARENCHAR
       ),
     // relation ----------------------------------
     relationCondition: ($) =>
       choice(
-        relationSignCondition,
-        relationArithmeticComparison,
-        relationCombinedComparison
+        $.relationSignCondition,
+        $.relationArithmeticComparison,
+        $.relationCombinedComparison
       ),
     relationSignCondition: ($) =>
       seq(
-        arithmeticExpression,
-        optional(IS),
-        optional(NOT),
-        choice(POSITIVE, NEGATIVE, ZERO)
+        $.arithmeticExpression,
+        optional($.IS),
+        optional($.NOT),
+        choice($.POSITIVE, $.NEGATIVE, $.ZERO)
       ),
     relationArithmeticComparison: ($) =>
-      seq(arithmeticExpression, relationalOperator, arithmeticExpression),
+      seq($.arithmeticExpression, $.relationalOperator, $.arithmeticExpression),
     relationCombinedComparison: ($) =>
       seq(
-        arithmeticExpression,
-        relationalOperator,
-        LPARENCHAR,
-        relationCombinedCondition,
-        RPARENCHAR
+        $.arithmeticExpression,
+        $.relationalOperator,
+        $.LPARENCHAR,
+        $.relationCombinedCondition,
+        $.RPARENCHAR
       ),
     relationCombinedCondition: ($) =>
       seq(
-        arithmeticExpression,
-        repeat1(seq(choice(AND, OR), arithmeticExpression))
+        $.arithmeticExpression,
+        repeat1(seq(choice($.AND, $.OR), $.arithmeticExpression))
       ),
     relationalOperator: ($) =>
       seq(
-        optional(choice(IS, ARE)),
+        optional(choice($.IS, $.ARE)),
         choice(
           seq(
-            optional(NOT),
+            optional($.NOT),
             choice(
-              seq(GREATER, optional(THAN)),
-              MORETHANCHAR,
-              seq(LESS, optional(THAN)),
-              LESSTHANCHAR,
-              seq(EQUAL, optional(TO)),
-              EQUALCHAR
+              seq($.GREATER, optional($.THAN)),
+              $.MORETHANCHAR,
+              seq($.LESS, optional($.THAN)),
+              $.LESSTHANCHAR,
+              seq($.EQUAL, optional($.TO)),
+              $.EQUALCHAR
             )
           ),
-          NOTEQUALCHAR,
-          seq(GREATER, optional(THAN), OR, EQUAL, optional(TO)),
-          MORETHANOREQUAL,
-          seq(LESS, optional(THAN), OR, EQUAL, optional(TO)),
-          LESSTHANOREQUAL
+          $.NOTEQUALCHAR,
+          seq($.GREATER, optional($.THAN), $.OR, $.EQUAL, optional($.TO)),
+          $.MORETHANOREQUAL,
+          seq($.LESS, optional($.THAN), $.OR, $.EQUAL, optional($.TO)),
+          $.LESSTHANOREQUAL
         )
       ),
     abbreviation: ($) =>
       seq(
-        optional(NOT),
-        optional(relationalOperator),
+        optional($.NOT),
+        optional($.relationalOperator),
         choice(
-          arithmeticExpression,
-          seq(LPARENCHAR, arithmeticExpression, abbreviation, RPARENCHAR)
+          $.arithmeticExpression,
+          seq(
+            $.LPARENCHAR,
+            $.arithmeticExpression,
+            $.abbreviation,
+            $.RPARENCHAR
+          )
         )
       ),
     // identifier ----------------------------------
     identifier: ($) =>
-      choice(qualifiedDataName, tableCall, functionCall, specialRegister),
+      choice(
+        $.qualifiedDataName,
+        $.tableCall,
+        $.functionCall,
+        $.specialRegister
+      ),
     tableCall: ($) =>
       seq(
-        qualifiedDataName,
+        $.qualifiedDataName,
         repeat(
           seq(
-            LPARENCHAR,
-            subscript,
-            repeat(seq(optional(COMMACHAR), subscript)),
-            RPARENCHAR
+            $.LPARENCHAR,
+            $.subscript,
+            repeat(seq(optional($.COMMACHAR), $.subscript)),
+            $.RPARENCHAR
           )
         ),
-        optional(referenceModifier)
+        optional($.referenceModifier)
       ),
     functionCall: ($) =>
       seq(
-        FUNCTION,
-        functionName,
+        $.FUNCTION,
+        $.functionName,
         repeat(
           seq(
-            LPARENCHAR,
-            argument,
-            repeat(seq(optional(COMMACHAR), argument)),
-            RPARENCHAR
+            $.LPARENCHAR,
+            $.argument,
+            repeat(seq(optional($.COMMACHAR), $.argument)),
+            $.RPARENCHAR
           )
         ),
-        optional(referenceModifier)
+        optional($.referenceModifier)
       ),
     referenceModifier: ($) =>
       seq(
-        LPARENCHAR,
-        characterPosition,
-        COLONCHAR,
-        optional(length),
-        RPARENCHAR
+        $.LPARENCHAR,
+        $.characterPosition,
+        $.COLONCHAR,
+        optional($.length),
+        $.RPARENCHAR
       ),
-    characterPosition: ($) => arithmeticExpression,
-    length: ($) => arithmeticExpression,
+    characterPosition: ($) => $.arithmeticExpression,
+    length: ($) => $.arithmeticExpression,
     subscript: ($) =>
       seq(
-        choice(ALL, integerLiteral, qualifiedDataName),
-        choice(optional(integerLiteral), indexName),
-        choice(optional(integerLiteral), arithmeticExpression)
+        choice($.ALL, $.integerLiteral, $.qualifiedDataName),
+        choice(optional($.integerLiteral), $.indexName),
+        choice(optional($.integerLiteral), $.arithmeticExpression)
       ),
     argument: ($) =>
       seq(
-        choice(literal, identifier, qualifiedDataName),
-        choice(optional(integerLiteral), indexName),
-        choice(optional(integerLiteral), arithmeticExpression)
+        choice($.literal, $.identifier, $.qualifiedDataName),
+        choice(optional($.integerLiteral), $.indexName),
+        choice(optional($.integerLiteral), $.arithmeticExpression)
       ),
     // qualified data name ----------------------------------
     qualifiedDataName: ($) =>
       choice(
-        qualifiedDataNameFormat1,
-        qualifiedDataNameFormat2,
-        qualifiedDataNameFormat3,
-        qualifiedDataNameFormat4
+        $.qualifiedDataNameFormat1,
+        $.qualifiedDataNameFormat2,
+        $.qualifiedDataNameFormat3,
+        $.qualifiedDataNameFormat4
       ),
     qualifiedDataNameFormat1: ($) =>
       seq(
-        choice(dataName, conditionName),
+        choice($.dataName, $.conditionName),
         optional(
-          choice(seq(repeat1(qualifiedInData), optional(inFile)), inFile)
+          choice(seq(repeat1($.qualifiedInData), optional($.inFile)), $.inFile)
         )
       ),
-    qualifiedDataNameFormat2: ($) => seq(paragraphName, inSection),
-    qualifiedDataNameFormat3: ($) => seq(textName, inLibrary),
-    qualifiedDataNameFormat4: ($) => seq(LINAGE_COUNTER, inFile),
-    qualifiedInData: ($) => choice(inData, inTable),
+    qualifiedDataNameFormat2: ($) => seq($.paragraphName, $.inSection),
+    qualifiedDataNameFormat3: ($) => seq($.textName, $.inLibrary),
+    qualifiedDataNameFormat4: ($) => seq($.LINAGE_COUNTER, $.inFile),
+    qualifiedInData: ($) => choice($.inData, $.inTable),
     // in ----------------------------------
-    inData: ($) => seq(choice(IN, OF), dataName),
-    inFile: ($) => seq(choice(IN, OF), fileName),
-    inMnemonic: ($) => seq(choice(IN, OF), mnemonicName),
-    inSection: ($) => seq(choice(IN, OF), sectionName),
-    inLibrary: ($) => seq(choice(IN, OF), libraryName),
-    inTable: ($) => seq(choice(IN, OF), tableCall),
+    inData: ($) => seq(choice($.IN, $.OF), $.dataName),
+    inFile: ($) => seq(choice($.IN, $.OF), $.fileName),
+    inMnemonic: ($) => seq(choice($.IN, $.OF), $.mnemonicName),
+    inSection: ($) => seq(choice($.IN, $.OF), $.sectionName),
+    inLibrary: ($) => seq(choice($.IN, $.OF), $.libraryName),
+    inTable: ($) => seq(choice($.IN, $.OF), $.tableCall),
     // names ----------------------------------
-    alphabetName: ($) => cobolWord,
-    assignmentName: ($) => systemName,
-    basisName: ($) => programName,
-    cdName: ($) => cobolWord,
-    className: ($) => cobolWord,
-    computerName: ($) => systemName,
-    conditionName: ($) => cobolWord,
-    dataName: ($) => cobolWord,
-    dataDescName: ($) => choice(FILLER, CURSOR, dataName),
-    environmentName: ($) => systemName,
-    fileName: ($) => cobolWord,
+    alphabetName: ($) => $.cobolWord,
+    assignmentName: ($) => $.systemName,
+    basisName: ($) => $.programName,
+    cdName: ($) => $.cobolWord,
+    className: ($) => $.cobolWord,
+    computerName: ($) => $.systemName,
+    conditionName: ($) => $.cobolWord,
+    dataName: ($) => $.cobolWord,
+    dataDescName: ($) => choice($.FILLER, $.CURSOR, $.dataName),
+    environmentName: ($) => $.systemName,
+    fileName: ($) => $.cobolWord,
     functionName: ($) =>
-      choice(INTEGER, LENGTH, RANDOM, SUM, WHEN_COMPILED, cobolWord),
-    indexName: ($) => cobolWord,
-    languageName: ($) => systemName,
-    libraryName: ($) => cobolWord,
-    localName: ($) => cobolWord,
-    mnemonicName: ($) => cobolWord,
-    paragraphName: ($) => choice(cobolWord, integerLiteral),
+      choice(
+        $.INTEGER,
+        $.LENGTH,
+        $.RANDOM,
+        $.SUM,
+        $.WHEN_COMPILED,
+        $.cobolWord
+      ),
+    indexName: ($) => $.cobolWord,
+    // languageName: ($) => $.systemName,
+    libraryName: ($) => $.cobolWord,
+    localName: ($) => $.cobolWord,
+    mnemonicName: ($) => $.cobolWord,
+    paragraphName: ($) => choice($.cobolWord, $.integerLiteral),
     procedureName: ($) =>
-      seq(paragraphName, choice(optional(inSection), sectionName)),
-    programName: ($) => choice(NONNUMERICLITERAL, cobolWord),
-    recordName: ($) => qualifiedDataName,
-    reportName: ($) => qualifiedDataName,
-    routineName: ($) => cobolWord,
-    screenName: ($) => cobolWord,
-    sectionName: ($) => choice(cobolWord, integerLiteral),
-    systemName: ($) => cobolWord,
-    symbolicCharacter: ($) => cobolWord,
-    textName: ($) => cobolWord,
+      seq($.paragraphName, choice(optional($.inSection), $.sectionName)),
+    programName: ($) => choice($.NONNUMERICLITERAL, $.cobolWord),
+    recordName: ($) => $.qualifiedDataName,
+    reportName: ($) => $.qualifiedDataName,
+    // routineName: ($) => $.cobolWord,
+    screenName: ($) => $.cobolWord,
+    sectionName: ($) => choice($.cobolWord, $.integerLiteral),
+    systemName: ($) => $.cobolWord,
+    symbolicCharacter: ($) => $.cobolWord,
+    textName: ($) => $.cobolWord,
     // literal ----------------------------------
     cobolWord: ($) =>
       choice(
-        IDENTIFIER,
-        ABORT,
-        AS,
-        ASCII,
-        ASSOCIATED_DATA,
-        ASSOCIATED_DATA_LENGTH,
-        ATTRIBUTE,
-        AUTO,
-        AUTO_SKIP,
-        BACKGROUND_COLOR,
-        BACKGROUND_COLOUR,
-        BEEP,
-        BELL,
-        BINARY,
-        BIT,
-        BLINK,
-        BLOB,
-        BOUNDS,
-        CAPABLE,
-        CCSVERSION,
-        CHANGED,
-        CHANNEL,
-        CLOB,
-        CLOSE_DISPOSITION,
-        COBOL,
-        COMMITMENT,
-        CONTROL_POINT,
-        CONVENTION,
-        CRUNCH,
-        CURSOR,
-        DBCLOB,
-        DEFAULT,
-        DEFAULT_DISPLAY,
-        DEFINITION,
-        DFHRESP,
-        DFHVALUE,
-        DISK,
-        DONTCARE,
-        DOUBLE,
-        EBCDIC,
-        EMPTY_CHECK,
-        ENTER,
-        ENTRY_PROCEDURE,
-        EOL,
-        EOS,
-        ERASE,
-        ESCAPE,
-        EVENT,
-        EXCLUSIVE,
-        EXPORT,
-        EXTENDED,
-        FOREGROUND_COLOR,
-        FOREGROUND_COLOUR,
-        FULL,
-        FUNCTIONNAME,
-        FUNCTION_POINTER,
-        GRID,
-        HIGHLIGHT,
-        IMPLICIT,
-        IMPORT,
-        INTEGER,
-        KEPT,
-        KEYBOARD,
-        LANGUAGE,
-        LB,
-        LD,
-        LEFTLINE,
-        LENGTH_CHECK,
-        LIBACCESS,
-        LIBPARAMETER,
-        LIBRARY,
-        LIST,
-        LOCAL,
-        LONG_DATE,
-        LONG_TIME,
-        LOWER,
-        LOWLIGHT,
-        MMDDYYYY,
-        NAMED,
-        NATIONAL,
-        NATIONAL_EDITED,
-        NETWORK,
-        NO_ECHO,
-        NUMERIC_DATE,
-        NUMERIC_TIME,
-        ODT,
-        ORDERLY,
-        OVERLINE,
-        OWN,
-        PASSWORD,
-        PORT,
-        PRINTER,
-        PRIVATE,
-        PROCESS,
-        PROGRAM,
-        PROMPT,
-        READER,
-        REAL,
-        RECEIVED,
-        RECURSIVE,
-        REF,
-        REMOTE,
-        REMOVE,
-        REQUIRED,
-        REVERSE_VIDEO,
-        SAVE,
-        SECURE,
-        SHARED,
-        SHAREDBYALL,
-        SHAREDBYRUNUNIT,
-        SHARING,
-        SHORT_DATE,
-        SQL,
-        SYMBOL,
-        TASK,
-        THREAD,
-        THREAD_LOCAL,
-        TIMER,
-        TODAYS_DATE,
-        TODAYS_NAME,
-        TRUNCATED,
-        TYPEDEF,
-        UNDERLINE,
-        VIRTUAL,
-        WAIT,
-        YEAR,
-        YYYYMMDD,
-        YYYYDDD,
-        ZERO_FILL
+        $.IDENTIFIER,
+        $.ABORT,
+        $.AS,
+        $.ASCII,
+        $.ASSOCIATED_DATA,
+        $.ASSOCIATED_DATA_LENGTH,
+        $.ATTRIBUTE,
+        $.AUTO,
+        $.AUTO_SKIP,
+        $.BACKGROUND_COLOR,
+        $.BACKGROUND_COLOUR,
+        $.BEEP,
+        $.BELL,
+        $.BINARY,
+        $.BIT,
+        $.BLINK,
+        $.BLOB,
+        $.BOUNDS,
+        $.CAPABLE,
+        $.CCSVERSION,
+        $.CHANGED,
+        $.CHANNEL,
+        $.CLOB,
+        $.CLOSE_DISPOSITION,
+        $.COBOL,
+        $.COMMITMENT,
+        $.CONTROL_POINT,
+        $.CONVENTION,
+        $.CRUNCH,
+        $.CURSOR,
+        $.DBCLOB,
+        $.DEFAULT,
+        $.DEFAULT_DISPLAY,
+        $.DEFINITION,
+        $.DFHRESP,
+        $.DFHVALUE,
+        $.DISK,
+        $.DONTCARE,
+        $.DOUBLE,
+        $.EBCDIC,
+        $.EMPTY_CHECK,
+        $.ENTER,
+        $.ENTRY_PROCEDURE,
+        $.EOL,
+        $.EOS,
+        $.ERASE,
+        $.ESCAPE,
+        $.EVENT,
+        $.EXCLUSIVE,
+        $.EXPORT,
+        $.EXTENDED,
+        $.FOREGROUND_COLOR,
+        $.FOREGROUND_COLOUR,
+        $.FULL,
+        $.FUNCTIONNAME,
+        $.FUNCTION_POINTER,
+        $.GRID,
+        $.HIGHLIGHT,
+        $.IMPLICIT,
+        $.IMPORT,
+        $.INTEGER,
+        $.KEPT,
+        $.KEYBOARD,
+        $.LANGUAGE,
+        $.LB,
+        $.LD,
+        $.LEFTLINE,
+        $.LENGTH_CHECK,
+        $.LIBACCESS,
+        $.LIBPARAMETER,
+        $.LIBRARY,
+        $.LIST,
+        $.LOCAL,
+        $.LONG_DATE,
+        $.LONG_TIME,
+        $.LOWER,
+        $.LOWLIGHT,
+        $.MMDDYYYY,
+        $.NAMED,
+        $.NATIONAL,
+        $.NATIONAL_EDITED,
+        $.NETWORK,
+        $.NO_ECHO,
+        $.NUMERIC_DATE,
+        $.NUMERIC_TIME,
+        $.ODT,
+        $.ORDERLY,
+        $.OVERLINE,
+        $.OWN,
+        $.PASSWORD,
+        $.PORT,
+        $.PRINTER,
+        $.PRIVATE,
+        $.PROCESS,
+        $.PROGRAM,
+        $.PROMPT,
+        $.READER,
+        $.REAL,
+        $.RECEIVED,
+        $.RECURSIVE,
+        $.REF,
+        $.REMOTE,
+        $.REMOVE,
+        $.REQUIRED,
+        $.REVERSE_VIDEO,
+        $.SAVE,
+        $.SECURE,
+        $.SHARED,
+        $.SHAREDBYALL,
+        $.SHAREDBYRUNUNIT,
+        $.SHARING,
+        $.SHORT_DATE,
+        $.SQL,
+        $.SYMBOL,
+        $.TASK,
+        $.THREAD,
+        $.THREAD_LOCAL,
+        $.TIMER,
+        $.TODAYS_DATE,
+        $.TODAYS_NAME,
+        $.TRUNCATED,
+        $.TYPEDEF,
+        $.UNDERLINE,
+        $.VIRTUAL,
+        $.WAIT,
+        $.YEAR,
+        $.YYYYMMDD,
+        $.YYYYDDD,
+        $.ZERO_FILL
       ),
     literal: ($) =>
       choice(
-        NONNUMERICLITERAL,
-        figurativeConstant,
-        numericLiteral,
-        booleanLiteral,
-        cicsDfhRespLiteral,
-        cicsDfhValueLiteral
+        $.NONNUMERICLITERAL,
+        $.figurativeConstant,
+        $.numericLiteral,
+        $.booleanLiteral,
+        $.cicsDfhRespLiteral,
+        $.cicsDfhValueLiteral
       ),
-    booleanLiteral: ($) => choice(TRUE, FALSE),
-    numericLiteral: ($) => choice(NUMERICLITERAL, ZERO, integerLiteral),
+    booleanLiteral: ($) => choice($.TRUE, $.FALSE),
+    numericLiteral: ($) => choice($.NUMERICLITERAL, $.ZERO, $.integerLiteral),
     integerLiteral: ($) =>
-      choice(INTEGERLITERAL, LEVEL_NUMBER_66, LEVEL_NUMBER_77, LEVEL_NUMBER_88),
+      choice(
+        $.INTEGERLITERAL,
+        $.LEVEL_NUMBER_66,
+        $.LEVEL_NUMBER_77,
+        $.LEVEL_NUMBER_88
+      ),
     cicsDfhRespLiteral: ($) =>
-      seq(DFHRESP, LPARENCHAR, choice(cobolWord, literal), RPARENCHAR),
+      seq(
+        $.DFHRESP,
+        $.LPARENCHAR,
+        choice($.cobolWord, $.literal),
+        $.RPARENCHAR
+      ),
     cicsDfhValueLiteral: ($) =>
-      seq(DFHVALUE, LPARENCHAR, choice(cobolWord, literal), RPARENCHAR),
+      seq(
+        $.DFHVALUE,
+        $.LPARENCHAR,
+        choice($.cobolWord, $.literal),
+        $.RPARENCHAR
+      ),
     // keywords ----------------------------------
     figurativeConstant: ($) =>
       seq(
-        ALL,
+        $.ALL,
         choice(
-          literal,
-          HIGH_VALUE,
-          HIGH_VALUES,
-          LOW_VALUE,
-          LOW_VALUES,
-          NULL,
-          NULLS,
-          QUOTE,
-          QUOTES,
-          SPACE,
-          SPACES,
-          ZERO,
-          ZEROS,
-          ZEROES
+          $.literal,
+          $.HIGH_VALUE,
+          $.HIGH_VALUES,
+          $.LOW_VALUE,
+          $.LOW_VALUES,
+          $.NULL,
+          $.NULLS,
+          $.QUOTE,
+          $.QUOTES,
+          $.SPACE,
+          $.SPACES,
+          $.ZERO,
+          $.ZEROS,
+          $.ZEROES
         )
       ),
     specialRegister: ($) =>
       seq(
-        ADDRESS,
-        OF,
+        $.ADDRESS,
+        $.OF,
         choice(
-          identifier,
-          DATE,
-          DAY,
-          DAY_OF_WEEK,
-          DEBUG_CONTENTS,
-          DEBUG_ITEM,
-          DEBUG_LINE,
-          DEBUG_NAME,
-          DEBUG_SUB_1,
-          DEBUG_SUB_2,
-          DEBUG_SUB_3,
-          LENGTH
+          $.identifier,
+          $.DATE,
+          $.DAY,
+          $.DAY_OF_WEEK,
+          $.DEBUG_CONTENTS,
+          $.DEBUG_ITEM,
+          $.DEBUG_LINE,
+          $.DEBUG_NAME,
+          $.DEBUG_SUB_1,
+          $.DEBUG_SUB_2,
+          $.DEBUG_SUB_3,
+          $.LENGTH
         ),
-        optional(OF),
+        optional($.OF),
         choice(
-          identifier,
-          LINAGE_COUNTER,
-          LINE_COUNTER,
-          PAGE_COUNTER,
-          RETURN_CODE,
-          SHIFT_IN,
-          SHIFT_OUT,
-          SORT_CONTROL,
-          SORT_CORE_SIZE,
-          SORT_FILE_SIZE,
-          SORT_MESSAGE,
-          SORT_MODE_SIZE,
-          SORT_RETURN,
-          TALLY,
-          TIME,
-          WHEN_COMPILED
+          $.identifier,
+          $.LINAGE_COUNTER,
+          $.LINE_COUNTER,
+          $.PAGE_COUNTER,
+          $.RETURN_CODE,
+          $.SHIFT_IN,
+          $.SHIFT_OUT,
+          $.SORT_CONTROL,
+          $.SORT_CORE_SIZE,
+          $.SORT_FILE_SIZE,
+          $.SORT_MESSAGE,
+          $.SORT_MODE_SIZE,
+          $.SORT_RETURN,
+          $.TALLY,
+          $.TIME,
+          $.WHEN_COMPILED
         )
       ),
     // comment entry
-    commentEntry: ($) => repeat1(COMMENTENTRYLINE),
+    commentEntry: ($) => repeat1($.COMMENTENTRYLINE),
     // lexer rules --------------------------------------------------------------------------------
     // keywords
-    ABORT: ($) => seq(A, B, O, R, T),
-    ACCEPT: ($) => seq(A, C, C, E, P, T),
-    ACCESS: ($) => seq(A, C, C, E, S, S),
-    ADD: ($) => seq(A, D, D),
-    ADDRESS: ($) => seq(A, D, D, R, E, S, S),
-    ADVANCING: ($) => seq(A, D, V, A, N, C, I, N, G),
-    AFTER: ($) => seq(A, F, T, E, R),
-    ALIGNED: ($) => seq(A, L, I, G, N, E, D),
-    ALL: ($) => seq(A, L, L),
-    ALPHABET: ($) => seq(A, L, P, H, A, B, E, T),
-    ALPHABETIC: ($) => seq(A, L, P, H, A, B, E, T, I, C),
+    ABORT: ($) => seq($._A, $._B, $._O, $._R, $._T),
+    ACCEPT: ($) => seq($._A, $._C, $._C, $._E, $._P, $._T),
+    ACCESS: ($) => seq($._A, $._C, $._C, $._E, $._S, $._S),
+    ADD: ($) => seq($._A, $._D, $._D),
+    ADDRESS: ($) => seq($._A, $._D, $._D, $._R, $._E, $._S, $._S),
+    ADVANCING: ($) => seq($._A, $._D, $._V, $._A, $._N, $._C, $._I, $._N, $._G),
+    AFTER: ($) => seq($._A, $._F, $._T, $._E, $._R),
+    ALIGNED: ($) => seq($._A, $._L, $._I, $._G, $._N, $._E, $._D),
+    ALL: ($) => seq($._A, $._L, $._L),
+    ALPHABET: ($) => seq($._A, $._L, $._P, $._H, $._A, $._B, $._E, $._T),
+    ALPHABETIC: ($) =>
+      seq($._A, $._L, $._P, $._H, $._A, $._B, $._E, $._T, $._I, $._C),
     ALPHABETIC_LOWER: ($) =>
-      seq(A, L, P, H, A, B, E, T, I, C, MINUSCHAR, L, O, W, E, R),
+      seq(
+        $._A,
+        $._L,
+        $._P,
+        $._H,
+        $._A,
+        $._B,
+        $._E,
+        $._T,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._L,
+        $._O,
+        $._W,
+        $._E,
+        $._R
+      ),
     ALPHABETIC_UPPER: ($) =>
-      seq(A, L, P, H, A, B, E, T, I, C, MINUSCHAR, U, P, P, E, R),
-    ALPHANUMERIC: ($) => seq(A, L, P, H, A, N, U, M, E, R, I, C),
+      seq(
+        $._A,
+        $._L,
+        $._P,
+        $._H,
+        $._A,
+        $._B,
+        $._E,
+        $._T,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._U,
+        $._P,
+        $._P,
+        $._E,
+        $._R
+      ),
+    ALPHANUMERIC: ($) =>
+      seq(
+        $._A,
+        $._L,
+        $._P,
+        $._H,
+        $._A,
+        $._N,
+        $._U,
+        $._M,
+        $._E,
+        $._R,
+        $._I,
+        $._C
+      ),
     ALPHANUMERIC_EDITED: ($) =>
-      seq(A, L, P, H, A, N, U, M, E, R, I, C, MINUSCHAR, E, D, I, T, E, D),
-    ALSO: ($) => seq(A, L, S, O),
-    ALTER: ($) => seq(A, L, T, E, R),
-    ALTERNATE: ($) => seq(A, L, T, E, R, N, A, T, E),
-    AND: ($) => seq(A, N, D),
-    ANY: ($) => seq(A, N, Y),
-    ARE: ($) => seq(A, R, E),
-    AREA: ($) => seq(A, R, E, A),
-    AREAS: ($) => seq(A, R, E, A, S),
-    AS: ($) => seq(A, S),
-    ASCENDING: ($) => seq(A, S, C, E, N, D, I, N, G),
-    ASCII: ($) => seq(A, S, C, I, I),
-    ASSIGN: ($) => seq(A, S, S, I, G, N),
+      seq(
+        $._A,
+        $._L,
+        $._P,
+        $._H,
+        $._A,
+        $._N,
+        $._U,
+        $._M,
+        $._E,
+        $._R,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._E,
+        $._D,
+        $._I,
+        $._T,
+        $._E,
+        $._D
+      ),
+    ALSO: ($) => seq($._A, $._L, $._S, $._O),
+    ALTER: ($) => seq($._A, $._L, $._T, $._E, $._R),
+    ALTERNATE: ($) => seq($._A, $._L, $._T, $._E, $._R, $._N, $._A, $._T, $._E),
+    AND: ($) => seq($._A, $._N, $._D),
+    ANY: ($) => seq($._A, $._N, $._Y),
+    ARE: ($) => seq($._A, $._R, $._E),
+    AREA: ($) => seq($._A, $._R, $._E, $._A),
+    AREAS: ($) => seq($._A, $._R, $._E, $._A, $._S),
+    AS: ($) => seq($._A, $._S),
+    ASCENDING: ($) => seq($._A, $._S, $._C, $._E, $._N, $._D, $._I, $._N, $._G),
+    ASCII: ($) => seq($._A, $._S, $._C, $._I, $._I),
+    ASSIGN: ($) => seq($._A, $._S, $._S, $._I, $._G, $._N),
     ASSOCIATED_DATA: ($) =>
-      seq(A, S, S, O, C, I, A, T, E, D, MINUSCHAR, D, A, T, A),
+      seq(
+        $._A,
+        $._S,
+        $._S,
+        $._O,
+        $._C,
+        $._I,
+        $._A,
+        $._T,
+        $._E,
+        $._D,
+        $.MINUSCHAR,
+        $._D,
+        $._A,
+        $._T,
+        $._A
+      ),
     ASSOCIATED_DATA_LENGTH: ($) =>
       seq(
-        A,
-        S,
-        S,
-        O,
-        C,
-        I,
-        A,
-        T,
-        E,
-        D,
-        MINUSCHAR,
-        D,
-        A,
-        T,
-        A,
-        MINUSCHAR,
-        L,
-        E,
-        N,
-        G,
-        T,
-        H
+        $._A,
+        $._S,
+        $._S,
+        $._O,
+        $._C,
+        $._I,
+        $._A,
+        $._T,
+        $._E,
+        $._D,
+        $.MINUSCHAR,
+        $._D,
+        $._A,
+        $._T,
+        $._A,
+        $.MINUSCHAR,
+        $._L,
+        $._E,
+        $._N,
+        $._G,
+        $._T,
+        $._H
       ),
-    AT: ($) => seq(A, T),
-    ATTRIBUTE: ($) => seq(A, T, T, R, I, B, U, T, E),
-    AUTHOR: ($) => seq(A, U, T, H, O, R),
-    AUTO: ($) => seq(A, U, T, O),
-    AUTO_SKIP: ($) => seq(A, U, T, O, MINUSCHAR, S, K, I, P),
+    AT: ($) => seq($._A, $._T),
+    ATTRIBUTE: ($) => seq($._A, $._T, $._T, $._R, $._I, $._B, $._U, $._T, $._E),
+    AUTHOR: ($) => seq($._A, $._U, $._T, $._H, $._O, $._R),
+    AUTO: ($) => seq($._A, $._U, $._T, $._O),
+    AUTO_SKIP: ($) =>
+      seq($._A, $._U, $._T, $._O, $.MINUSCHAR, $._S, $._K, $._I, $._P),
     BACKGROUND_COLOR: ($) =>
-      seq(B, A, C, K, G, R, O, U, N, D, MINUSCHAR, C, O, L, O, R),
+      seq(
+        $._B,
+        $._A,
+        $._C,
+        $._K,
+        $._G,
+        $._R,
+        $._O,
+        $._U,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._L,
+        $._O,
+        $._R
+      ),
     BACKGROUND_COLOUR: ($) =>
-      seq(B, A, C, K, G, R, O, U, N, D, MINUSCHAR, C, O, L, O, U, R),
-    BASIS: ($) => seq(B, A, S, I, S),
-    BEEP: ($) => seq(B, E, E, P),
-    BEFORE: ($) => seq(B, E, F, O, R, E),
-    BEGINNING: ($) => seq(B, E, G, I, N, N, I, N, G),
-    BELL: ($) => seq(B, E, L, L),
-    BINARY: ($) => seq(B, I, N, A, R, Y),
-    BIT: ($) => seq(B, I, T),
-    BLANK: ($) => seq(B, L, A, N, K),
-    BLINK: ($) => seq(B, L, I, N, K),
-    BLOB: ($) => seq(B, L, O, B),
-    BLOCK: ($) => seq(B, L, O, C, K),
-    BOUNDS: ($) => seq(B, O, U, N, D, S),
-    BOTTOM: ($) => seq(B, O, T, T, O, M),
-    BY: ($) => seq(B, Y),
-    BYFUNCTION: ($) => seq(B, Y, F, U, N, C, T, I, O, N),
-    BYTITLE: ($) => seq(B, Y, T, I, T, L, E),
-    CALL: ($) => seq(C, A, L, L),
-    CANCEL: ($) => seq(C, A, N, C, E, L),
-    CAPABLE: ($) => seq(C, A, P, A, B, L, E),
-    CCSVERSION: ($) => seq(C, C, S, V, E, R, S, I, O, N),
-    CD: ($) => seq(C, D),
-    CF: ($) => seq(C, F),
-    CH: ($) => seq(C, H),
-    CHAINING: ($) => seq(C, H, A, I, N, I, N, G),
-    CHANGED: ($) => seq(C, H, A, N, G, E, D),
-    CHANNEL: ($) => seq(C, H, A, N, N, E, L),
-    CHARACTER: ($) => seq(C, H, A, R, A, C, T, E, R),
-    CHARACTERS: ($) => seq(C, H, A, R, A, C, T, E, R, S),
-    CLASS: ($) => seq(C, L, A, S, S),
-    CLASS_ID: ($) => seq(C, L, A, S, S, MINUSCHAR, I, D),
-    CLOB: ($) => seq(C, L, O, B),
-    CLOCK_UNITS: ($) => seq(C, L, O, C, K, MINUSCHAR, U, N, I, T, S),
-    CLOSE: ($) => seq(C, L, O, S, E),
+      seq(
+        $._B,
+        $._A,
+        $._C,
+        $._K,
+        $._G,
+        $._R,
+        $._O,
+        $._U,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._L,
+        $._O,
+        $._U,
+        $._R
+      ),
+    //BASIS: ($) => seq($._B, $._A, $._S, $._I, $._S),
+    BEEP: ($) => seq($._B, $._E, $._E, $._P),
+    BEFORE: ($) => seq($._B, $._E, $._F, $._O, $._R, $._E),
+    //BEGINNING: ($) => seq($._B, $._E, $._G, $._I, $._N, $._N, $._I, $._N, $._G),
+    BELL: ($) => seq($._B, $._E, $._L, $._L),
+    BINARY: ($) => seq($._B, $._I, $._N, $._A, $._R, $._Y),
+    BIT: ($) => seq($._B, $._I, $._T),
+    BLANK: ($) => seq($._B, $._L, $._A, $._N, $._K),
+    BLINK: ($) => seq($._B, $._L, $._I, $._N, $._K),
+    BLOB: ($) => seq($._B, $._L, $._O, $._B),
+    BLOCK: ($) => seq($._B, $._L, $._O, $._C, $._K),
+    BOUNDS: ($) => seq($._B, $._O, $._U, $._N, $._D, $._S),
+    BOTTOM: ($) => seq($._B, $._O, $._T, $._T, $._O, $._M),
+    BY: ($) => seq($._B, $._Y),
+    BYFUNCTION: ($) =>
+      seq($._B, $._Y, $._F, $._U, $._N, $._C, $._T, $._I, $._O, $._N),
+    BYTITLE: ($) => seq($._B, $._Y, $._T, $._I, $._T, $._L, $._E),
+    CALL: ($) => seq($._C, $._A, $._L, $._L),
+    CANCEL: ($) => seq($._C, $._A, $._N, $._C, $._E, $._L),
+    CAPABLE: ($) => seq($._C, $._A, $._P, $._A, $._B, $._L, $._E),
+    CCSVERSION: ($) =>
+      seq($._C, $._C, $._S, $._V, $._E, $._R, $._S, $._I, $._O, $._N),
+    CD: ($) => seq($._C, $._D),
+    CF: ($) => seq($._C, $._F),
+    CH: ($) => seq($._C, $._H),
+    CHAINING: ($) => seq($._C, $._H, $._A, $._I, $._N, $._I, $._N, $._G),
+    CHANGED: ($) => seq($._C, $._H, $._A, $._N, $._G, $._E, $._D),
+    CHANNEL: ($) => seq($._C, $._H, $._A, $._N, $._N, $._E, $._L),
+    CHARACTER: ($) => seq($._C, $._H, $._A, $._R, $._A, $._C, $._T, $._E, $._R),
+    CHARACTERS: ($) =>
+      seq($._C, $._H, $._A, $._R, $._A, $._C, $._T, $._E, $._R, $._S),
+    CLASS: ($) => seq($._C, $._L, $._A, $._S, $._S),
+    CLASS_ID: ($) => seq($._C, $._L, $._A, $._S, $._S, $.MINUSCHAR, $._I, $._D),
+    CLOB: ($) => seq($._C, $._L, $._O, $._B),
+    CLOCK_UNITS: ($) =>
+      seq(
+        $._C,
+        $._L,
+        $._O,
+        $._C,
+        $._K,
+        $.MINUSCHAR,
+        $._U,
+        $._N,
+        $._I,
+        $._T,
+        $._S
+      ),
+    CLOSE: ($) => seq($._C, $._L, $._O, $._S, $._E),
     CLOSE_DISPOSITION: ($) =>
-      seq(C, L, O, S, E, MINUSCHAR, D, I, S, P, O, S, I, T, I, O, N),
-    COBOL: ($) => seq(C, O, B, O, L),
-    CODE: ($) => seq(C, O, D, E),
-    CODE_SET: ($) => seq(C, O, D, E, MINUSCHAR, S, E, T),
-    COLLATING: ($) => seq(C, O, L, L, A, T, I, N, G),
-    COL: ($) => seq(C, O, L),
-    COLUMN: ($) => seq(C, O, L, U, M, N),
-    COM_REG: ($) => seq(C, O, M, MINUSCHAR, R, E, G),
-    COMMA: ($) => seq(C, O, M, M, A),
-    COMMITMENT: ($) => seq(C, O, M, M, I, T, M, E, N, T),
-    COMMON: ($) => seq(C, O, M, M, O, N),
-    COMMUNICATION: ($) => seq(C, O, M, M, U, N, I, C, A, T, I, O, N),
-    COMP: ($) => seq(C, O, M, P),
-    COMP_1: ($) => seq(C, O, M, P, MINUSCHAR, "1"),
-    COMP_2: ($) => seq(C, O, M, P, MINUSCHAR, "2"),
-    COMP_3: ($) => seq(C, O, M, P, MINUSCHAR, "3"),
-    COMP_4: ($) => seq(C, O, M, P, MINUSCHAR, "4"),
-    COMP_5: ($) => seq(C, O, M, P, MINUSCHAR, "5"),
-    COMPUTATIONAL: ($) => seq(C, O, M, P, U, T, A, T, I, O, N, A, L),
+      seq(
+        $.CLOSE,
+        $.MINUSCHAR,
+        $._D,
+        $._I,
+        $._S,
+        $._P,
+        $._O,
+        $._S,
+        $._I,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    COBOL: ($) => seq($._C, $._O, $._B, $._O, $._L),
+    CODE: ($) => seq($._C, $._O, $._D, $._E),
+    CODE_SET: ($) => seq($._C, $._O, $._D, $._E, $.MINUSCHAR, $._S, $._E, $._T),
+    COLLATING: ($) => seq($._C, $._O, $._L, $._L, $._A, $._T, $._I, $._N, $._G),
+    COL: ($) => seq($._C, $._O, $._L),
+    COLUMN: ($) => seq($._C, $._O, $._L, $._U, $._M, $._N),
+    //COM_REG: ($) => seq($._C, $._O, $._M, $.MINUSCHAR, $._R, $._E, $._G),
+    COMMA: ($) => seq($._C, $._O, $._M, $._M, $._A),
+    COMMITMENT: ($) =>
+      seq($._C, $._O, $._M, $._M, $._I, $._T, $._M, $._E, $._N, $._T),
+    COMMON: ($) => seq($._C, $._O, $._M, $._M, $._O, $._N),
+    COMMUNICATION: ($) =>
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._M,
+        $._U,
+        $._N,
+        $._I,
+        $._C,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    COMP: ($) => seq($._C, $._O, $._M, $._P),
+    COMP_1: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "1"),
+    COMP_2: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "2"),
+    COMP_3: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "3"),
+    COMP_4: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "4"),
+    COMP_5: ($) => seq($._C, $._O, $._M, $._P, $.MINUSCHAR, "5"),
+    COMPUTATIONAL: ($) =>
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L
+      ),
     COMPUTATIONAL_1: ($) =>
-      seq(C, O, M, P, U, T, A, T, I, O, N, A, L, MINUSCHAR, "1"),
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        "1"
+      ),
     COMPUTATIONAL_2: ($) =>
-      seq(C, O, M, P, U, T, A, T, I, O, N, A, L, MINUSCHAR, "2"),
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        "2"
+      ),
     COMPUTATIONAL_3: ($) =>
-      seq(C, O, M, P, U, T, A, T, I, O, N, A, L, MINUSCHAR, "3"),
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        "3"
+      ),
     COMPUTATIONAL_4: ($) =>
-      seq(C, O, M, P, U, T, A, T, I, O, N, A, L, MINUSCHAR, "4"),
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        "4"
+      ),
     COMPUTATIONAL_5: ($) =>
-      seq(C, O, M, P, U, T, A, T, I, O, N, A, L, MINUSCHAR, "5"),
-    COMPUTE: ($) => seq(C, O, M, P, U, T, E),
-    CONFIGURATION: ($) => seq(C, O, N, F, I, G, U, R, A, T, I, O, N),
-    CONTAINS: ($) => seq(C, O, N, T, A, I, N, S),
-    CONTENT: ($) => seq(C, O, N, T, E, N, T),
-    CONTINUE: ($) => seq(C, O, N, T, I, N, U, E),
-    CONTROL: ($) => seq(C, O, N, T, R, O, L),
-    CONTROL_POINT: ($) => seq(C, O, N, T, R, O, L, MINUSCHAR, P, O, I, N, T),
-    CONTROLS: ($) => seq(C, O, N, T, R, O, L, S),
-    CONVENTION: ($) => seq(C, O, N, V, E, N, T, I, O, N),
-    CONVERTING: ($) => seq(C, O, N, V, E, R, T, I, N, G),
-    COPY: ($) => seq(C, O, P, Y),
-    CORR: ($) => seq(C, O, R, R),
-    CORRESPONDING: ($) => seq(C, O, R, R, E, S, P, O, N, D, I, N, G),
-    COUNT: ($) => seq(C, O, U, N, T),
-    CRUNCH: ($) => seq(C, R, U, N, C, H),
-    CURRENCY: ($) => seq(C, U, R, R, E, N, C, Y),
-    CURSOR: ($) => seq(C, U, R, S, O, R),
-    DATA: ($) => seq(D, A, T, A),
-    DATA_BASE: ($) => seq(D, A, T, A, MINUSCHAR, B, A, S, E),
-    DATE: ($) => seq(D, A, T, E),
-    DATE_COMPILED: ($) => seq(D, A, T, E, MINUSCHAR, C, O, M, P, I, L, E, D),
-    DATE_WRITTEN: ($) => seq(D, A, T, E, MINUSCHAR, W, R, I, T, T, E, N),
-    DAY: ($) => seq(D, A, Y),
-    DAY_OF_WEEK: ($) => seq(D, A, Y, MINUSCHAR, O, F, MINUSCHAR, W, E, E, K),
-    DBCS: ($) => seq(D, B, C, S),
-    DBCLOB: ($) => seq(D, B, C, L, O, B),
-    DE: ($) => seq(D, E),
+      seq(
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        "5"
+      ),
+    COMPUTE: ($) => seq($._C, $._O, $._M, $._P, $._U, $._T, $._E),
+    CONFIGURATION: ($) =>
+      seq(
+        $._C,
+        $._O,
+        $._N,
+        $._F,
+        $._I,
+        $._G,
+        $._U,
+        $._R,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    CONTAINS: ($) => seq($._C, $._O, $._N, $._T, $._A, $._I, $._N, $._S),
+    CONTENT: ($) => seq($._C, $._O, $._N, $._T, $._E, $._N, $._T),
+    CONTINUE: ($) => seq($._C, $._O, $._N, $._T, $._I, $._N, $._U, $._E),
+    CONTROL: ($) => seq($._C, $._O, $._N, $._T, $._R, $._O, $._L),
+    CONTROL_POINT: ($) =>
+      seq(
+        $._C,
+        $._O,
+        $._N,
+        $._T,
+        $._R,
+        $._O,
+        $._L,
+        $.MINUSCHAR,
+        $._P,
+        $._O,
+        $._I,
+        $._N,
+        $._T
+      ),
+    CONTROLS: ($) => seq($._C, $._O, $._N, $._T, $._R, $._O, $._L, $._S),
+    CONVENTION: ($) =>
+      seq($._C, $._O, $._N, $._V, $._E, $._N, $._T, $._I, $._O, $._N),
+    CONVERTING: ($) =>
+      seq($._C, $._O, $._N, $._V, $._E, $._R, $._T, $._I, $._N, $._G),
+    //COPY: ($) => seq($._C, $._O, $._P, $._Y),
+    CORR: ($) => seq($._C, $._O, $._R, $._R),
+    CORRESPONDING: ($) =>
+      seq(
+        $._C,
+        $._O,
+        $._R,
+        $._R,
+        $._E,
+        $._S,
+        $._P,
+        $._O,
+        $._N,
+        $._D,
+        $._I,
+        $._N,
+        $._G
+      ),
+    COUNT: ($) => seq($._C, $._O, $._U, $._N, $._T),
+    CRUNCH: ($) => seq($._C, $._R, $._U, $._N, $._C, $._H),
+    CURRENCY: ($) => seq($._C, $._U, $._R, $._R, $._E, $._N, $._C, $._Y),
+    CURSOR: ($) => seq($._C, $._U, $._R, $._S, $._O, $._R),
+    DATA: ($) => seq($._D, $._A, $._T, $._A),
+    DATA_BASE: ($) =>
+      seq($._D, $._A, $._T, $._A, $.MINUSCHAR, $._B, $._A, $._S, $._E),
+    DATE: ($) => seq($._D, $._A, $._T, $._E),
+    DATE_COMPILED: ($) =>
+      seq(
+        $._D,
+        $._A,
+        $._T,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._I,
+        $._L,
+        $._E,
+        $._D
+      ),
+    DATE_WRITTEN: ($) =>
+      seq(
+        $._D,
+        $._A,
+        $._T,
+        $._E,
+        $.MINUSCHAR,
+        $._W,
+        $._R,
+        $._I,
+        $._T,
+        $._T,
+        $._E,
+        $._N
+      ),
+    DAY: ($) => seq($._D, $._A, $._Y),
+    DAY_OF_WEEK: ($) =>
+      seq(
+        $._D,
+        $._A,
+        $._Y,
+        $.MINUSCHAR,
+        $._O,
+        $._F,
+        $.MINUSCHAR,
+        $._W,
+        $._E,
+        $._E,
+        $._K
+      ),
+    DBCS: ($) => seq($._D, $._B, $._C, $._S),
+    DBCLOB: ($) => seq($._D, $._B, $._C, $._L, $._O, $._B),
+    DE: ($) => seq($._D, $._E),
     DEBUG_CONTENTS: ($) =>
-      seq(D, E, B, U, G, MINUSCHAR, C, O, N, T, E, N, T, S),
-    DEBUG_ITEM: ($) => seq(D, E, B, U, G, MINUSCHAR, I, T, E, M),
-    DEBUG_LINE: ($) => seq(D, E, B, U, G, MINUSCHAR, L, I, N, E),
-    DEBUG_NAME: ($) => seq(D, E, B, U, G, MINUSCHAR, N, A, M, E),
-    DEBUG_SUB_1: ($) => seq(D, E, B, U, G, MINUSCHAR, S, U, B, MINUSCHAR, "1"),
-    DEBUG_SUB_2: ($) => seq(D, E, B, U, G, MINUSCHAR, S, U, B, MINUSCHAR, "2"),
-    DEBUG_SUB_3: ($) => seq(D, E, B, U, G, MINUSCHAR, S, U, B, MINUSCHAR, "3"),
-    DEBUGGING: ($) => seq(D, E, B, U, G, G, I, N, G),
-    DECIMAL_POINT: ($) => seq(D, E, C, I, M, A, L, MINUSCHAR, P, O, I, N, T),
-    DECLARATIVES: ($) => seq(D, E, C, L, A, R, A, T, I, V, E, S),
-    DEFAULT: ($) => seq(D, E, F, A, U, L, T),
+      seq(
+        $._D,
+        $._E,
+        $._B,
+        $._U,
+        $._G,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._N,
+        $._T,
+        $._E,
+        $._N,
+        $._T,
+        $._S
+      ),
+    DEBUG_ITEM: ($) =>
+      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._I, $._T, $._E, $._M),
+    DEBUG_LINE: ($) =>
+      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._L, $._I, $._N, $._E),
+    DEBUG_NAME: ($) =>
+      seq($._D, $._E, $._B, $._U, $._G, $.MINUSCHAR, $._N, $._A, $._M, $._E),
+    DEBUG_SUB_1: ($) =>
+      seq(
+        $._D,
+        $._E,
+        $._B,
+        $._U,
+        $._G,
+        $.MINUSCHAR,
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        "1"
+      ),
+    DEBUG_SUB_2: ($) =>
+      seq(
+        $._D,
+        $._E,
+        $._B,
+        $._U,
+        $._G,
+        $.MINUSCHAR,
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        "2"
+      ),
+    DEBUG_SUB_3: ($) =>
+      seq(
+        $._D,
+        $._E,
+        $._B,
+        $._U,
+        $._G,
+        $.MINUSCHAR,
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        "3"
+      ),
+    DEBUGGING: ($) => seq($._D, $._E, $._B, $._U, $._G, $._G, $._I, $._N, $._G),
+    DECIMAL_POINT: ($) =>
+      seq(
+        $._D,
+        $._E,
+        $._C,
+        $._I,
+        $._M,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        $._P,
+        $._O,
+        $._I,
+        $._N,
+        $._T
+      ),
+    DECLARATIVES: ($) =>
+      seq(
+        $._D,
+        $._E,
+        $._C,
+        $._L,
+        $._A,
+        $._R,
+        $._A,
+        $._T,
+        $._I,
+        $._V,
+        $._E,
+        $._S
+      ),
+    DEFAULT: ($) => seq($._D, $._E, $._F, $._A, $._U, $._L, $._T),
     DEFAULT_DISPLAY: ($) =>
-      seq(D, E, F, A, U, L, T, MINUSCHAR, D, I, S, P, L, A, Y),
-    DEFINITION: ($) => seq(D, E, F, I, N, I, T, I, O, N),
-    DELETE: ($) => seq(D, E, L, E, T, E),
-    DELIMITED: ($) => seq(D, E, L, I, M, I, T, E, D),
-    DELIMITER: ($) => seq(D, E, L, I, M, I, T, E, R),
-    DEPENDING: ($) => seq(D, E, P, E, N, D, I, N, G),
-    DESCENDING: ($) => seq(D, E, S, C, E, N, D, I, N, G),
-    DESTINATION: ($) => seq(D, E, S, T, I, N, A, T, I, O, N),
-    DETAIL: ($) => seq(D, E, T, A, I, L),
-    DFHRESP: ($) => seq(D, F, H, R, E, S, P),
-    DFHVALUE: ($) => seq(D, F, H, V, A, L, U, E),
-    DISABLE: ($) => seq(D, I, S, A, B, L, E),
-    DISK: ($) => seq(D, I, S, K),
-    DISPLAY: ($) => seq(D, I, S, P, L, A, Y),
-    DISPLAY_1: ($) => seq(D, I, S, P, L, A, Y, MINUSCHAR, "1"),
-    DIVIDE: ($) => seq(D, I, V, I, D, E),
-    DIVISION: ($) => seq(D, I, V, I, S, I, O, N),
-    DONTCARE: ($) => seq(D, O, N, T, C, A, R, E),
-    DOUBLE: ($) => seq(D, O, U, B, L, E),
-    DOWN: ($) => seq(D, O, W, N),
-    DUPLICATES: ($) => seq(D, U, P, L, I, C, A, T, E, S),
-    DYNAMIC: ($) => seq(D, Y, N, A, M, I, C),
-    EBCDIC: ($) => seq(E, B, C, D, I, C),
-    EGCS: ($) => seq(E, G, C, S), // E, X, T, E, N, S, I, O, N
-    EGI: ($) => seq(E, G, I),
-    ELSE: ($) => seq(E, L, S, E),
-    EMI: ($) => seq(E, M, I),
-    EMPTY_CHECK: ($) => seq(E, M, P, T, Y, MINUSCHAR, C, H, E, C, K),
-    ENABLE: ($) => seq(E, N, A, B, L, E),
-    END: ($) => seq(E, N, D),
-    END_ACCEPT: ($) => seq(E, N, D, MINUSCHAR, A, C, C, E, P, T),
-    END_ADD: ($) => seq(E, N, D, MINUSCHAR, A, D, D),
-    END_CALL: ($) => seq(E, N, D, MINUSCHAR, C, A, L, L),
-    END_COMPUTE: ($) => seq(E, N, D, MINUSCHAR, C, O, M, P, U, T, E),
-    END_DELETE: ($) => seq(E, N, D, MINUSCHAR, D, E, L, E, T, E),
-    END_DISPLAY: ($) => seq(E, N, D, MINUSCHAR, D, I, S, P, L, A, Y),
-    END_DIVIDE: ($) => seq(E, N, D, MINUSCHAR, D, I, V, I, D, E),
-    END_EVALUATE: ($) => seq(E, N, D, MINUSCHAR, E, V, A, L, U, A, T, E),
-    END_IF: ($) => seq(E, N, D, MINUSCHAR, I, F),
-    END_MULTIPLY: ($) => seq(E, N, D, MINUSCHAR, M, U, L, T, I, P, L, Y),
-    END_OF_PAGE: ($) => seq(E, N, D, MINUSCHAR, O, F, MINUSCHAR, P, A, G, E),
-    END_PERFORM: ($) => seq(E, N, D, MINUSCHAR, P, E, R, F, O, R, M),
-    END_READ: ($) => seq(E, N, D, MINUSCHAR, R, E, A, D),
-    END_RECEIVE: ($) => seq(E, N, D, MINUSCHAR, R, E, C, E, I, V, E),
-    END_REMARKS: ($) => seq(E, N, D, MINUSCHAR, R, E, M, A, R, K, S),
-    END_RETURN: ($) => seq(E, N, D, MINUSCHAR, R, E, T, U, R, N),
-    END_REWRITE: ($) => seq(E, N, D, MINUSCHAR, R, E, W, R, I, T, E),
-    END_SEARCH: ($) => seq(E, N, D, MINUSCHAR, S, E, A, R, C, H),
-    END_START: ($) => seq(E, N, D, MINUSCHAR, S, T, A, R, T),
-    END_STRING: ($) => seq(E, N, D, MINUSCHAR, S, T, R, I, N, G),
-    END_SUBTRACT: ($) => seq(E, N, D, MINUSCHAR, S, U, B, T, R, A, C, T),
-    END_UNSTRING: ($) => seq(E, N, D, MINUSCHAR, U, N, S, T, R, I, N, G),
-    END_WRITE: ($) => seq(E, N, D, MINUSCHAR, W, R, I, T, E),
-    ENDING: ($) => seq(E, N, D, I, N, F),
-    ENTER: ($) => seq(E, N, T, E, R),
-    ENTRY: ($) => seq(E, N, T, R, Y),
+      seq(
+        $._D,
+        $._E,
+        $._F,
+        $._A,
+        $._U,
+        $._L,
+        $._T,
+        $.MINUSCHAR,
+        $._D,
+        $._I,
+        $._S,
+        $._P,
+        $._L,
+        $._A,
+        $._Y
+      ),
+    DEFINITION: ($) =>
+      seq($._D, $._E, $._F, $._I, $._N, $._I, $._T, $._I, $._O, $._N),
+    DELETE: ($) => seq($._D, $._E, $._L, $._E, $._T, $._E),
+    DELIMITED: ($) => seq($._D, $._E, $._L, $._I, $._M, $._I, $._T, $._E, $._D),
+    DELIMITER: ($) => seq($._D, $._E, $._L, $._I, $._M, $._I, $._T, $._E, $._R),
+    DEPENDING: ($) => seq($._D, $._E, $._P, $._E, $._N, $._D, $._I, $._N, $._G),
+    DESCENDING: ($) =>
+      seq($._D, $._E, $._S, $._C, $._E, $._N, $._D, $._I, $._N, $._G),
+    DESTINATION: ($) =>
+      seq($._D, $._E, $._S, $._T, $._I, $._N, $._A, $._T, $._I, $._O, $._N),
+    DETAIL: ($) => seq($._D, $._E, $._T, $._A, $._I, $._L),
+    DFHRESP: ($) => seq($._D, $._F, $._H, $._R, $._E, $._S, $._P),
+    DFHVALUE: ($) => seq($._D, $._F, $._H, $._V, $._A, $._L, $._U, $._E),
+    DISABLE: ($) => seq($._D, $._I, $._S, $._A, $._B, $._L, $._E),
+    DISK: ($) => seq($._D, $._I, $._S, $._K),
+    DISPLAY: ($) => seq($._D, $._I, $._S, $._P, $._L, $._A, $._Y),
+    DISPLAY_1: ($) =>
+      seq($._D, $._I, $._S, $._P, $._L, $._A, $._Y, $.MINUSCHAR, "1"),
+    DIVIDE: ($) => seq($._D, $._I, $._V, $._I, $._D, $._E),
+    DIVISION: ($) => seq($._D, $._I, $._V, $._I, $._S, $._I, $._O, $._N),
+    DONTCARE: ($) => seq($._D, $._O, $._N, $._T, $._C, $._A, $._R, $._E),
+    DOUBLE: ($) => seq($._D, $._O, $._U, $._B, $._L, $._E),
+    DOWN: ($) => seq($._D, $._O, $._W, $._N),
+    DUPLICATES: ($) =>
+      seq($._D, $._U, $._P, $._L, $._I, $._C, $._A, $._T, $._E, $._S),
+    DYNAMIC: ($) => seq($._D, $._Y, $._N, $._A, $._M, $._I, $._C),
+    EBCDIC: ($) => seq($._E, $._B, $._C, $._D, $._I, $._C),
+    EGCS: ($) => seq($._E, $._G, $._C, $._S), // $._E, $._X, $._T, $._E, $._N, $._S, $._I, $._O, N
+    EGI: ($) => seq($._E, $._G, $._I),
+    ELSE: ($) => seq($._E, $._L, $._S, $._E),
+    EMI: ($) => seq($._E, $._M, $._I),
+    EMPTY_CHECK: ($) =>
+      seq(
+        $._E,
+        $._M,
+        $._P,
+        $._T,
+        $._Y,
+        $.MINUSCHAR,
+        $._C,
+        $._H,
+        $._E,
+        $._C,
+        $._K
+      ),
+    ENABLE: ($) => seq($._E, $._N, $._A, $._B, $._L, $._E),
+    END: ($) => seq($._E, $._N, $._D),
+    END_ACCEPT: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._A, $._C, $._C, $._E, $._P, $._T),
+    END_ADD: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._A, $._D, $._D),
+    END_CALL: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._C, $._A, $._L, $._L),
+    END_COMPUTE: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._E
+      ),
+    END_DELETE: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._D, $._E, $._L, $._E, $._T, $._E),
+    END_DISPLAY: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._D,
+        $._I,
+        $._S,
+        $._P,
+        $._L,
+        $._A,
+        $._Y
+      ),
+    END_DIVIDE: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._D, $._I, $._V, $._I, $._D, $._E),
+    END_EVALUATE: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._E,
+        $._V,
+        $._A,
+        $._L,
+        $._U,
+        $._A,
+        $._T,
+        $._E
+      ),
+    END_IF: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._I, $._F),
+    END_MULTIPLY: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._M,
+        $._U,
+        $._L,
+        $._T,
+        $._I,
+        $._P,
+        $._L,
+        $._Y
+      ),
+    END_OF_PAGE: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._O,
+        $._F,
+        $.MINUSCHAR,
+        $._P,
+        $._A,
+        $._G,
+        $._E
+      ),
+    END_PERFORM: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._P,
+        $._E,
+        $._R,
+        $._F,
+        $._O,
+        $._R,
+        $._M
+      ),
+    END_READ: ($) => seq($._E, $._N, $._D, $.MINUSCHAR, $._R, $._E, $._A, $._D),
+    END_RECEIVE: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._R,
+        $._E,
+        $._C,
+        $._E,
+        $._I,
+        $._V,
+        $._E
+      ),
+    END_REMARKS: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._R,
+        $._E,
+        $._M,
+        $._A,
+        $._R,
+        $._K,
+        $._S
+      ),
+    END_RETURN: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._R, $._E, $._T, $._U, $._R, $._N),
+    END_REWRITE: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._R,
+        $._E,
+        $._W,
+        $._R,
+        $._I,
+        $._T,
+        $._E
+      ),
+    END_SEARCH: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._E, $._A, $._R, $._C, $._H),
+    END_START: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._T, $._A, $._R, $._T),
+    END_STRING: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._S, $._T, $._R, $._I, $._N, $._G),
+    END_SUBTRACT: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._S,
+        $._U,
+        $._B,
+        $._T,
+        $._R,
+        $._A,
+        $._C,
+        $._T
+      ),
+    END_UNSTRING: ($) =>
+      seq(
+        $._E,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._U,
+        $._N,
+        $._S,
+        $._T,
+        $._R,
+        $._I,
+        $._N,
+        $._G
+      ),
+    END_WRITE: ($) =>
+      seq($._E, $._N, $._D, $.MINUSCHAR, $._W, $._R, $._I, $._T, $._E),
+    //ENDING: ($) => seq($._E, $._N, $._D, $._I, $._N, $._F),
+    ENTER: ($) => seq($._E, $._N, $._T, $._E, $._R),
+    ENTRY: ($) => seq($._E, $._N, $._T, $._R, $._Y),
     ENTRY_PROCEDURE: ($) =>
-      seq(E, N, T, R, Y, MINUSCHAR, P, R, O, C, E, D, U, R, E),
-    ENVIRONMENT: ($) => seq(E, N, V, I, R, O, N, M, E, N, T),
-    EOP: ($) => seq(E, O, P),
-    EQUAL: ($) => seq(E, Q, U, A, L),
-    ERASE: ($) => seq(E, R, A, S, E),
-    ERROR: ($) => seq(E, R, R, O, R),
-    EOL: ($) => seq(E, O, L),
-    EOS: ($) => seq(E, O, S),
-    ESCAPE: ($) => seq(E, S, C, A, P, E),
-    ESI: ($) => seq(E, S, I),
-    EVALUATE: ($) => seq(E, V, A, L, U, A, T, E),
-    EVENT: ($) => seq(E, V, E, N, T),
-    EVERY: ($) => seq(E, V, E, R, Y),
-    EXCEPTION: ($) => seq(E, X, C, E, P, T, I, O, N),
-    EXCLUSIVE: ($) => seq(E, X, C, L, U, S, I, V, E),
-    EXHIBIT: ($) => seq(E, X, H, I, B, I, T),
-    EXIT: ($) => seq(E, X, I, T),
-    EXPORT: ($) => seq(E, X, P, O, R, T),
-    EXTEND: ($) => seq(E, X, T, E, N, D),
-    EXTENDED: ($) => seq(E, X, T, E, N, D, E, D),
-    EXTERNAL: ($) => seq(E, X, T, E, R, N, A, L),
-    FALSE: ($) => seq(F, A, L, S, E),
-    FD: ($) => seq(F, D),
-    FILE: ($) => seq(F, I, L, E),
-    FILE_CONTROL: ($) => seq(F, I, L, E, MINUSCHAR, C, O, N, T, R, O, L),
-    FILLER: ($) => seq(F, I, L, L, E, R),
-    FINAL: ($) => seq(F, I, N, A, L),
-    FIRST: ($) => seq(F, I, R, S, T),
-    FOOTING: ($) => seq(F, O, O, T, I, N, G),
-    FOR: ($) => seq(F, O, R),
+      seq(
+        $._E,
+        $._N,
+        $._T,
+        $._R,
+        $._Y,
+        $.MINUSCHAR,
+        $._P,
+        $._R,
+        $._O,
+        $._C,
+        $._E,
+        $._D,
+        $._U,
+        $._R,
+        $._E
+      ),
+    ENVIRONMENT: ($) =>
+      seq($._E, $._N, $._V, $._I, $._R, $._O, $._N, $._M, $._E, $._N, $._T),
+    EOP: ($) => seq($._E, $._O, $._P),
+    EQUAL: ($) => seq($._E, $._Q, $._U, $._A, $._L),
+    ERASE: ($) => seq($._E, $._R, $._A, $._S, $._E),
+    ERROR: ($) => seq($._E, $._R, $._R, $._O, $._R),
+    EOL: ($) => seq($._E, $._O, $._L),
+    EOS: ($) => seq($._E, $._O, $._S),
+    ESCAPE: ($) => seq($._E, $._S, $._C, $._A, $._P, $._E),
+    ESI: ($) => seq($._E, $._S, $._I),
+    EVALUATE: ($) => seq($._E, $._V, $._A, $._L, $._U, $._A, $._T, $._E),
+    EVENT: ($) => seq($._E, $._V, $._E, $._N, $._T),
+    EVERY: ($) => seq($._E, $._V, $._E, $._R, $._Y),
+    EXCEPTION: ($) => seq($._E, $._X, $._C, $._E, $._P, $._T, $._I, $._O, $._N),
+    EXCLUSIVE: ($) => seq($._E, $._X, $._C, $._L, $._U, $._S, $._I, $._V, $._E),
+    EXHIBIT: ($) => seq($._E, $._X, $._H, $._I, $._B, $._I, $._T),
+    EXIT: ($) => seq($._E, $._X, $._I, $._T),
+    EXPORT: ($) => seq($._E, $._X, $._P, $._O, $._R, $._T),
+    EXTEND: ($) => seq($._E, $._X, $._T, $._E, $._N, $._D),
+    EXTENDED: ($) => seq($._E, $._X, $._T, $._E, $._N, $._D, $._E, $._D),
+    EXTERNAL: ($) => seq($._E, $._X, $._T, $._E, $._R, $._N, $._A, $._L),
+    FALSE: ($) => seq($._F, $._A, $._L, $._S, $._E),
+    FD: ($) => seq($._F, $._D),
+    FILE: ($) => seq($._F, $._I, $._L, $._E),
+    FILE_CONTROL: ($) =>
+      seq(
+        $._F,
+        $._I,
+        $._L,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._N,
+        $._T,
+        $._R,
+        $._O,
+        $._L
+      ),
+    FILLER: ($) => seq($._F, $._I, $._L, $._L, $._E, $._R),
+    FINAL: ($) => seq($._F, $._I, $._N, $._A, $._L),
+    FIRST: ($) => seq($._F, $._I, $._R, $._S, $._T),
+    FOOTING: ($) => seq($._F, $._O, $._O, $._T, $._I, $._N, $._G),
+    FOR: ($) => seq($._F, $._O, $._R),
     FOREGROUND_COLOR: ($) =>
-      seq(F, O, R, E, G, R, O, U, N, D, MINUSCHAR, C, O, L, O, R),
+      seq(
+        $._F,
+        $._O,
+        $._R,
+        $._E,
+        $._G,
+        $._R,
+        $._O,
+        $._U,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._L,
+        $._O,
+        $._R
+      ),
     FOREGROUND_COLOUR: ($) =>
-      seq(F, O, R, E, G, R, O, U, N, D, MINUSCHAR, C, O, L, O, U, R),
-    FROM: ($) => seq(F, R, O, M),
-    FULL: ($) => seq(F, U, L, L),
-    FUNCTION: ($) => seq(F, U, N, C, T, I, O, N),
-    FUNCTIONNAME: ($) => seq(F, U, N, C, T, I, O, N, N, A, M, E),
+      seq(
+        $._F,
+        $._O,
+        $._R,
+        $._E,
+        $._G,
+        $._R,
+        $._O,
+        $._U,
+        $._N,
+        $._D,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._L,
+        $._O,
+        $._U,
+        $._R
+      ),
+    FROM: ($) => seq($._F, $._R, $._O, $._M),
+    FULL: ($) => seq($._F, $._U, $._L, $._L),
+    FUNCTION: ($) => seq($._F, $._U, $._N, $._C, $._T, $._I, $._O, $._N),
+    FUNCTIONNAME: ($) =>
+      seq(
+        $._F,
+        $._U,
+        $._N,
+        $._C,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._N,
+        $._A,
+        $._M,
+        $._E
+      ),
     FUNCTION_POINTER: ($) =>
-      seq(F, U, N, C, T, I, O, N, MINUSCHAR, P, O, I, N, T, E, R),
-    GENERATE: ($) => seq(G, E, N, E, R, A, T, E),
-    GOBACK: ($) => seq(G, O, B, A, C, K),
-    GIVING: ($) => seq(G, I, V, I, N, G),
-    GLOBAL: ($) => seq(G, L, O, B, A, L),
-    GO: ($) => seq(G, O),
-    GREATER: ($) => seq(G, R, E, A, T, E, R),
-    GRID: ($) => seq(G, R, I, D),
-    GROUP: ($) => seq(G, R, O, U, P),
-    HEADING: ($) => seq(H, E, A, D, I, N, G),
-    HIGHLIGHT: ($) => seq(H, I, G, H, L, I, G, H, T),
-    HIGH_VALUE: ($) => seq(H, I, G, H, MINUSCHAR, V, A, L, U, E),
-    HIGH_VALUES: ($) => seq(H, I, G, H, MINUSCHAR, V, A, L, U, E, S),
-    I_O: ($) => seq(I, MINUSCHAR, O),
-    I_O_CONTROL: ($) => seq(I, MINUSCHAR, O, MINUSCHAR, C, O, N, T, R, O, L),
-    ID: ($) => seq(I, D),
-    IDENTIFICATION: ($) => seq(I, D, E, N, T, I, F, I, C, A, T, I, O, N),
-    IF: ($) => seq(I, F),
-    IMPLICIT: ($) => seq(I, M, P, L, I, C, I, T),
-    IMPORT: ($) => seq(I, M, P, O, R, T),
-    IN: ($) => seq(I, N),
-    INDEX: ($) => seq(I, N, D, E, X),
-    INDEXED: ($) => seq(I, N, D, E, X, E, D),
-    INDICATE: ($) => seq(I, N, D, I, C, A, T, E),
-    INITIAL: ($) => seq(I, N, I, T, I, A, L),
-    INITIALIZE: ($) => seq(I, N, I, T, I, A, L, I, Z, E),
-    INITIATE: ($) => seq(I, N, I, T, I, A, T, E),
-    INPUT: ($) => seq(I, N, P, U, T),
-    INPUT_OUTPUT: ($) => seq(I, N, P, U, T, MINUSCHAR, O, U, T, P, U, T),
-    INSPECT: ($) => seq(I, N, S, P, E, C, T),
-    INSTALLATION: ($) => seq(I, N, S, T, A, L, L, A, T, I, O, N),
-    INTEGER: ($) => seq(I, N, T, E, G, E, R),
-    INTO: ($) => seq(I, N, T, O),
-    INVALID: ($) => seq(I, N, V, A, L, I, D),
-    INVOKE: ($) => seq(I, N, V, O, K, E),
-    IS: ($) => seq(I, S),
-    JUST: ($) => seq(J, U, S, T),
-    JUSTIFIED: ($) => seq(J, U, S, T, I, F, I, E, D),
-    KANJI: ($) => seq(K, A, N, J, I),
-    KEPT: ($) => seq(K, E, P, T),
-    KEY: ($) => seq(K, E, Y),
-    KEYBOARD: ($) => seq(K, E, Y, B, O, A, R, D),
-    LABEL: ($) => seq(L, A, B, E, L),
-    LANGUAGE: ($) => seq(L, A, N, G, U, A, G, E),
-    LAST: ($) => seq(L, A, S, T),
-    LB: ($) => seq(L, B),
-    LD: ($) => seq(L, D),
-    LEADING: ($) => seq(L, E, A, D, I, N, G),
-    LEFT: ($) => seq(L, E, F, T),
-    LEFTLINE: ($) => seq(L, E, F, T, L, I, N, E),
-    LENGTH: ($) => seq(L, E, N, G, T, H),
-    LENGTH_CHECK: ($) => seq(L, E, N, G, T, H, MINUSCHAR, C, H, E, C, K),
-    LESS: ($) => seq(L, E, S, S),
-    LIBACCESS: ($) => seq(L, I, B, A, C, C, E, S, S),
-    LIBPARAMETER: ($) => seq(L, I, B, P, A, R, A, M, E, T, E, R),
-    LIBRARY: ($) => seq(L, I, B, R, A, R, Y),
-    LIMIT: ($) => seq(L, I, M, I, T),
-    LIMITS: ($) => seq(L, I, M, I, T, S),
-    LINAGE: ($) => seq(L, I, N, A, G, E),
+      seq(
+        $._F,
+        $._U,
+        $._N,
+        $._C,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $.MINUSCHAR,
+        $._P,
+        $._O,
+        $._I,
+        $._N,
+        $._T,
+        $._E,
+        $._R
+      ),
+    GENERATE: ($) => seq($._G, $._E, $._N, $._E, $._R, $._A, $._T, $._E),
+    GOBACK: ($) => seq($._G, $._O, $._B, $._A, $._C, $._K),
+    GIVING: ($) => seq($._G, $._I, $._V, $._I, $._N, $._G),
+    GLOBAL: ($) => seq($._G, $._L, $._O, $._B, $._A, $._L),
+    GO: ($) => seq($._G, $._O),
+    GREATER: ($) => seq($._G, $._R, $._E, $._A, $._T, $._E, $._R),
+    GRID: ($) => seq($._G, $._R, $._I, $._D),
+    GROUP: ($) => seq($._G, $._R, $._O, $._U, $._P),
+    HEADING: ($) => seq($._H, $._E, $._A, $._D, $._I, $._N, $._G),
+    HIGHLIGHT: ($) => seq($._H, $._I, $._G, $._H, $._L, $._I, $._G, $._H, $._T),
+    HIGH_VALUE: ($) =>
+      seq($._H, $._I, $._G, $._H, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
+    HIGH_VALUES: ($) =>
+      seq(
+        $._H,
+        $._I,
+        $._G,
+        $._H,
+        $.MINUSCHAR,
+        $._V,
+        $._A,
+        $._L,
+        $._U,
+        $._E,
+        $._S
+      ),
+    I_O: ($) => seq($._I, $.MINUSCHAR, $._O),
+    I_O_CONTROL: ($) =>
+      seq(
+        $._I,
+        $.MINUSCHAR,
+        $._O,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._N,
+        $._T,
+        $._R,
+        $._O,
+        $._L
+      ),
+    ID: ($) => seq($._I, $._D),
+    IDENTIFICATION: ($) =>
+      seq(
+        $._I,
+        $._D,
+        $._E,
+        $._N,
+        $._T,
+        $._I,
+        $._F,
+        $._I,
+        $._C,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    IF: ($) => seq($._I, $._F),
+    IMPLICIT: ($) => seq($._I, $._M, $._P, $._L, $._I, $._C, $._I, $._T),
+    IMPORT: ($) => seq($._I, $._M, $._P, $._O, $._R, $._T),
+    IN: ($) => seq($._I, $._N),
+    INDEX: ($) => seq($._I, $._N, $._D, $._E, $._X),
+    INDEXED: ($) => seq($._I, $._N, $._D, $._E, $._X, $._E, $._D),
+    INDICATE: ($) => seq($._I, $._N, $._D, $._I, $._C, $._A, $._T, $._E),
+    INITIAL: ($) => seq($._I, $._N, $._I, $._T, $._I, $._A, $._L),
+    INITIALIZE: ($) =>
+      seq($._I, $._N, $._I, $._T, $._I, $._A, $._L, $._I, $._Z, $._E),
+    INITIATE: ($) => seq($._I, $._N, $._I, $._T, $._I, $._A, $._T, $._E),
+    INPUT: ($) => seq($._I, $._N, $._P, $._U, $._T),
+    INPUT_OUTPUT: ($) =>
+      seq(
+        $._I,
+        $._N,
+        $._P,
+        $._U,
+        $._T,
+        $.MINUSCHAR,
+        $._O,
+        $._U,
+        $._T,
+        $._P,
+        $._U,
+        $._T
+      ),
+    INSPECT: ($) => seq($._I, $._N, $._S, $._P, $._E, $._C, $._T),
+    INSTALLATION: ($) =>
+      seq(
+        $._I,
+        $._N,
+        $._S,
+        $._T,
+        $._A,
+        $._L,
+        $._L,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    INTEGER: ($) => seq($._I, $._N, $._T, $._E, $._G, $._E, $._R),
+    INTO: ($) => seq($._I, $._N, $._T, $._O),
+    INVALID: ($) => seq($._I, $._N, $._V, $._A, $._L, $._I, $._D),
+    INVOKE: ($) => seq($._I, $._N, $._V, $._O, $._K, $._E),
+    IS: ($) => seq($._I, $._S),
+    JUST: ($) => seq($._J, $._U, $._S, $._T),
+    JUSTIFIED: ($) => seq($._J, $._U, $._S, $._T, $._I, $._F, $._I, $._E, $._D),
+    KANJI: ($) => seq($._K, $._A, $._N, $._J, $._I),
+    KEPT: ($) => seq($._K, $._E, $._P, $._T),
+    KEY: ($) => seq($._K, $._E, $._Y),
+    KEYBOARD: ($) => seq($._K, $._E, $._Y, $._B, $._O, $._A, $._R, $._D),
+    LABEL: ($) => seq($._L, $._A, $._B, $._E, $._L),
+    LANGUAGE: ($) => seq($._L, $._A, $._N, $._G, $._U, $._A, $._G, $._E),
+    LAST: ($) => seq($._L, $._A, $._S, $._T),
+    LB: ($) => seq($._L, $._B),
+    LD: ($) => seq($._L, $._D),
+    LEADING: ($) => seq($._L, $._E, $._A, $._D, $._I, $._N, $._G),
+    LEFT: ($) => seq($._L, $._E, $._F, $._T),
+    LEFTLINE: ($) => seq($._L, $._E, $._F, $._T, $._L, $._I, $._N, $._E),
+    LENGTH: ($) => seq($._L, $._E, $._N, $._G, $._T, $._H),
+    LENGTH_CHECK: ($) =>
+      seq(
+        $._L,
+        $._E,
+        $._N,
+        $._G,
+        $._T,
+        $._H,
+        $.MINUSCHAR,
+        $._C,
+        $._H,
+        $._E,
+        $._C,
+        $._K
+      ),
+    LESS: ($) => seq($._L, $._E, $._S, $._S),
+    LIBACCESS: ($) => seq($._L, $._I, $._B, $._A, $._C, $._C, $._E, $._S, $._S),
+    LIBPARAMETER: ($) =>
+      seq(
+        $._L,
+        $._I,
+        $._B,
+        $._P,
+        $._A,
+        $._R,
+        $._A,
+        $._M,
+        $._E,
+        $._T,
+        $._E,
+        $._R
+      ),
+    LIBRARY: ($) => seq($._L, $._I, $._B, $._R, $._A, $._R, $._Y),
+    LIMIT: ($) => seq($._L, $._I, $._M, $._I, $._T),
+    LIMITS: ($) => seq($._L, $._I, $._M, $._I, $._T, $._S),
+    LINAGE: ($) => seq($._L, $._I, $._N, $._A, $._G, $._E),
     LINAGE_COUNTER: ($) =>
-      seq(L, I, N, A, G, E, MINUSCHAR, C, O, U, N, T, E, R),
-    LINE: ($) => seq(L, I, N, E),
-    LINES: ($) => seq(L, I, N, E, S),
-    LINE_COUNTER: ($) => seq(L, I, N, E, MINUSCHAR, C, O, U, N, T, E, R),
-    LINKAGE: ($) => seq(L, I, N, K, A, G, E),
-    LIST: ($) => seq(L, I, S, T),
-    LOCAL: ($) => seq(L, O, C, A, L),
-    LOCAL_STORAGE: ($) => seq(L, O, C, A, L, MINUSCHAR, S, T, O, R, A, G, E),
-    LOCK: ($) => seq(L, O, C, K),
-    LONG_DATE: ($) => seq(L, O, N, G, MINUSCHAR, D, A, T, E),
-    LONG_TIME: ($) => seq(L, O, N, G, MINUSCHAR, T, I, M, E),
-    LOWER: ($) => seq(L, O, W, E, R),
-    LOWLIGHT: ($) => seq(L, O, W, L, I, G, H, T),
-    LOW_VALUE: ($) => seq(L, O, W, MINUSCHAR, V, A, L, U, E),
-    LOW_VALUES: ($) => seq(L, O, W, MINUSCHAR, V, A, L, U, E, S),
-    MEMORY: ($) => seq(M, E, M, O, R, Y),
-    MERGE: ($) => seq(M, E, R, G, E),
-    MESSAGE: ($) => seq(M, E, S, S, A, G, E),
-    MMDDYYYY: ($) => seq(M, M, D, D, Y, Y, Y, Y),
-    MODE: ($) => seq(M, O, D, E),
-    MODULES: ($) => seq(M, O, D, U, L, E, S),
-    MORE_LABELS: ($) => seq(M, O, R, E, MINUSCHAR, L, A, B, E, L, S),
-    MOVE: ($) => seq(M, O, V, E),
-    MULTIPLE: ($) => seq(M, U, L, T, I, P, L, E),
-    MULTIPLY: ($) => seq(M, U, L, T, I, P, L, Y),
-    NAMED: ($) => seq(N, A, M, E, D),
-    NATIONAL: ($) => seq(N, A, T, I, O, N, A, L),
+      seq(
+        $._L,
+        $._I,
+        $._N,
+        $._A,
+        $._G,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._U,
+        $._N,
+        $._T,
+        $._E,
+        $._R
+      ),
+    LINE: ($) => seq($._L, $._I, $._N, $._E),
+    LINES: ($) => seq($._L, $._I, $._N, $._E, $._S),
+    LINE_COUNTER: ($) =>
+      seq(
+        $._L,
+        $._I,
+        $._N,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._U,
+        $._N,
+        $._T,
+        $._E,
+        $._R
+      ),
+    LINKAGE: ($) => seq($._L, $._I, $._N, $._K, $._A, $._G, $._E),
+    LIST: ($) => seq($._L, $._I, $._S, $._T),
+    LOCAL: ($) => seq($._L, $._O, $._C, $._A, $._L),
+    LOCAL_STORAGE: ($) =>
+      seq(
+        $._L,
+        $._O,
+        $._C,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        $._S,
+        $._T,
+        $._O,
+        $._R,
+        $._A,
+        $._G,
+        $._E
+      ),
+    LOCK: ($) => seq($._L, $._O, $._C, $._K),
+    LONG_DATE: ($) =>
+      seq($._L, $._O, $._N, $._G, $.MINUSCHAR, $._D, $._A, $._T, $._E),
+    LONG_TIME: ($) =>
+      seq($._L, $._O, $._N, $._G, $.MINUSCHAR, $._T, $._I, $._M, $._E),
+    LOWER: ($) => seq($._L, $._O, $._W, $._E, $._R),
+    LOWLIGHT: ($) => seq($._L, $._O, $._W, $._L, $._I, $._G, $._H, $._T),
+    LOW_VALUE: ($) =>
+      seq($._L, $._O, $._W, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E),
+    LOW_VALUES: ($) =>
+      seq($._L, $._O, $._W, $.MINUSCHAR, $._V, $._A, $._L, $._U, $._E, $._S),
+    MEMORY: ($) => seq($._M, $._E, $._M, $._O, $._R, $._Y),
+    MERGE: ($) => seq($._M, $._E, $._R, $._G, $._E),
+    MESSAGE: ($) => seq($._M, $._E, $._S, $._S, $._A, $._G, $._E),
+    MMDDYYYY: ($) => seq($._M, $._M, $._D, $._D, $._Y, $._Y, $._Y, $._Y),
+    MODE: ($) => seq($._M, $._O, $._D, $._E),
+    MODULES: ($) => seq($._M, $._O, $._D, $._U, $._L, $._E, $._S),
+    MORE_LABELS: ($) =>
+      seq(
+        $._M,
+        $._O,
+        $._R,
+        $._E,
+        $.MINUSCHAR,
+        $._L,
+        $._A,
+        $._B,
+        $._E,
+        $._L,
+        $._S
+      ),
+    MOVE: ($) => seq($._M, $._O, $._V, $._E),
+    MULTIPLE: ($) => seq($._M, $._U, $._L, $._T, $._I, $._P, $._L, $._E),
+    MULTIPLY: ($) => seq($._M, $._U, $._L, $._T, $._I, $._P, $._L, $._Y),
+    NAMED: ($) => seq($._N, $._A, $._M, $._E, $._D),
+    NATIONAL: ($) => seq($._N, $._A, $._T, $._I, $._O, $._N, $._A, $._L),
     NATIONAL_EDITED: ($) =>
-      seq(N, A, T, I, O, N, A, L, MINUSCHAR, E, D, I, T, E, D),
-    NATIVE: ($) => seq(N, A, T, I, V, E),
-    NEGATIVE: ($) => seq(N, E, G, A, T, I, V, E),
-    NETWORK: ($) => seq(N, E, T, W, O, R, K),
-    NEXT: ($) => seq(N, E, X, T),
-    NO: ($) => seq(N, O),
-    NO_ECHO: ($) => seq(N, O, MINUSCHAR, E, C, H, O),
-    NOT: ($) => seq(N, O, T),
-    NULL: ($) => seq(N, U, L, L),
-    NULLS: ($) => seq(N, U, L, L, S),
-    NUMBER: ($) => seq(N, U, M, B, E, R),
-    NUMERIC: ($) => seq(N, U, M, E, R, I, C),
-    NUMERIC_DATE: ($) => seq(N, U, M, E, R, I, C, MINUSCHAR, D, A, T, E),
+      seq(
+        $._N,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        $._E,
+        $._D,
+        $._I,
+        $._T,
+        $._E,
+        $._D
+      ),
+    NATIVE: ($) => seq($._N, $._A, $._T, $._I, $._V, $._E),
+    NEGATIVE: ($) => seq($._N, $._E, $._G, $._A, $._T, $._I, $._V, $._E),
+    NETWORK: ($) => seq($._N, $._E, $._T, $._W, $._O, $._R, $._K),
+    NEXT: ($) => seq($._N, $._E, $._X, $._T),
+    NO: ($) => seq($._N, $._O),
+    NO_ECHO: ($) => seq($._N, $._O, $.MINUSCHAR, $._E, $._C, $._H, $._O),
+    NOT: ($) => seq($._N, $._O, $._T),
+    NULL: ($) => seq($._N, $._U, $._L, $._L),
+    NULLS: ($) => seq($._N, $._U, $._L, $._L, $._S),
+    NUMBER: ($) => seq($._N, $._U, $._M, $._B, $._E, $._R),
+    NUMERIC: ($) => seq($._N, $._U, $._M, $._E, $._R, $._I, $._C),
+    NUMERIC_DATE: ($) =>
+      seq(
+        $._N,
+        $._U,
+        $._M,
+        $._E,
+        $._R,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._D,
+        $._A,
+        $._T,
+        $._E
+      ),
     NUMERIC_EDITED: ($) =>
-      seq(N, U, M, E, R, I, C, MINUSCHAR, E, D, I, T, E, D),
-    NUMERIC_TIME: ($) => seq(N, U, M, E, R, I, C, MINUSCHAR, T, I, M, E),
+      seq(
+        $._N,
+        $._U,
+        $._M,
+        $._E,
+        $._R,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._E,
+        $._D,
+        $._I,
+        $._T,
+        $._E,
+        $._D
+      ),
+    NUMERIC_TIME: ($) =>
+      seq(
+        $._N,
+        $._U,
+        $._M,
+        $._E,
+        $._R,
+        $._I,
+        $._C,
+        $.MINUSCHAR,
+        $._T,
+        $._I,
+        $._M,
+        $._E
+      ),
     OBJECT_COMPUTER: ($) =>
-      seq(O, B, J, E, C, T, MINUSCHAR, C, O, M, P, U, T, E, R),
-    OCCURS: ($) => seq(O, C, C, U, R, S),
-    ODT: ($) => seq(O, D, T),
-    OF: ($) => seq(O, F),
-    OFF: ($) => seq(O, F, F),
-    OMITTED: ($) => seq(O, M, I, T, T, E, D),
-    ON: ($) => seq(O, N),
-    OPEN: ($) => seq(O, P, E, N),
-    OPTIONAL: ($) => seq(O, P, T, I, O, N, A, L),
-    OR: ($) => seq(O, R),
-    ORDER: ($) => seq(O, R, D, E, R),
-    ORDERLY: ($) => seq(O, R, D, E, R, L, Y),
-    ORGANIZATION: ($) => seq(O, R, G, A, N, I, Z, A, T, I, O, N),
-    OTHER: ($) => seq(O, T, H, E, R),
-    OUTPUT: ($) => seq(O, U, T, P, U, T),
-    OVERFLOW: ($) => seq(O, V, E, R, F, L, O, W),
-    OVERLINE: ($) => seq(O, V, E, R, L, I, N, E),
-    OWN: ($) => seq(O, W, N),
+      seq(
+        $._O,
+        $._B,
+        $._J,
+        $._E,
+        $._C,
+        $._T,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._E,
+        $._R
+      ),
+    OCCURS: ($) => seq($._O, $._C, $._C, $._U, $._R, $._S),
+    ODT: ($) => seq($._O, $._D, $._T),
+    OF: ($) => seq($._O, $._F),
+    OFF: ($) => seq($._O, $._F, $._F),
+    OMITTED: ($) => seq($._O, $._M, $._I, $._T, $._T, $._E, $._D),
+    ON: ($) => seq($._O, $._N),
+    OPEN: ($) => seq($._O, $._P, $._E, $._N),
+    OPTIONAL: ($) => seq($._O, $._P, $._T, $._I, $._O, $._N, $._A, $._L),
+    OR: ($) => seq($._O, $._R),
+    ORDER: ($) => seq($._O, $._R, $._D, $._E, $._R),
+    ORDERLY: ($) => seq($._O, $._R, $._D, $._E, $._R, $._L, $._Y),
+    ORGANIZATION: ($) =>
+      seq(
+        $._O,
+        $._R,
+        $._G,
+        $._A,
+        $._N,
+        $._I,
+        $._Z,
+        $._A,
+        $._T,
+        $._I,
+        $._O,
+        $._N
+      ),
+    OTHER: ($) => seq($._O, $._T, $._H, $._E, $._R),
+    OUTPUT: ($) => seq($._O, $._U, $._T, $._P, $._U, $._T),
+    OVERFLOW: ($) => seq($._O, $._V, $._E, $._R, $._F, $._L, $._O, $._W),
+    OVERLINE: ($) => seq($._O, $._V, $._E, $._R, $._L, $._I, $._N, $._E),
+    OWN: ($) => seq($._O, $._W, $._N),
     PACKED_DECIMAL: ($) =>
-      seq(P, A, C, K, E, D, MINUSCHAR, D, E, C, I, M, A, L),
-    PADDING: ($) => seq(P, A, D, D, I, N, G),
-    PAGE: ($) => seq(P, A, G, E),
-    PAGE_COUNTER: ($) => seq(P, A, G, E, MINUSCHAR, C, O, U, N, T, E, R),
-    PASSWORD: ($) => seq(P, A, S, S, W, O, R, D),
-    PERFORM: ($) => seq(P, E, R, F, O, R, M),
-    PF: ($) => seq(P, F),
-    PH: ($) => seq(P, H),
-    PIC: ($) => seq(P, I, C),
-    PICTURE: ($) => seq(P, I, C, T, U, R, E),
-    PLUS: ($) => seq(P, L, U, S),
-    POINTER: ($) => seq(P, O, I, N, T, E, R),
-    POSITION: ($) => seq(P, O, S, I, T, I, O, N),
-    POSITIVE: ($) => seq(P, O, S, I, T, I, V, E),
-    PORT: ($) => seq(P, O, R, T),
-    PRINTER: ($) => seq(P, R, I, N, T, E, R),
-    PRINTING: ($) => seq(P, R, I, N, T, I, N, G),
-    PRIVATE: ($) => seq(P, R, I, V, A, T, E),
-    PROCEDURE: ($) => seq(P, R, O, C, E, D, U, R, E),
+      seq(
+        $._P,
+        $._A,
+        $._C,
+        $._K,
+        $._E,
+        $._D,
+        $.MINUSCHAR,
+        $._D,
+        $._E,
+        $._C,
+        $._I,
+        $._M,
+        $._A,
+        $._L
+      ),
+    PADDING: ($) => seq($._P, $._A, $._D, $._D, $._I, $._N, $._G),
+    PAGE: ($) => seq($._P, $._A, $._G, $._E),
+    PAGE_COUNTER: ($) =>
+      seq(
+        $._P,
+        $._A,
+        $._G,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._U,
+        $._N,
+        $._T,
+        $._E,
+        $._R
+      ),
+    PASSWORD: ($) => seq($._P, $._A, $._S, $._S, $._W, $._O, $._R, $._D),
+    PERFORM: ($) => seq($._P, $._E, $._R, $._F, $._O, $._R, $._M),
+    PF: ($) => seq($._P, $._F),
+    PH: ($) => seq($._P, $._H),
+    PIC: ($) => seq($._P, $._I, $._C),
+    PICTURE: ($) => seq($._P, $._I, $._C, $._T, $._U, $._R, $._E),
+    PLUS: ($) => seq($._P, $._L, $._U, $._S),
+    POINTER: ($) => seq($._P, $._O, $._I, $._N, $._T, $._E, $._R),
+    POSITION: ($) => seq($._P, $._O, $._S, $._I, $._T, $._I, $._O, $._N),
+    POSITIVE: ($) => seq($._P, $._O, $._S, $._I, $._T, $._I, $._V, $._E),
+    PORT: ($) => seq($._P, $._O, $._R, $._T),
+    PRINTER: ($) => seq($._P, $._R, $._I, $._N, $._T, $._E, $._R),
+    //PRINTING: ($) => seq($._P, $._R, $._I, $._N, $._T, $._I, $._N, $._G),
+    PRIVATE: ($) => seq($._P, $._R, $._I, $._V, $._A, $._T, $._E),
+    PROCEDURE: ($) => seq($._P, $._R, $._O, $._C, $._E, $._D, $._U, $._R, $._E),
     PROCEDURE_POINTER: ($) =>
-      seq(P, R, O, C, E, D, U, R, E, MINUSCHAR, P, O, I, N, T, E, R),
-    PROCEDURES: ($) => seq(P, R, O, C, E, D, U, R, E, S),
-    PROCEED: ($) => seq(P, R, O, C, E, E, D),
-    PROCESS: ($) => seq(P, R, O, C, E, S, S),
-    PROGRAM: ($) => seq(P, R, O, G, R, A, M),
-    PROGRAM_ID: ($) => seq(P, R, O, G, R, A, M, MINUSCHAR, I, D),
+      seq(
+        $._P,
+        $._R,
+        $._O,
+        $._C,
+        $._E,
+        $._D,
+        $._U,
+        $._R,
+        $._E,
+        $.MINUSCHAR,
+        $._P,
+        $._O,
+        $._I,
+        $._N,
+        $._T,
+        $._E,
+        $._R
+      ),
+    PROCEDURES: ($) =>
+      seq($._P, $._R, $._O, $._C, $._E, $._D, $._U, $._R, $._E, $._S),
+    PROCEED: ($) => seq($._P, $._R, $._O, $._C, $._E, $._E, $._D),
+    PROCESS: ($) => seq($._P, $._R, $._O, $._C, $._E, $._S, $._S),
+    PROGRAM: ($) => seq($._P, $._R, $._O, $._G, $._R, $._A, $._M),
+    PROGRAM_ID: ($) =>
+      seq($._P, $._R, $._O, $._G, $._R, $._A, $._M, $.MINUSCHAR, $._I, $._D),
     PROGRAM_LIBRARY: ($) =>
-      seq(P, R, O, G, R, A, M, MINUSCHAR, L, I, B, R, A, R, Y),
-    PROMPT: ($) => seq(P, R, O, M, P, T),
-    PURGE: ($) => seq(P, U, R, G, E),
-    QUEUE: ($) => seq(Q, U, E, U, E),
-    QUOTE: ($) => seq(Q, U, O, T, E),
-    QUOTES: ($) => seq(Q, U, O, T, E, S),
-    RANDOM: ($) => seq(R, A, N, D, O, M),
-    READER: ($) => seq(R, E, A, D, E, R),
-    REMOTE: ($) => seq(R, E, M, O, T, E),
-    RD: ($) => seq(R, D),
-    REAL: ($) => seq(R, E, A, L),
-    READ: ($) => seq(R, E, A, D),
-    RECEIVE: ($) => seq(R, E, C, E, I, V, E),
-    RECEIVED: ($) => seq(R, E, C, E, I, V, E, D),
-    RECORD: ($) => seq(R, E, C, O, R, D),
-    RECORDING: ($) => seq(R, E, C, O, R, D, I, N, G),
-    RECORDS: ($) => seq(R, E, C, O, R, D, S),
-    RECURSIVE: ($) => seq(R, E, C, U, R, S, I, V, E),
-    REDEFINES: ($) => seq(R, E, D, E, F, I, N, E, S),
-    REEL: ($) => seq(R, E, E, L),
-    REF: ($) => seq(R, E, F),
-    REFERENCE: ($) => seq(R, E, F, E, R, E, N, C, E),
-    REFERENCES: ($) => seq(R, E, F, E, R, E, N, C, E, S),
-    RELATIVE: ($) => seq(R, E, L, A, T, I, V, E),
-    RELEASE: ($) => seq(R, E, L, E, A, S, E),
-    REMAINDER: ($) => seq(R, E, M, A, I, N, D, E, R),
-    REMARKS: ($) => seq(R, E, M, A, R, K, S),
-    REMOVAL: ($) => seq(R, E, M, O, V, A, L),
-    REMOVE: ($) => seq(R, E, M, O, V, E),
-    RENAMES: ($) => seq(R, E, N, A, M, E, S),
-    REPLACE: ($) => seq(R, E, P, L, A, C, E),
-    REPLACING: ($) => seq(R, E, P, L, A, C, I, N, G),
-    REPORT: ($) => seq(R, E, P, O, R, T),
-    REPORTING: ($) => seq(R, E, P, O, R, T, I, N, G),
-    REPORTS: ($) => seq(R, E, P, O, R, T, S),
-    REQUIRED: ($) => seq(R, E, Q, U, I, R, E, D),
-    RERUN: ($) => seq(R, E, R, U, N),
-    RESERVE: ($) => seq(R, E, S, E, R, V, E),
-    REVERSE_VIDEO: ($) => seq(R, E, S, E, R, V, E, MINUSCHAR, V, I, D, E, O),
-    RESET: ($) => seq(R, E, S, E, T),
-    RETURN: ($) => seq(R, E, T, U, R, N),
-    RETURN_CODE: ($) => seq(R, E, T, U, R, N, MINUSCHAR, C, O, D, E),
-    RETURNING: ($) => seq(R, E, T, U, R, N, I, N, G),
-    REVERSED: ($) => seq(R, E, V, E, R, S, E, D),
-    REWIND: ($) => seq(R, E, W, I, N, D),
-    REWRITE: ($) => seq(R, E, W, R, I, T, E),
-    RF: ($) => seq(R, F),
-    RH: ($) => seq(R, H),
-    RIGHT: ($) => seq(R, I, G, H, T),
-    ROUNDED: ($) => seq(R, O, U, N, D, E, D),
-    RUN: ($) => seq(R, U, N),
-    SAME: ($) => seq(S, A, M, E),
-    SAVE: ($) => seq(S, A, V, E),
-    SCREEN: ($) => seq(S, C, R, E, E, N),
-    SD: ($) => seq(S, D),
-    SEARCH: ($) => seq(S, E, A, R, C, H),
-    SECTION: ($) => seq(S, E, C, T, I, O, N),
-    SECURE: ($) => seq(S, E, C, U, R, E),
-    SECURITY: ($) => seq(S, E, C, U, R, I, T, Y),
-    SEGMENT: ($) => seq(S, E, G, M, E, N, T),
-    SEGMENT_LIMIT: ($) => seq(S, E, G, M, E, N, T, MINUSCHAR, L, I, M, I, T),
-    SELECT: ($) => seq(S, E, L, E, C, T),
-    SEND: ($) => seq(S, E, N, D),
-    SENTENCE: ($) => seq(S, E, N, T, E, N, C, E),
-    SEPARATE: ($) => seq(S, E, P, A, R, A, T, E),
-    SEQUENCE: ($) => seq(S, E, Q, U, E, N, C, E),
-    SEQUENTIAL: ($) => seq(S, E, Q, U, E, N, T, I, A, L),
-    SET: ($) => seq(S, E, T),
-    SHARED: ($) => seq(S, H, A, R, E, D),
-    SHAREDBYALL: ($) => seq(S, H, A, R, E, D, B, Y, A, L, L),
-    SHAREDBYRUNUNIT: ($) => seq(S, H, A, R, E, D, B, Y, R, U, N, U, N, I, T),
-    SHARING: ($) => seq(S, H, A, R, I, N, G),
-    SHIFT_IN: ($) => seq(S, H, I, F, T, MINUSCHAR, I, N),
-    SHIFT_OUT: ($) => seq(S, H, I, F, T, MINUSCHAR, O, U, T),
-    SHORT_DATE: ($) => seq(S, H, O, R, T, MINUSCHAR, D, A, T, E),
-    SIGN: ($) => seq(S, I, G, N),
-    SIZE: ($) => seq(S, I, Z, E),
-    SORT: ($) => seq(S, O, R, T),
-    SORT_CONTROL: ($) => seq(S, O, R, T, MINUSCHAR, C, O, N, T, R, O, L),
+      seq(
+        $._P,
+        $._R,
+        $._O,
+        $._G,
+        $._R,
+        $._A,
+        $._M,
+        $.MINUSCHAR,
+        $._L,
+        $._I,
+        $._B,
+        $._R,
+        $._A,
+        $._R,
+        $._Y
+      ),
+    PROMPT: ($) => seq($._P, $._R, $._O, $._M, $._P, $._T),
+    PURGE: ($) => seq($._P, $._U, $._R, $._G, $._E),
+    QUEUE: ($) => seq($._Q, $._U, $._E, $._U, $._E),
+    QUOTE: ($) => seq($._Q, $._U, $._O, $._T, $._E),
+    QUOTES: ($) => seq($._Q, $._U, $._O, $._T, $._E, $._S),
+    RANDOM: ($) => seq($._R, $._A, $._N, $._D, $._O, $._M),
+    READER: ($) => seq($._R, $._E, $._A, $._D, $._E, $._R),
+    REMOTE: ($) => seq($._R, $._E, $._M, $._O, $._T, $._E),
+    RD: ($) => seq($._R, $._D),
+    REAL: ($) => seq($._R, $._E, $._A, $._L),
+    READ: ($) => seq($._R, $._E, $._A, $._D),
+    RECEIVE: ($) => seq($._R, $._E, $._C, $._E, $._I, $._V, $._E),
+    RECEIVED: ($) => seq($._R, $._E, $._C, $._E, $._I, $._V, $._E, $._D),
+    RECORD: ($) => seq($._R, $._E, $._C, $._O, $._R, $._D),
+    RECORDING: ($) => seq($._R, $._E, $._C, $._O, $._R, $._D, $._I, $._N, $._G),
+    RECORDS: ($) => seq($._R, $._E, $._C, $._O, $._R, $._D, $._S),
+    RECURSIVE: ($) => seq($._R, $._E, $._C, $._U, $._R, $._S, $._I, $._V, $._E),
+    REDEFINES: ($) => seq($._R, $._E, $._D, $._E, $._F, $._I, $._N, $._E, $._S),
+    REEL: ($) => seq($._R, $._E, $._E, $._L),
+    REF: ($) => seq($._R, $._E, $._F),
+    REFERENCE: ($) => seq($._R, $._E, $._F, $._E, $._R, $._E, $._N, $._C, $._E),
+    REFERENCES: ($) =>
+      seq($._R, $._E, $._F, $._E, $._R, $._E, $._N, $._C, $._E, $._S),
+    RELATIVE: ($) => seq($._R, $._E, $._L, $._A, $._T, $._I, $._V, $._E),
+    RELEASE: ($) => seq($._R, $._E, $._L, $._E, $._A, $._S, $._E),
+    REMAINDER: ($) => seq($._R, $._E, $._M, $._A, $._I, $._N, $._D, $._E, $._R),
+    REMARKS: ($) => seq($._R, $._E, $._M, $._A, $._R, $._K, $._S),
+    REMOVAL: ($) => seq($._R, $._E, $._M, $._O, $._V, $._A, $._L),
+    REMOVE: ($) => seq($._R, $._E, $._M, $._O, $._V, $._E),
+    RENAMES: ($) => seq($._R, $._E, $._N, $._A, $._M, $._E, $._S),
+    REPLACE: ($) => seq($._R, $._E, $._P, $._L, $._A, $._C, $._E),
+    REPLACING: ($) => seq($._R, $._E, $._P, $._L, $._A, $._C, $._I, $._N, $._G),
+    REPORT: ($) => seq($._R, $._E, $._P, $._O, $._R, $._T),
+    //REPORTING: ($) => seq($._R, $._E, $._P, $._O, $._R, $._T, $._I, $._N, $._G),
+    REPORTS: ($) => seq($._R, $._E, $._P, $._O, $._R, $._T, $._S),
+    REQUIRED: ($) => seq($._R, $._E, $._Q, $._U, $._I, $._R, $._E, $._D),
+    RERUN: ($) => seq($._R, $._E, $._R, $._U, $._N),
+    RESERVE: ($) => seq($._R, $._E, $._S, $._E, $._R, $._V, $._E),
+    REVERSE_VIDEO: ($) =>
+      seq(
+        $._R,
+        $._E,
+        $._S,
+        $._E,
+        $._R,
+        $._V,
+        $._E,
+        $.MINUSCHAR,
+        $._V,
+        $._I,
+        $._D,
+        $._E,
+        $._O
+      ),
+    RESET: ($) => seq($._R, $._E, $._S, $._E, $._T),
+    RETURN: ($) => seq($._R, $._E, $._T, $._U, $._R, $._N),
+    RETURN_CODE: ($) =>
+      seq(
+        $._R,
+        $._E,
+        $._T,
+        $._U,
+        $._R,
+        $._N,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._D,
+        $._E
+      ),
+    RETURNING: ($) => seq($._R, $._E, $._T, $._U, $._R, $._N, $._I, $._N, $._G),
+    REVERSED: ($) => seq($._R, $._E, $._V, $._E, $._R, $._S, $._E, $._D),
+    REWIND: ($) => seq($._R, $._E, $._W, $._I, $._N, $._D),
+    REWRITE: ($) => seq($._R, $._E, $._W, $._R, $._I, $._T, $._E),
+    RF: ($) => seq($._R, $._F),
+    RH: ($) => seq($._R, $._H),
+    RIGHT: ($) => seq($._R, $._I, $._G, $._H, $._T),
+    ROUNDED: ($) => seq($._R, $._O, $._U, $._N, $._D, $._E, $._D),
+    RUN: ($) => seq($._R, $._U, $._N),
+    SAME: ($) => seq($._S, $._A, $._M, $._E),
+    SAVE: ($) => seq($._S, $._A, $._V, $._E),
+    SCREEN: ($) => seq($._S, $._C, $._R, $._E, $._E, $._N),
+    SD: ($) => seq($._S, $._D),
+    SEARCH: ($) => seq($._S, $._E, $._A, $._R, $._C, $._H),
+    SECTION: ($) => seq($._S, $._E, $._C, $._T, $._I, $._O, $._N),
+    SECURE: ($) => seq($._S, $._E, $._C, $._U, $._R, $._E),
+    SECURITY: ($) => seq($._S, $._E, $._C, $._U, $._R, $._I, $._T, $._Y),
+    SEGMENT: ($) => seq($._S, $._E, $._G, $._M, $._E, $._N, $._T),
+    SEGMENT_LIMIT: ($) =>
+      seq(
+        $._S,
+        $._E,
+        $._G,
+        $._M,
+        $._E,
+        $._N,
+        $._T,
+        $.MINUSCHAR,
+        $._L,
+        $._I,
+        $._M,
+        $._I,
+        $._T
+      ),
+    SELECT: ($) => seq($._S, $._E, $._L, $._E, $._C, $._T),
+    SEND: ($) => seq($._S, $._E, $._N, $._D),
+    SENTENCE: ($) => seq($._S, $._E, $._N, $._T, $._E, $._N, $._C, $._E),
+    SEPARATE: ($) => seq($._S, $._E, $._P, $._A, $._R, $._A, $._T, $._E),
+    SEQUENCE: ($) => seq($._S, $._E, $._Q, $._U, $._E, $._N, $._C, $._E),
+    SEQUENTIAL: ($) =>
+      seq($._S, $._E, $._Q, $._U, $._E, $._N, $._T, $._I, $._A, $._L),
+    SET: ($) => seq($._S, $._E, $._T),
+    SHARED: ($) => seq($._S, $._H, $._A, $._R, $._E, $._D),
+    SHAREDBYALL: ($) =>
+      seq($._S, $._H, $._A, $._R, $._E, $._D, $._B, $._Y, $._A, $._L, $._L),
+    SHAREDBYRUNUNIT: ($) =>
+      seq(
+        $._S,
+        $._H,
+        $._A,
+        $._R,
+        $._E,
+        $._D,
+        $._B,
+        $._Y,
+        $._R,
+        $._U,
+        $._N,
+        $._U,
+        $._N,
+        $._I,
+        $._T
+      ),
+    SHARING: ($) => seq($._S, $._H, $._A, $._R, $._I, $._N, $._G),
+    SHIFT_IN: ($) => seq($._S, $._H, $._I, $._F, $._T, $.MINUSCHAR, $._I, $._N),
+    SHIFT_OUT: ($) =>
+      seq($._S, $._H, $._I, $._F, $._T, $.MINUSCHAR, $._O, $._U, $._T),
+    SHORT_DATE: ($) =>
+      seq($._S, $._H, $._O, $._R, $._T, $.MINUSCHAR, $._D, $._A, $._T, $._E),
+    SIGN: ($) => seq($._S, $._I, $._G, $._N),
+    SIZE: ($) => seq($._S, $._I, $._Z, $._E),
+    SORT: ($) => seq($._S, $._O, $._R, $._T),
+    SORT_CONTROL: ($) =>
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._N,
+        $._T,
+        $._R,
+        $._O,
+        $._L
+      ),
     SORT_CORE_SIZE: ($) =>
-      seq(S, O, R, T, MINUSCHAR, C, O, R, E, MINUSCHAR, S, I, Z, E),
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._R,
+        $._E,
+        $.MINUSCHAR,
+        $._S,
+        $._I,
+        $._Z,
+        $._E
+      ),
     SORT_FILE_SIZE: ($) =>
-      seq(S, O, R, T, MINUSCHAR, F, I, L, E, MINUSCHAR, S, I, Z, E),
-    SORT_MERGE: ($) => seq(S, O, R, T, MINUSCHAR, M, E, R, G, E),
-    SORT_MESSAGE: ($) => seq(S, O, R, T, MINUSCHAR, M, E, S, S, A, G, E),
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._F,
+        $._I,
+        $._L,
+        $._E,
+        $.MINUSCHAR,
+        $._S,
+        $._I,
+        $._Z,
+        $._E
+      ),
+    SORT_MERGE: ($) =>
+      seq($._S, $._O, $._R, $._T, $.MINUSCHAR, $._M, $._E, $._R, $._G, $._E),
+    SORT_MESSAGE: ($) =>
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._M,
+        $._E,
+        $._S,
+        $._S,
+        $._A,
+        $._G,
+        $._E
+      ),
     SORT_MODE_SIZE: ($) =>
-      seq(S, O, R, T, MINUSCHAR, M, O, D, E, MINUSCHAR, S, I, Z, E),
-    SORT_RETURN: ($) => seq(S, O, R, T, MINUSCHAR, R, E, T, U, R, N),
-    SOURCE: ($) => seq(S, O, U, R, C, E),
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._M,
+        $._O,
+        $._D,
+        $._E,
+        $.MINUSCHAR,
+        $._S,
+        $._I,
+        $._Z,
+        $._E
+      ),
+    SORT_RETURN: ($) =>
+      seq(
+        $._S,
+        $._O,
+        $._R,
+        $._T,
+        $.MINUSCHAR,
+        $._R,
+        $._E,
+        $._T,
+        $._U,
+        $._R,
+        $._N
+      ),
+    SOURCE: ($) => seq($._S, $._O, $._U, $._R, $._C, $._E),
     SOURCE_COMPUTER: ($) =>
-      seq(S, O, U, R, C, E, MINUSCHAR, C, O, M, P, U, T, E, R),
-    SPACE: ($) => seq(S, P, A, C, E),
-    SPACES: ($) => seq(S, P, A, C, E, S),
-    SPECIAL_NAMES: ($) => seq(S, P, E, C, I, A, L, MINUSCHAR, N, A, M, E, S),
-    SQL: ($) => seq(S, Q, L),
-    STANDARD: ($) => seq(S, T, A, N, D, A, R, D),
-    STANDARD_1: ($) => seq(S, T, A, N, D, A, R, D, MINUSCHAR, "1"),
-    STANDARD_2: ($) => seq(S, T, A, N, D, A, R, D, MINUSCHAR, "2"),
-    START: ($) => seq(S, T, A, R, T),
-    STATUS: ($) => seq(S, T, A, T, U, S),
-    STOP: ($) => seq(S, T, O, P),
-    STRING: ($) => seq(S, T, R, I, N, G),
-    SUB_QUEUE_1: ($) => seq(S, U, B, MINUSCHAR, Q, U, E, U, E, MINUSCHAR, "1"),
-    SUB_QUEUE_2: ($) => seq(S, U, B, MINUSCHAR, Q, U, E, U, E, MINUSCHAR, "2"),
-    SUB_QUEUE_3: ($) => seq(S, U, B, MINUSCHAR, Q, U, E, U, E, MINUSCHAR, "3"),
-    SUBTRACT: ($) => seq(S, U, B, T, R, A, C, T),
-    SUM: ($) => seq(S, U, M),
-    SUPPRESS: ($) => seq(S, U, P, P, R, E, S, S),
-    SYMBOL: ($) => seq(S, Y, M, B, O, L),
-    SYMBOLIC: ($) => seq(S, Y, M, B, O, L, I, C),
-    SYNC: ($) => seq(S, Y, N, C),
-    SYNCHRONIZED: ($) => seq(S, Y, N, C, H, R, O, N, I, Z, E, D),
-    TABLE: ($) => seq(T, A, B, L, E),
-    TALLY: ($) => seq(T, A, L, L, Y),
-    TALLYING: ($) => seq(T, A, L, L, Y, I, N, G),
-    TASK: ($) => seq(T, A, S, K),
-    TAPE: ($) => seq(T, A, P, E),
-    TERMINAL: ($) => seq(T, E, R, M, I, N, A, L),
-    TERMINATE: ($) => seq(T, E, R, M, I, N, A, T, E),
-    TEST: ($) => seq(T, E, S, T),
-    TEXT: ($) => seq(T, E, X, T),
-    THAN: ($) => seq(T, H, A, N),
-    THEN: ($) => seq(T, H, E, N),
-    THREAD: ($) => seq(T, H, R, E, A, D),
-    THREAD_LOCAL: ($) => seq(T, H, R, E, A, D, MINUSCHAR, L, O, C, A, L),
-    THROUGH: ($) => seq(T, H, R, O, U, G, H),
-    THRU: ($) => seq(T, H, R, U),
-    TIME: ($) => seq(T, I, M, E),
-    TIMER: ($) => seq(T, I, M, E, R),
-    TIMES: ($) => seq(T, I, M, E, S),
-    TITLE: ($) => seq(T, I, T, L, E),
-    TO: ($) => seq(T, O),
-    TODAYS_DATE: ($) => seq(T, O, D, A, Y, S, MINUSCHAR, D, A, T, E),
-    TODAYS_NAME: ($) => seq(T, O, D, A, Y, S, MINUSCHAR, N, A, M, E),
-    TOP: ($) => seq(T, O, P),
-    TRAILING: ($) => seq(T, R, A, I, L, I, N, G),
-    TRUE: ($) => seq(T, R, U, E),
-    TRUNCATED: ($) => seq(T, R, U, N, C, A, T, E, D),
-    TYPE: ($) => seq(T, Y, P, E),
-    TYPEDEF: ($) => seq(T, Y, P, E, D, E, F),
-    UNDERLINE: ($) => seq(U, N, D, E, R, L, I, N, E),
-    UNIT: ($) => seq(U, N, I, T),
-    UNSTRING: ($) => seq(U, N, S, T, R, I, N, G),
-    UNTIL: ($) => seq(U, N, T, I, L),
-    UP: ($) => seq(U, P),
-    UPON: ($) => seq(U, P, O, N),
-    USAGE: ($) => seq(U, S, A, G, E),
-    USE: ($) => seq(U, S, E),
-    USING: ($) => seq(U, S, I, N, G),
-    VALUE: ($) => seq(V, A, L, U, E),
-    VALUES: ($) => seq(V, A, L, U, E, S),
-    VARYING: ($) => seq(V, A, R, Y, I, N, G),
-    VIRTUAL: ($) => seq(V, I, R, T, U, A, L),
-    WAIT: ($) => seq(W, A, I, T),
-    WHEN: ($) => seq(W, H, E, N),
-    WHEN_COMPILED: ($) => seq(W, H, E, N, MINUSCHAR, C, O, M, P, I, L, E, D),
-    WITH: ($) => seq(W, I, T, H),
-    WORDS: ($) => seq(W, O, R, D, S),
+      seq(
+        $._S,
+        $._O,
+        $._U,
+        $._R,
+        $._C,
+        $._E,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._U,
+        $._T,
+        $._E,
+        $._R
+      ),
+    SPACE: ($) => seq($._S, $._P, $._A, $._C, $._E),
+    SPACES: ($) => seq($._S, $._P, $._A, $._C, $._E, $._S),
+    SPECIAL_NAMES: ($) =>
+      seq(
+        $._S,
+        $._P,
+        $._E,
+        $._C,
+        $._I,
+        $._A,
+        $._L,
+        $.MINUSCHAR,
+        $._N,
+        $._A,
+        $._M,
+        $._E,
+        $._S
+      ),
+    SQL: ($) => seq($._S, $._Q, $._L),
+    STANDARD: ($) => seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D),
+    STANDARD_1: ($) =>
+      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $.MINUSCHAR, "1"),
+    STANDARD_2: ($) =>
+      seq($._S, $._T, $._A, $._N, $._D, $._A, $._R, $._D, $.MINUSCHAR, "2"),
+    START: ($) => seq($._S, $._T, $._A, $._R, $._T),
+    STATUS: ($) => seq($._S, $._T, $._A, $._T, $._U, $._S),
+    STOP: ($) => seq($._S, $._T, $._O, $._P),
+    STRING: ($) => seq($._S, $._T, $._R, $._I, $._N, $._G),
+    SUB_QUEUE_1: ($) =>
+      seq(
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        $._Q,
+        $._U,
+        $._E,
+        $._U,
+        $._E,
+        $.MINUSCHAR,
+        "1"
+      ),
+    SUB_QUEUE_2: ($) =>
+      seq(
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        $._Q,
+        $._U,
+        $._E,
+        $._U,
+        $._E,
+        $.MINUSCHAR,
+        "2"
+      ),
+    SUB_QUEUE_3: ($) =>
+      seq(
+        $._S,
+        $._U,
+        $._B,
+        $.MINUSCHAR,
+        $._Q,
+        $._U,
+        $._E,
+        $._U,
+        $._E,
+        $.MINUSCHAR,
+        "3"
+      ),
+    SUBTRACT: ($) => seq($._S, $._U, $._B, $._T, $._R, $._A, $._C, $._T),
+    SUM: ($) => seq($._S, $._U, $._M),
+    //SUPPRESS: ($) => seq($._S, $._U, $._P, $._P, $._R, $._E, $._S, $._S),
+    SYMBOL: ($) => seq($._S, $._Y, $._M, $._B, $._O, $._L),
+    SYMBOLIC: ($) => seq($._S, $._Y, $._M, $._B, $._O, $._L, $._I, $._C),
+    SYNC: ($) => seq($._S, $._Y, $._N, $._C),
+    SYNCHRONIZED: ($) =>
+      seq(
+        $._S,
+        $._Y,
+        $._N,
+        $._C,
+        $._H,
+        $._R,
+        $._O,
+        $._N,
+        $._I,
+        $._Z,
+        $._E,
+        $._D
+      ),
+    TABLE: ($) => seq($._T, $._A, $._B, $._L, $._E),
+    TALLY: ($) => seq($._T, $._A, $._L, $._L, $._Y),
+    TALLYING: ($) => seq($._T, $._A, $._L, $._L, $._Y, $._I, $._N, $._G),
+    TASK: ($) => seq($._T, $._A, $._S, $._K),
+    TAPE: ($) => seq($._T, $._A, $._P, $._E),
+    TERMINAL: ($) => seq($._T, $._E, $._R, $._M, $._I, $._N, $._A, $._L),
+    TERMINATE: ($) => seq($._T, $._E, $._R, $._M, $._I, $._N, $._A, $._T, $._E),
+    TEST: ($) => seq($._T, $._E, $._S, $._T),
+    TEXT: ($) => seq($._T, $._E, $._X, $._T),
+    THAN: ($) => seq($._T, $._H, $._A, $._N),
+    THEN: ($) => seq($._T, $._H, $._E, $._N),
+    THREAD: ($) => seq($._T, $._H, $._R, $._E, $._A, $._D),
+    THREAD_LOCAL: ($) =>
+      seq(
+        $._T,
+        $._H,
+        $._R,
+        $._E,
+        $._A,
+        $._D,
+        $.MINUSCHAR,
+        $._L,
+        $._O,
+        $._C,
+        $._A,
+        $._L
+      ),
+    THROUGH: ($) => seq($._T, $._H, $._R, $._O, $._U, $._G, $._H),
+    THRU: ($) => seq($._T, $._H, $._R, $._U),
+    TIME: ($) => seq($._T, $._I, $._M, $._E),
+    TIMER: ($) => seq($._T, $._I, $._M, $._E, $._R),
+    TIMES: ($) => seq($._T, $._I, $._M, $._E, $._S),
+    TITLE: ($) => seq($._T, $._I, $._T, $._L, $._E),
+    TO: ($) => seq($._T, $._O),
+    TODAYS_DATE: ($) =>
+      seq(
+        $._T,
+        $._O,
+        $._D,
+        $._A,
+        $._Y,
+        $._S,
+        $.MINUSCHAR,
+        $._D,
+        $._A,
+        $._T,
+        $._E
+      ),
+    TODAYS_NAME: ($) =>
+      seq(
+        $._T,
+        $._O,
+        $._D,
+        $._A,
+        $._Y,
+        $._S,
+        $.MINUSCHAR,
+        $._N,
+        $._A,
+        $._M,
+        $._E
+      ),
+    TOP: ($) => seq($._T, $._O, $._P),
+    TRAILING: ($) => seq($._T, $._R, $._A, $._I, $._L, $._I, $._N, $._G),
+    TRUE: ($) => seq($._T, $._R, $._U, $._E),
+    TRUNCATED: ($) => seq($._T, $._R, $._U, $._N, $._C, $._A, $._T, $._E, $._D),
+    TYPE: ($) => seq($._T, $._Y, $._P, $._E),
+    TYPEDEF: ($) => seq($._T, $._Y, $._P, $._E, $._D, $._E, $._F),
+    UNDERLINE: ($) => seq($._U, $._N, $._D, $._E, $._R, $._L, $._I, $._N, $._E),
+    UNIT: ($) => seq($._U, $._N, $._I, $._T),
+    UNSTRING: ($) => seq($._U, $._N, $._S, $._T, $._R, $._I, $._N, $._G),
+    UNTIL: ($) => seq($._U, $._N, $._T, $._I, $._L),
+    UP: ($) => seq($._U, $._P),
+    UPON: ($) => seq($._U, $._P, $._O, $._N),
+    USAGE: ($) => seq($._U, $._S, $._A, $._G, $._E),
+    USE: ($) => seq($._U, $._S, $._E),
+    USING: ($) => seq($._U, $._S, $._I, $._N, $._G),
+    VALUE: ($) => seq($._V, $._A, $._L, $._U, $._E),
+    VALUES: ($) => seq($._V, $._A, $._L, $._U, $._E, $._S),
+    VARYING: ($) => seq($._V, $._A, $._R, $._Y, $._I, $._N, $._G),
+    VIRTUAL: ($) => seq($._V, $._I, $._R, $._T, $._U, $._A, $._L),
+    WAIT: ($) => seq($._W, $._A, $._I, $._T),
+    WHEN: ($) => seq($._W, $._H, $._E, $._N),
+    WHEN_COMPILED: ($) =>
+      seq(
+        $._W,
+        $._H,
+        $._E,
+        $._N,
+        $.MINUSCHAR,
+        $._C,
+        $._O,
+        $._M,
+        $._P,
+        $._I,
+        $._L,
+        $._E,
+        $._D
+      ),
+    WITH: ($) => seq($._W, $._I, $._T, $._H),
+    WORDS: ($) => seq($._W, $._O, $._R, $._D, $._S),
     WORKING_STORAGE: ($) =>
-      seq(W, O, R, K, I, N, G, MINUSCHAR, S, T, O, R, A, G, E),
-    WRITE: ($) => seq(W, R, I, T, E),
-    YEAR: ($) => seq(Y, E, A, R),
-    YYYYMMDD: ($) => seq(Y, Y, Y, Y, M, M, D, D),
-    YYYYDDD: ($) => seq(Y, Y, Y, Y, D, D, D),
-    ZERO: ($) => seq(Z, E, R, O),
-    ZERO_FILL: ($) => seq(Z, E, R, O, MINUSCHAR, F, I, L, L),
-    ZEROS: ($) => seq(Z, E, R, O, S),
-    ZEROES: ($) => seq(Z, E, R, O, E, S),
+      seq(
+        $._W,
+        $._O,
+        $._R,
+        $._K,
+        $._I,
+        $._N,
+        $._G,
+        $.MINUSCHAR,
+        $._S,
+        $._T,
+        $._O,
+        $._R,
+        $._A,
+        $._G,
+        $._E
+      ),
+    WRITE: ($) => seq($._W, $._R, $._I, $._T, $._E),
+    YEAR: ($) => seq($._Y, $._E, $._A, $._R),
+    YYYYMMDD: ($) => seq($._Y, $._Y, $._Y, $._Y, $._M, $._M, $._D, $._D),
+    YYYYDDD: ($) => seq($._Y, $._Y, $._Y, $._Y, $._D, $._D, $._D),
+    ZERO: ($) => seq($._Z, $._E, $._R, $._O),
+    ZERO_FILL: ($) =>
+      seq($._Z, $._E, $._R, $._O, $.MINUSCHAR, $._F, $._I, $._L, $._L),
+    ZEROS: ($) => seq($._Z, $._E, $._R, $._O, $._S),
+    ZEROES: ($) => seq($._Z, $._E, $._R, $._O, $._E, $._S),
     // symbols
-    AMPCHAR: ($) => "&",
+    //AMPCHAR: ($) => "&",
     ASTERISKCHAR: ($) => "*",
     DOUBLEASTERISKCHAR: ($) => "**",
     COLONCHAR: ($) => ":",
@@ -3321,13 +4944,9 @@ module.exports = grammar({
     COMMENTENTRYTAG: ($) => "*>CE",
     COMMENTTAG: ($) => "*>",
     DOLLARCHAR: ($) => "$",
-    DOUBLEQUOTE: ($) => '"',
+    // DOUBLEQUOTE: ($) => '"',
     // period full stop
-    DOT_FS: ($) =>
-      choice(
-        seq(".", repeat1(choice("\r", "\n", "\f", "\t", " "))),
-        seq(".", EOF)
-      ),
+    DOT_FS: ($) => seq(".", repeat1(choice("\r", "\n", "\f", "\t", " "))),
     DOT: ($) => ".",
     EQUALCHAR: ($) => "=",
     EXECCICSTAG: ($) => "*>EXECCICS",
@@ -3346,13 +4965,16 @@ module.exports = grammar({
     SLASHCHAR: ($) => "/",
     // literals
     NONNUMERICLITERAL: ($) =>
-      choice(STRINGLITERAL, DBCSLITERAL, HEXNUMBER, NULLTERMINATED),
+      choice($._STRINGLITERAL, $._DBCSLITERAL, $._HEXNUMBER, $._NULLTERMINATED),
     _HEXNUMBER: ($) =>
-      choice(seq(X, '"', /[0-9A-F]+/, '"'), seq(X, "'", /[0-9A-F]+/, "'")),
+      choice(
+        seq($._X, '"', /[0-9A-F]+/, '"'),
+        seq($._X, "'", /[0-9A-F]+/, "'")
+      ),
     _NULLTERMINATED: ($) =>
       choice(
-        seq(Z, '"', repeat(choice(/[^"\n\r]/, '""', "'")), '"'),
-        seq(Z, "'", repeat(choice(/[^'\n\r]/, "''", '"')), "'")
+        seq($._Z, '"', repeat(choice(/[^"\n\r]/, '""', "'")), '"'),
+        seq($._Z, "'", repeat(choice(/[^'\n\r]/, "''", '"')), "'")
       ),
     _STRINGLITERAL: ($) =>
       choice(
@@ -3361,31 +4983,34 @@ module.exports = grammar({
       ),
     _DBCSLITERAL: ($) =>
       choice(
-        seq([GN], '"', repeat(choice(/[^"\n\r]/, '""', "'")), '"'),
-        seq([GN], "'", repeat(choice(/[^'\n\r]/, "''", '"')), "'")
+        seq(/[GN]/, '"', repeat(choice(/[^"\n\r]/, '""', "'")), '"'),
+        seq(/[GN]/, "'", repeat(choice(/[^'\n\r]/, "''", '"')), "'")
       ),
     LEVEL_NUMBER_66: ($) => "66",
     LEVEL_NUMBER_77: ($) => "77",
     LEVEL_NUMBER_88: ($) => "88",
-    INTEGERLITERAL: ($) => seq(optional(choice(PLUSCHAR, MINUSCHAR)), /[0-9]+/),
+    INTEGERLITERAL: ($) =>
+      seq(optional(choice($.PLUSCHAR, $.MINUSCHAR)), /[0-9]+/),
     NUMERICLITERAL: ($) =>
       seq(
-        optional(choice(PLUSCHAR, MINUSCHAR)),
+        optional(choice($.PLUSCHAR, $.MINUSCHAR)),
         /[0-9]*/,
-        choice(DOT, COMMACHAR),
+        choice($.DOT, $.COMMACHAR),
         /[0-9]+/,
-        optional(seq(/[eE]/, optional(choice(PLUSCHAR, MINUSCHAR)), /[0-9]+/))
+        optional(
+          seq(/[eE]/, optional(choice($.PLUSCHAR, $.MINUSCHAR)), /[0-9]+/)
+        )
       ),
     IDENTIFIER: ($) => /[a-zA-Z0-9]+([-_]+[a-zA-Z0-9]+)*/,
     // whitespace, line breaks, comments, ...
-    NEWLINE: ($) => seq(optional("\r"), "\n"),
-    EXECCICSLINE: ($) => seq(EXECCICSTAG, WS, /[^\n\r}]*[\n\r}]/),
-    EXECSQLIMSLINE: ($) => seq(EXECSQLIMSTAG, WS, /[^\n\r}]*[\n\r}]/),
-    EXECSQLLINE: ($) => seq(EXECSQLTAG, WS, /[^\n\r}]*[\n\r}]/),
-    COMMENTENTRYLINE: ($) => seq(COMMENTENTRYTAG, WS, /[^\n\r]*/),
-    COMMENTLINE: ($) => seq(COMMENTTAG, WS, /[^\n\r]*/),
+    // NEWLINE: ($) => seq(optional("\r"), "\n"),
+    EXECCICSLINE: ($) => seq($.EXECCICSTAG, $.WS, /[^\n\r}]*[\n\r}]/),
+    EXECSQLIMSLINE: ($) => seq($.EXECSQLIMSTAG, $.WS, /[^\n\r}]*[\n\r}]/),
+    EXECSQLLINE: ($) => seq($.EXECSQLTAG, $.WS, /[^\n\r}]*[\n\r}]/),
+    COMMENTENTRYLINE: ($) => seq($.COMMENTENTRYTAG, $.WS, /[^\n\r]*/),
+    // COMMENTLINE: ($) => seq($.COMMENTTAG, $.WS, /[^\n\r]*/),
     WS: ($) => /[\t\f;]+/,
-    SEPARATOR: ($) => ", ",
+    // SEPARATOR: ($) => ", ",
     // case insensitive chars
     _A: ($) => /[aA]/,
     _B: ($) => /[bB]/,
@@ -3414,4 +5039,31 @@ module.exports = grammar({
     _Y: ($) => /[yY]/,
     _Z: ($) => /[zZ]/,
   },
+  conflicts: ($) => [
+    [$.programUnit],
+    [$.dataDivision],
+    [$.environmentDivision],
+    [$.identificationDivision],
+    [$.identifier, $.tableCall],
+    [$.qualifiedDataNameFormat1],
+    [$.conditionName, $.dataName, $.fileName],
+    [$.conditionName, $.dataName],
+    [$.conditionName, $.dataName, $.fileName, $.paragraphName, $.textName],
+    [$.procedureDivisionUsingClause],
+    [$.procedureDivisionByReferencePhrase],
+    [$.procedureDivisionBody],
+    [$.paragraph],
+    [$.exitStatement],
+    [$.execSqlStatement],
+    [$.paragraphs],
+    [$.execCicsStatement],
+    [$.execSqlImsStatement],
+    [$.specialNamesParagraph],
+    [$.AS, $.ASCII],
+    [$.AS, $.ASSOCIATED_DATA, $.ASSOCIATED_DATA_LENGTH],
+    [$.functionName, $.cobolWord],
+    [$.conditionName, $.dataName, $.paragraphName, $.textName],
+    [$.paragraphName, $.numericLiteral]
+    //HERE
+  ],
 });
