@@ -20,9 +20,9 @@ module.exports = grammar({
         $.DIVISION,
         $.DOT_FS,
         $.programIdParagraph,
-        repeat($.identificationDivisionBody)
+        repeat($._identificationDivisionBody)
       ),
-    identificationDivisionBody: ($) =>
+    _identificationDivisionBody: ($) =>
       choice(
         $.authorParagraph,
         $.installationParagraph,
@@ -44,8 +44,7 @@ module.exports = grammar({
             optional($.PROGRAM)
           )
         ),
-        optional($.DOT_FS),
-        optional($.commentEntry)
+        optional($.DOT_FS)
       ),
     // - author paragraph ----------------------------------
     authorParagraph: ($) => seq($.AUTHOR, $.DOT_FS, optional($.commentEntry)),
@@ -3019,7 +3018,8 @@ module.exports = grammar({
         )
       ),
     // comment entry
-    commentEntry: ($) => repeat1($.COMMENTENTRYLINE),
+    // TODO: multiple indented comment entries are allowed
+    commentEntry: ($) => /[^\n\r]*/,
     // lexer rules --------------------------------------------------------------------------------
     // keywords
     ABORT: ($) => seq($._A, $._B, $._O, $._R, $._T),
@@ -5270,7 +5270,6 @@ module.exports = grammar({
     EXECCICSLINE: ($) => seq($.EXECCICSTAG, $._WS, /[^\n\r}]*[\n\r}]/),
     EXECSQLIMSLINE: ($) => seq($.EXECSQLIMSTAG, $._WS, /[^\n\r}]*[\n\r}]/),
     EXECSQLLINE: ($) => seq($.EXECSQLTAG, $._WS, /[^\n\r}]*[\n\r}]/),
-    COMMENTENTRYLINE: ($) => seq($.COMMENTENTRYTAG, $._WS, /[^\n\r]*/),
     // COMMENTLINE: ($) => seq($.COMMENTTAG, $.WS, /[^\n\r]*/),
     _WS: ($) => /[\t\f;]+/,
     // SEPARATOR: ($) => ", ",

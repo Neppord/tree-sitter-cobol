@@ -2,7 +2,7 @@
 IDENTIFICATION DIVISION
 =================
 IDENTIFICATION DIVISION.
-PROGRAM-ID. program-name
+PROGRAM-ID. program-name.
 AUTHOR. comment-entry
 DATE-WRITTEN. comment-entry
 DATE-COMPILED. comment-entry
@@ -17,16 +17,16 @@ SECURITY. comment-entry
             (programIdParagraph
                 (PROGRAM_ID)
                 (DOT_FS)
-                (programName (cobolWord (IDENTIFIER))))
-                (identificationDivisionBody
-                    (authorParagraph (AUTHOR) (DOT_FS)))
-                )
+                (programName (cobolWord (IDENTIFIER)))
+                (DOT_FS)
             )
-            (ERROR
-                (END (ERROR))
-                (END (ERROR))
-            )
+            (authorParagraph (AUTHOR) (DOT_FS) (commentEntry))
+            (dateWrittenParagraph (DATE_WRITTEN) (DOT_FS) (commentEntry))
+            (dateCompiledParagraph (DATE_COMPILED) (DOT_FS) (commentEntry))
+            (securityParagraph (SECURITY) (DOT_FS) (commentEntry))
         )
+    )
+)
 =================
 ENVIRONMENT DIVISION
 =================
