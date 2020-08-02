@@ -75,9 +75,9 @@ module.exports = grammar({
         $.ENVIRONMENT,
         $.DIVISION,
         $.DOT_FS,
-        repeat($.environmentDivisionBody)
+        repeat($._environmentDivisionBody)
       ),
-    environmentDivisionBody: ($) =>
+    _environmentDivisionBody: ($) =>
       choice(
         $.configurationSection,
         $.specialNamesParagraph,
@@ -89,16 +89,16 @@ module.exports = grammar({
         $.CONFIGURATION,
         $.SECTION,
         $.DOT_FS,
-        repeat($.configurationSectionParagraph)
+        repeat($._configurationSectionParagraph)
       ),
     // - configuration section paragraph ----------------------------------
-    configurationSectionParagraph: ($) =>
+    _configurationSectionParagraph: ($) =>
       choice(
         $.sourceComputerParagraph,
         $.objectComputerParagraph,
         $.specialNamesParagraph
       ),
-    // $.strictly, specialNamesParagraph does not belong into $.configurationSectionParagraph, but IBM-COBOL allows $.this,
+    // $.strictly, specialNamesParagraph does not belong into $._configurationSectionParagraph, but IBM-COBOL allows $.this,
     // - source computer paragraph ----------------------------------
     sourceComputerParagraph: ($) =>
       seq(
@@ -216,7 +216,7 @@ module.exports = grammar({
         seq(choice($.NATIVE, $.CCSVERSION), $.literal)
       ),
     channelClause: ($) =>
-      seq($.CHANNEL, $.integerLiteral, optional($.IS), $.mnemonicName),
+      seq($.CHANNEL, $.integerLiteral, optional($.IS), $.mnemonic_name),
     classClause: ($) =>
       seq(
         $.CLASS,
@@ -266,7 +266,7 @@ module.exports = grammar({
       seq(
         $.environmentName,
         optional($.IS),
-        $.mnemonicName,
+        $.mnemonic_name,
         choice(
           optional($.environmentSwitchNameSpecialNamesStatusPhrase),
           $.environmentSwitchNameSpecialNamesStatusPhrase
@@ -287,7 +287,7 @@ module.exports = grammar({
         $.condition,
         optional(seq($.ON, optional($.STATUS), optional($.IS), $.condition))
       ),
-    odtClause: ($) => prec(2, seq($.ODT, optional($.IS), $.mnemonicName)),
+    odtClause: ($) => prec(2, seq($.ODT, optional($.IS), $.mnemonic_name)),
     reserveNetworkClause: ($) =>
       seq(
         $.RESERVE,
@@ -317,10 +317,10 @@ module.exports = grammar({
         $.INPUT_OUTPUT,
         $.SECTION,
         $.DOT_FS,
-        repeat($.inputOutputSectionParagraph)
+        repeat($._inputOutputSectionParagraph)
       ),
     // - input output section paragraph ----------------------------------
-    inputOutputSectionParagraph: ($) =>
+    _inputOutputSectionParagraph: ($) =>
       choice($.fileControlParagraph, $.ioControlParagraph),
     // - file control paragraph ----------------------------------
     fileControlParagraph: ($) =>
@@ -329,9 +329,9 @@ module.exports = grammar({
         repeat(seq(optional($.DOT_FS), $.fileControlEntry)),
         $.DOT_FS
       ),
-    fileControlEntry: ($) => seq($.selectClause, repeat($.fileControlClause)),
+    fileControlEntry: ($) => seq($.selectClause, repeat($._fileControlClause)),
     selectClause: ($) => seq($.SELECT, optional($.OPTIONAL), $.fileName),
-    fileControlClause: ($) =>
+    _fileControlClause: ($) =>
       choice(
         $.assignClause,
         $.reserveClause,
@@ -575,7 +575,11 @@ module.exports = grammar({
       ),
     valueOfClause: ($) => seq($.VALUE, $.OF, repeat1($.valuePair)),
     valuePair: ($) =>
-      seq($.systemName, optional($.IS), choice($.qualifiedDataName, $.literal)),
+      seq(
+        $.system_name,
+        optional($.IS),
+        choice($.qualifiedDataName, $.literal)
+      ),
     dataRecordsClause: ($) =>
       seq(
         $.DATA,
@@ -1502,7 +1506,7 @@ module.exports = grammar({
           )
         )
       ),
-    acceptFromMnemonicStatement: ($) => seq($.FROM, $.mnemonicName),
+    acceptFromMnemonicStatement: ($) => seq($.FROM, $.mnemonic_name),
     acceptFromEscapeKeyStatement: ($) => seq($.FROM, $.ESCAPE, $.KEY),
     acceptMessageCountStatement: ($) => seq(optional($.MESSAGE), $.COUNT),
     // add statement
@@ -1695,7 +1699,7 @@ module.exports = grammar({
       ),
     displayOperand: ($) => choice($.identifier, $.literal),
     displayAt: ($) => seq($.AT, choice($.identifier, $.literal)),
-    displayUpon: ($) => seq($.UPON, choice($.mnemonicName, $.environmentName)),
+    displayUpon: ($) => seq($.UPON, choice($.mnemonic_name, $.environmentName)),
     displayWith: ($) => seq(optional($.WITH), $.NO, $.ADVANCING),
     // divide statement
     divideStatement: ($) =>
@@ -2219,7 +2223,7 @@ module.exports = grammar({
     sendAdvancingPage: ($) => $.PAGE,
     sendAdvancingLines: ($) =>
       seq(choice($.identifier, $.literal), optional(choice($.LINE, $.LINES))),
-    sendAdvancingMnemonic: ($) => $.mnemonicName,
+    sendAdvancingMnemonic: ($) => $.mnemonic_name,
     // set statement
     setStatement: ($) =>
       seq($.SET, choice(repeat1($.setToStatement), $.setUpDownByStatement)),
@@ -2500,7 +2504,7 @@ module.exports = grammar({
     writeAdvancingPage: ($) => $.PAGE,
     writeAdvancingLines: ($) =>
       seq(choice($.identifier, $.literal), optional(choice($.LINE, $.LINES))),
-    writeAdvancingMnemonic: ($) => $.mnemonicName,
+    writeAdvancingMnemonic: ($) => $.mnemonic_name,
     writeAtEndOfPagePhrase: ($) =>
       seq(optional($.AT), choice($.END_OF_PAGE, $.EOP), repeat($.statement)),
     writeNotAtEndOfPagePhrase: ($) =>
@@ -2742,22 +2746,22 @@ module.exports = grammar({
     // in ----------------------------------
     inData: ($) => seq(choice($.IN, $.OF), $.dataName),
     inFile: ($) => seq(choice($.IN, $.OF), $.fileName),
-    inMnemonic: ($) => seq(choice($.IN, $.OF), $.mnemonicName),
+    inMnemonic: ($) => seq(choice($.IN, $.OF), $.mnemonic_name),
     inSection: ($) => seq(choice($.IN, $.OF), $.sectionName),
     inLibrary: ($) => seq(choice($.IN, $.OF), $.libraryName),
     inTable: ($) => seq(choice($.IN, $.OF), $.tableCall),
     // names ----------------------------------
     alphabetName: ($) => $.cobolWord,
-    assignmentName: ($) => $.systemName,
+    assignmentName: ($) => $.system_name,
     basisName: ($) => $.programName,
     cdName: ($) => $.cobolWord,
     className: ($) => $.cobolWord,
-    computerName: ($) => $.systemName,
+    computerName: ($) => $.system_name,
     conditionName: ($) => $.cobolWord,
     dataName: ($) => $.cobolWord,
     dataDescName: ($) => choice($.FILLER, $.CURSOR, $.dataName),
-    environmentName: ($) => $.systemName,
-    fileName: ($) => $.cobolWord,
+    environmentName: ($) => $.system_name,
+    fileName: ($) => $.IDENTIFIER,
     functionName: ($) =>
       prec(
         2,
@@ -2771,10 +2775,10 @@ module.exports = grammar({
         )
       ),
     indexName: ($) => $.cobolWord,
-    // languageName: ($) => $.systemName,
+    // languageName: ($) => $.system_name,
     libraryName: ($) => $.cobolWord,
     localName: ($) => $.cobolWord,
-    mnemonicName: ($) => $.cobolWord,
+    mnemonic_name: ($) => /[a-zA-Z0-9]+([-_]+[a-zA-Z0-9]+)*/,
     paragraphName: ($) => choice($.cobolWord, $.integerLiteral),
     procedureName: ($) =>
       seq($.paragraphName, choice(optional($.inSection), $.sectionName)),
@@ -2784,13 +2788,12 @@ module.exports = grammar({
     // routineName: ($) => $.cobolWord,
     screenName: ($) => $.cobolWord,
     sectionName: ($) => choice($.cobolWord, $.integerLiteral),
-    systemName: ($) => $.cobolWord,
+    system_name: ($) => /[a-zA-Z0-9]+([-_]+[a-zA-Z0-9]+)*/,
     symbolicCharacter: ($) => $.cobolWord,
     textName: ($) => $.cobolWord,
     // literal ----------------------------------
     cobolWord: ($) =>
       choice(
-        $.IDENTIFIER,
         $.ABORT,
         $.AS,
         $.ASCII,
@@ -2918,7 +2921,8 @@ module.exports = grammar({
         $.YEAR,
         $.YYYYMMDD,
         $.YYYYDDD,
-        $.ZERO_FILL
+        $.ZERO_FILL,
+        $.IDENTIFIER
       ),
     literal: ($) =>
       choice(
@@ -5421,7 +5425,7 @@ module.exports = grammar({
     [$.closePortFileIOStatement],
     [$.computeStatement],
     [$.notInvalidKeyPhrase],
-    [$.mnemonicName, $.systemName],
+    [$.mnemonic_name, $.system_name],
     [$.divideByGivingStatement],
     [$.divideIntoGivingStatement, $.divideInto],
     [$.divideIntoGivingStatement],
@@ -5448,8 +5452,8 @@ module.exports = grammar({
     [$.receiveIntoStatement],
     [$.receiveFromStatement],
     [$.searchWhen],
-    [$.conditionName, $.dataName, $.mnemonicName],
-    [$.conditionName, $.dataName, $.mnemonicName, $.paragraphName, $.textName],
+    [$.conditionName, $.dataName, $.mnemonic_name],
+    [$.conditionName, $.dataName, $.mnemonic_name, $.paragraphName, $.textName],
     [$.setToStatement],
     [$.sortOnKeyClause],
     [$.sortDuplicatesPhrase],
@@ -5530,13 +5534,13 @@ module.exports = grammar({
     [$.callByReference, $.specialRegister],
     [$.divideGiving],
     [$.divideGivingPhrase],
-    [$.dataName, $.fileName, $.mnemonicName],
-    [$.conditionName, $.dataName, $.fileName, $.mnemonicName],
+    [$.dataName, $.fileName, $.mnemonic_name],
+    [$.conditionName, $.dataName, $.fileName, $.mnemonic_name],
     [
       $.conditionName,
       $.dataName,
       $.fileName,
-      $.mnemonicName,
+      $.mnemonic_name,
       $.paragraphName,
       $.textName,
     ],
@@ -5600,7 +5604,7 @@ module.exports = grammar({
     [$.multipleFileClause],
     [$.rerunEveryClock],
     [$.rerunEveryRecords, $.rerunEveryClock],
-    [$.fileName, $.systemName],
+    [$.fileName, $.system_name],
     [$.conditionName, $.dataName, $.fileName, $.paragraphName],
     [$.linageLinesAtBottom],
     [$.linageLinesAtTop],
@@ -5609,40 +5613,55 @@ module.exports = grammar({
     [$.libraryEntryProcedureWithClause],
     [$.destinationTableClause],
     [$.defaultComputationalSignClause],
-    [ $.symbolicCharactersClause, $.cobolWord],
-[ $.callByReference, $.cobolWord],
-[ $.dataUsageClause, $.cobolWord],
-[ $.dataIntegerStringClause, $.cobolWord],
-[ $.dataCommonOwnLocalClause, $.cobolWord],
-[ $.dataWithLowerBoundsClause, $.cobolWord],
-[ $.dataReceivedByClause, $.cobolWord],
-[ $.dataThreadLocalClause, $.cobolWord],
-[ $.dataTypeDefClause, $.cobolWord],
-[ $.screenDescriptionAutoClause, $.cobolWord],
-[ $.screenDescriptionBackgroundColorClause, $.cobolWord],
-[ $.screenDescriptionBellClause, $.cobolWord],
-[ $.screenDescriptionBlinkClause, $.cobolWord],
-[ $.screenDescriptionRequiredClause, $.cobolWord],
-[ $.screenDescriptionEraseClause, $.cobolWord],
-[ $.screenDescriptionForegroundColorClause, $.cobolWord],
-[ $.screenDescriptionFullClause, $.cobolWord],
-[ $.screenDescriptionGridClause, $.cobolWord],
-[ $.screenDescriptionLightClause, $.cobolWord],
-[ $.screenDescriptionSecureClause, $.cobolWord],
-[ $.screenDescriptionPromptClause, $.cobolWord],
-[ $.screenDescriptionReverseVideoClause, $.cobolWord],
-[ $.screenDescriptionUnderlineClause, $.cobolWord],
-[ $.screenDescriptionZeroFillClause, $.cobolWord],
-[ $.alphabetClauseFormat1, $.cobolWord],
-[ $.alphabetClauseFormat2, $.cobolWord],
-[ $.classClause, $.cobolWord],
-[ $.assignClause, $.cobolWord],
-[ $.organizationClause, $.cobolWord],
-[ $.mergeCollatingNational, $.cobolWord],
-[ $.sortCollatingNational, $.cobolWord],
-[ $.dataDescName, $.cobolWord],
-[ $.recordDelimiterClause, $.cobolWord],
-[ $.dataOccursIndexed, $.cobolWord],
+    [$.symbolicCharactersClause, $.cobolWord],
+    [$.callByReference, $.cobolWord],
+    [$.dataUsageClause, $.cobolWord],
+    [$.dataIntegerStringClause, $.cobolWord],
+    [$.dataCommonOwnLocalClause, $.cobolWord],
+    [$.dataWithLowerBoundsClause, $.cobolWord],
+    [$.dataReceivedByClause, $.cobolWord],
+    [$.dataThreadLocalClause, $.cobolWord],
+    [$.dataTypeDefClause, $.cobolWord],
+    [$.screenDescriptionAutoClause, $.cobolWord],
+    [$.screenDescriptionBackgroundColorClause, $.cobolWord],
+    [$.screenDescriptionBellClause, $.cobolWord],
+    [$.screenDescriptionBlinkClause, $.cobolWord],
+    [$.screenDescriptionRequiredClause, $.cobolWord],
+    [$.screenDescriptionEraseClause, $.cobolWord],
+    [$.screenDescriptionForegroundColorClause, $.cobolWord],
+    [$.screenDescriptionFullClause, $.cobolWord],
+    [$.screenDescriptionGridClause, $.cobolWord],
+    [$.screenDescriptionLightClause, $.cobolWord],
+    [$.screenDescriptionSecureClause, $.cobolWord],
+    [$.screenDescriptionPromptClause, $.cobolWord],
+    [$.screenDescriptionReverseVideoClause, $.cobolWord],
+    [$.screenDescriptionUnderlineClause, $.cobolWord],
+    [$.screenDescriptionZeroFillClause, $.cobolWord],
+    [$.alphabetClauseFormat1, $.cobolWord],
+    [$.alphabetClauseFormat2, $.cobolWord],
+    [$.classClause, $.cobolWord],
+    [$.assignClause, $.cobolWord],
+    [$.organizationClause, $.cobolWord],
+    [$.mergeCollatingNational, $.cobolWord],
+    [$.sortCollatingNational, $.cobolWord],
+    [$.dataDescName, $.cobolWord],
+    [$.recordDelimiterClause, $.cobolWord],
+    [$.dataOccursIndexed, $.cobolWord],
+    [$.cobolWord, $.IDENTIFIER],
+    [$.IDENTIFIER],
+    [$.symbolicCharacters],
+    [$.symbolicCharactersClause, $.system_name, $.cobolWord],
+    [$.symbolicCharactersClause, $.system_name],
+    [$.mnemonic_name, $.cobolWord],
+    [$.mnemonic_name],
+    [$.mnemonic_name, $.system_name, $.cobolWord],
+    [$.mnemonic_name, $.cobolWord, $.IDENTIFIER],
+    [$.mnemonic_name, $.IDENTIFIER],
+    [$.system_name, $.cobolWord],
+    [$.system_name],
+    [$.system_name, $.cobolWord, $.IDENTIFIER],
+    [$.system_name, $.IDENTIFIER],
+    [ $.fileName, $.cobolWord],
 //HERE
   ],
 });

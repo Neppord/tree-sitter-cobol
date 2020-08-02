@@ -34,18 +34,19 @@ IDENTIFICATION DIVISION.
     PROGRAM-ID. hello-world
 ENVIRONMENT DIVISION.
     CONFIGURATION SECTION.
-        SOURCE-COMPUTER. source-computer-entry
-        OBJECT-COMPUTER. object-computer-entry
-        SPECIAL-NAMES. special-names-entry
+        SOURCE-COMPUTER. computer-name
+            WITH DEBUGGING MODE.
+        OBJECT-COMPUTER. computer-name.
     INPUT-OUTPUT SECTION.
         FILE-CONTROL.
-          SELECT file-name ASSIGN TO dd-name
-          ORGANIZATION RELATIVE
-          ACCESS MODE IS SEQUENTIAL
-          SELECT file-name-2 ASSIGN TO dd-name-2
-          ORGANIZATION SEQUENTIAL
-          ACCESS MODE IS SEQUENTIAL
-        I-O-CONTROL.
+            SELECT file-name
+                ASSIGN TO dd-name
+                ORGANIZATION RELATIVE
+                ACCESS MODE IS SEQUENTIAL
+            SELECT file-name-2
+                ASSIGN TO dd-name-2
+                ORGANIZATION SEQUENTIAL
+                ACCESS MODE IS SEQUENTIAL
 ---
 (compilationUnit
     (programUnit
@@ -63,59 +64,47 @@ ENVIRONMENT DIVISION.
             (ENVIRONMENT)
             (DIVISION)
             (DOT_FS)
-            (environmentDivisionBody
-                (configurationSection
-                    (CONFIGURATION)
-                    (SECTION)
+            (configurationSection
+                (CONFIGURATION)
+                (SECTION)
+                (DOT_FS)
+                (sourceComputerParagraph
+                    (SOURCE_COMPUTER)
                     (DOT_FS)
-                    (configurationSectionParagraph
-                        (sourceComputerParagraph
-                            (SOURCE_COMPUTER)
-                            (DOT_FS)
-                            (ERROR
-                                (computerName
-                                    (systemName (cobolWord (IDENTIFIER)))
-                                )
-                            )
-                            (computerName (systemName (cobolWord (IDENTIFIER))))
-                            (DOT_FS)
-                        )
+                    (computerName (system_name))
+                    (WITH)
+                    (DEBUGGING)
+                    (MODE)
+                    (DOT_FS)
+                )
+                (objectComputerParagraph
+                    (OBJECT_COMPUTER)
+                    (DOT_FS)
+                    (computerName (system_name))
+                    (DOT_FS)
+                )
+            )
+            (inputOutputSection
+                (INPUT_OUTPUT)
+                (SECTION)
+                (DOT_FS)
+                (fileControlParagraph
+                    (FILE_CONTROL)
+                    (DOT_FS)
+                    (fileControlEntry
+                        (selectClause (SELECT) (fileName (IDENTIFIER)))
+                        (assignClause (ASSIGN) (TO) (system-name))
+                        (organizationClause (ORGANIZATION) (RELATIVE))
+                        (accessModeClause (ACCESS) (MODE) (IS) (SEQUENTIAL))
                     )
-                    (ERROR (OBJECT_COMPUTER))
-                    (configurationSectionParagraph
-                        (specialNamesParagraph
-                            (SPECIAL_NAMES)
-                            (DOT_FS)
-                            (specialNameClause
-                                (environmentSwitchNameClause
-                                    (environmentName
-                                        (systemName (cobolWord (IDENTIFIER)))
-                                    )
-                                    (mnemonicName (cobolWord (IDENTIFIER)))
-                                )
-                            )
-                            (specialNameClause
-                                (environmentSwitchNameClause
-                                    (environmentName
-                                        (systemName
-                                            (cobolWord (IDENTIFIER))
-                                        )
-                                    )
-                                    (ERROR)
-                                    (mnemonicName
-                                        (cobolWord (IDENTIFIER))
-                                    )
-                                )
-                            )
-                            (DOT_FS)
-                        )
+                    (fileControlEntry
+                        (selectClause (SELECT) (fileName (IDENTIFIER)))
+                        (assignClause (ASSIGN) (TO) (system-name))
+                        (organizationClause (ORGANIZATION) (SEQUENTIAL))
+                        (accessModeClause (ACCESS) (MODE) (IS) (SEQUENTIAL))
                     )
                 )
             )
         )
     )
-    (ERROR (ERROR)
-    (ID (ERROR))
-    (ERROR)
-    (ID (ERROR))
-))
+)
